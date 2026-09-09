@@ -1,0 +1,40 @@
+/**
+ * Target Platform Configuration Provider
+ * Controls build-time and runtime feature flags for Editor, Play Store, Itch.io, and Web.
+ */
+
+export const TARGET_MODES = {
+  EDITOR: "editor",
+  PLAYSTORE: "playstore",
+  ITCH: "itch",
+  WEB: "web"
+};
+
+const rawMode = (import.meta.env.VITE_APP_TARGET || "editor").toLowerCase();
+const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TARGET_MODES.EDITOR;
+
+export const TargetConfig = {
+  mode: activeMode,
+  title: import.meta.env.VITE_APP_TITLE || "Grid Leap",
+
+  isEditor: activeMode === TARGET_MODES.EDITOR,
+  isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,
+  isItch: activeMode === TARGET_MODES.ITCH,
+  isWeb: activeMode === TARGET_MODES.WEB,
+
+  features: {
+    // Level Editor & creation suite
+    levelEditor: activeMode === TARGET_MODES.EDITOR,
+    // In-game Developer diagnostics HUD button
+    devDiagnostics: activeMode === TARGET_MODES.EDITOR,
+    // Native Capacitor plugins (Haptics, StatusBar, App)
+    nativePlugins: activeMode === TARGET_MODES.PLAYSTORE,
+    // Itch.io / Desktop fullscreen toggle
+    fullscreenControl: activeMode === TARGET_MODES.ITCH || activeMode === TARGET_MODES.WEB,
+    // Keyboard hint pill on screen
+    keyboardHints: activeMode === TARGET_MODES.ITCH || (activeMode === TARGET_MODES.WEB && !("ontouchstart" in (typeof window !== "undefined" ? window : {}))),
+    // Web Share API
+    socialShare: activeMode === TARGET_MODES.WEB
+  }
+};
+

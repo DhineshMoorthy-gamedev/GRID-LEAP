@@ -1,0 +1,18 @@
+{
+  "name": "Grid Leap",
+  "short_name": "Grid Leap",
+  "description": "A 2D mathematical exact-distance puzzle maze.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B131A",
+  "theme_color": "#0B131A",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

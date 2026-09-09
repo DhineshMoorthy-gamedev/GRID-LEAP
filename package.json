@@ -1,0 +1,33 @@
+{
+  "name": "grid-leap",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Number Grid Maze puzzle game",
+  "scripts": {
+    "dev": "vite --mode editor",
+    "dev:editor": "vite --mode editor",
+    "dev:playstore": "vite --mode playstore",
+    "dev:itch": "vite --mode itch",
+    "dev:web": "vite --mode web",
+    "build": "vite build --mode editor",
+    "build:editor": "vite build --mode editor --outDir dist/editor",
+    "build:web": "vite build --mode web --outDir dist/web",
+    "build:itch": "vite build --mode itch --outDir dist/itch",
+    "build:playstore": "vite build --mode playstore --outDir dist && cap sync android",
+    "build:apk": "npm run build:playstore && cd android && gradlew.bat assembleDebug",
+    "preview": "vite preview",
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3"
+  }
+}

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0B131A" />
+<link rel="manifest" href="/manifest.json" />
+<title>Grid Leap</title>
+</head>
+<body>
+
+<div class="app-root">
+
+  <!-- ======================================================== -->
+  <!-- SCREEN 1: HOME HUB (Nonogram / Easybrain Style)           -->
+  <!-- ======================================================== -->
+  <section class="screen active" id="screenHome">
+    
+    <!-- Top Bar -->
+    <header class="home-topbar">
+      <div class="brand-logo">
+        <span class="logo-text">GRID<span class="dot">.</span>LEAP</span>
+      </div>
+      <div class="topbar-right">
+        <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
+      </div>
+    </header>
+
+    <!-- Scrollable Hub Content -->
+    <div class="home-scroll-area">
+
+      <!-- Hero "Continue" Banner -->
+      <div class="hero-banner" id="heroBanner">
+        <div class="hero-info">
+          <div class="hero-badge-row">
+            <span class="hero-badge" id="heroBadge">RESUME</span>
+          </div>
+          <h2 class="hero-title" id="heroTitle">Level 01</h2>
+          <p class="hero-sub" id="heroSub">Tutorial • Learn Distance</p>
+        </div>
+        <button class="play-hero-btn" id="heroPlayBtn" aria-label="Play Level">
+          <span class="play-triangle">▶</span>
+        </button>
+      </div>
+
+      <!-- Dev Level Selector (Temporary) -->
+      <div class="section-title-wrap">
+        <h3 class="section-title">SELECT LEVEL (DEV)</h3>
+        <span class="completion-pill" id="completionPill">0 / 10 CLEARED</span>
+      </div>
+
+      <!-- Difficulty Color Code Legend -->
+      <div class="diff-legend-strip">
+        <span class="legend-badge tier-easy"><span class="legend-dot"></span>1.0–2.9 EASY</span>
+        <span class="legend-badge tier-medium"><span class="legend-dot"></span>3.0–5.4 MED</span>
+        <span class="legend-badge tier-hard"><span class="legend-dot"></span>5.5–7.9 HARD</span>
+        <span class="legend-badge tier-master"><span class="legend-dot"></span>8.0–10.0 MASTER</span>
+      </div>
+
+      <div class="dev-level-strip" id="levelStrip">
+        <!-- Rendered dynamically as numbered circle dots -->
+      </div>
+
+      <!-- Level Editor Hub Entry (Visible only in Editor Mode) -->
+      <div class="editor-hub-card" id="editorHubCard" style="display:none;">
+        <div class="editor-hub-info">
+          <span class="eyebrow">CREATOR TOOLS</span>
+          <h3>Visual Level Designer</h3>
+          <p>Design puzzles, paint numbers, live test BFS paths & export JSON</p>
+        </div>
+        <button class="btn primary" id="openEditorBtn" style="flex:none; padding: 8px 14px; font-size: 12px;">LAUNCH EDITOR ✎</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- SCREEN 2: ACTIVE GAMEPLAY SCREEN                          -->
+  <!-- ======================================================== -->
+  <section class="screen" id="screenGame">
+
+    <!-- Top In-Game App Bar -->
+    <header class="game-topbar">
+      <div class="game-meta">
+        <span class="meta-title" id="gameTitle">Level 01</span>
+        <span class="meta-chapter" id="gameChapter">Tutorial</span>
+      </div>
+
+      <div class="game-top-actions">
+        <button class="nav-icon-btn" id="gameFullscreenBtn" title="Toggle Fullscreen" style="display:none;">⛶</button>
+        <button class="dev-tag-btn" id="devToggleBtn" title="Dev Diagnostics" style="display:none;">DEV</button>
+        <button class="nav-icon-btn" id="gamePauseBtn" title="Pause Game" aria-label="Pause">❚❚</button>
+      </div>
+    </header>
+
+    <!-- In-Game Stat Bar (Lives & Moves) -->
+    <div class="game-stat-bar">
+      <div class="stat-bubble lives-bubble" id="hudLives" title="Remaining Lives">
+        <span class="heart active">❤️</span>
+        <span class="heart active">❤️</span>
+        <span class="heart active">❤️</span>
+      </div>
+
+      <div class="stat-bubble moves-bubble">
+        <span class="label">MOVES</span>
+        <span class="val" id="hudMoves">0</span>
+      </div>
+    </div>
+
+    <!-- Centered Puzzle Grid Stage -->
+    <main class="grid-stage">
+      <div class="board-frame">
+        <div class="board" id="board"></div>
+      </div>
+    </main>
+
+    <!-- Desktop / Itch Key Legend -->
+    <div class="desktop-key-legend" id="desktopKeyLegend" style="display:none;">
+      <span>[Arrows / WASD] Move</span> • <span>[Z] Undo</span> • <span>[R] Restart</span> • <span>[H] Hint</span>
+    </div>
+
+    <!-- Bottom Thumb-Zone Tool Bar -->
+    <footer class="game-bottom-bar">
+      <button class="tool-btn" id="undoBtn" aria-label="Undo Move">
+        <span class="tool-icon">↺</span>
+        <span class="tool-label">UNDO</span>
+      </button>
+
+      <button class="tool-btn" id="hintBtn" aria-label="Show Solution Path">
+        <span class="tool-icon">💡</span>
+        <span class="tool-label">HINT</span>
+      </button>
+
+      <button class="tool-btn" id="restartBtn" aria-label="Restart Puzzle">
+        <span class="tool-icon">⟲</span>
+        <span class="tool-label">RESTART</span>
+      </button>
+    </footer>
+
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- SCREEN 3: VISUAL LEVEL DESIGNER & LAB (Editor Target)    -->
+  <!-- ======================================================== -->
+  <section class="screen" id="screenEditor">
+    
+    <!-- Editor Header -->
+    <header class="editor-topbar">
+      <button class="nav-icon-btn" id="editorBackBtn" title="Back to Home">‹</button>
+      <div class="editor-title-wrap">
+        <span class="meta-title">LEVEL DESIGNER</span>
+        <span class="meta-chapter" id="editorSolverStatus">SOLVER READY</span>
+      </div>
+      <button class="btn primary" id="editorPlaytestBtn" style="padding: 6px 12px; font-size: 11px; flex: none;">TEST PLAY ▶</button>
+    </header>
+
+    <div class="editor-scroll-area">
+      <!-- Metadata Row -->
+      <div class="editor-meta-card">
+        <div class="editor-field-row">
+          <div class="editor-field">
+            <label>NAME</label>
+            <input type="text" id="editorLevelName" value="Custom Maze" maxlength="24" />
+          </div>
+          <div class="editor-field">
+            <label>PHASE</label>
+            <input type="text" id="editorLevelPhase" value="Planning" maxlength="20" />
+          </div>
+          <div class="editor-field size-field">
+            <label>GRID SIZE</label>
+            <div class="size-stepper">
+              <button class="stepper-btn" id="editorSizeDecBtn">−</button>
+              <span id="editorSizeVal">4 × 4</span>
+              <button class="stepper-btn" id="editorSizeIncBtn">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paint Brush Palette -->
+      <div class="editor-brush-bar">
+        <span class="brush-label">BRUSH:</span>
+        <div class="brush-palette" id="brushPalette">
+          <button class="brush-btn active" data-brush="1">1</button>
+          <button class="brush-btn" data-brush="2">2</button>
+          <button class="brush-btn" data-brush="3">3</button>
+          <button class="brush-btn" data-brush="4">4</button>
+          <button class="brush-btn" data-brush="5">5</button>
+          <button class="brush-btn special start" data-brush="start">START</button>
+          <button class="brush-btn special goal" data-brush="goal">GOAL</button>
+        </div>
+      </div>
+
+      <!-- Interactive Grid Canvas Stage -->
+      <div class="editor-canvas-stage">
+        <div class="editor-grid" id="editorGrid"></div>
+      </div>
+
+      <!-- Live Diagnostics & Difficulty Score Bar -->
+      <div class="editor-diagnostics-card" id="editorDiagCard">
+        <div class="diag-header">
+          <div class="diag-header-left">
+            <span class="diag-title">SOLVER & DIFFICULTY</span>
+            <span class="diag-badge valid" id="editorDiagBadge">SOLVABLE</span>
+          </div>
+          <div class="diag-diff-pill medium" id="editorDiffPill">
+            <span class="star">★</span> <span class="score-num">5.2</span> <span class="tier-label">MEDIUM</span>
+          </div>
+        </div>
+        <div class="diag-metrics">
+          <div class="diag-col"><span class="label">OPTIMAL:</span><span class="val" id="editorOptMoves">4 moves</span></div>
+          <div class="diag-col"><span class="label">DECOYS:</span><span class="val" id="editorDecoyCount">12 false paths</span></div>
+          <div class="diag-col"><span class="label">TRAP DEPTH:</span><span class="val" id="editorTrapDepth">Max 2 deep</span></div>
+          <div class="diag-col"><span class="label">BRANCH LOAD:</span><span class="val" id="editorBranchLoad">2.4 exits/step</span></div>
+        </div>
+        <div class="diag-path-trail" id="editorPathTrail">Path: [0,0] → [0,2] → [2,2] → [2,0] → [3,0]</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="editor-actions-row">
+        <select class="editor-select" id="editorPresetSelect">
+          <option value="">Load Existing Level...</option>
+        </select>
+        <button class="btn" id="editorExportBtn">Export JSON</button>
+        <button class="btn" id="editorImportBtn">Import JSON</button>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<!-- Floating Toast -->
+<div class="toast" id="toast">No legal move that way</div>
+
+<!-- ======================================================== -->
+<!-- MODALS & OVERLAYS                                        -->
+<!-- ======================================================== -->
+
+<!-- Level Complete Modal Sheet -->
+<div class="overlay" id="winOverlay">
+  <div class="card win-card">
+    <div class="eyebrow">LEVEL COMPLETE</div>
+    <h2 id="winTitle">Level 01 cleared</h2>
+
+    <div class="stat-row" style="margin-top: 14px;">
+      <div class="stat">
+        <div class="value" id="winMoves">0</div>
+        <div class="label">YOUR MOVES</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="winOptimal">0</div>
+        <div class="label">OPTIMAL</div>
+      </div>
+      <div class="stat efficiency" id="winEfficiencyStat">
+        <div class="value" id="winEfficiency">0%</div>
+        <div class="label">EFFICIENCY</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn" id="winRestartBtn">Replay</button>
+      <button class="btn primary" id="winNextBtn">Next Level ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- Out of Lives Modal Overlay -->
+<div class="overlay" id="outOfLivesModal">
+  <div class="card out-of-lives-card">
+    <div class="eyebrow" style="color:var(--danger)">NO HEARTS REMAINING</div>
+    <h2>Out of Lives 💔</h2>
+    <p style="color:var(--paper-dim); font-size:13px; line-height: 1.4; margin-bottom: 20px;">
+      You entered a dead end with no legal exits. Take a fresh look at the leap numbers and try again!
+    </p>
+    <div class="card-actions" style="flex-direction: column; gap: 8px;">
+      <button class="btn primary" id="outOfLivesRestartBtn">Restart Level (3 ❤️)</button>
+      <button class="btn" id="outOfLivesHomeBtn">Exit to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pause Modal -->
+<div class="overlay" id="pauseModal">
+  <div class="card">
+    <div class="eyebrow">GAME PAUSED</div>
+    <h2>Paused</h2>
+    <div class="stat-row" style="margin-bottom: 20px;">
+      <div class="stat">
+        <div class="value" id="pauseLevel">01</div>
+        <div class="label">LEVEL</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="pauseMoves">0</div>
+        <div class="label">MOVES</div>
+      </div>
+    </div>
+    <div class="card-actions" style="flex-direction: column; gap: 8px;">
+      <button class="btn primary" id="resumeBtn">Resume</button>
+      <button class="btn" id="pauseRestartBtn">Restart Level</button>
+      <button class="btn" id="pauseHomeBtn">Exit to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="overlay" id="settingsModal">
+  <div class="card">
+    <div class="eyebrow">PREFERENCES</div>
+    <h2>Settings</h2>
+    <div class="settings-list">
+      <div class="setting-row">
+        <span>Sound Effects</span>
+        <input type="checkbox" id="settingSound" checked />
+      </div>
+      <div class="setting-row">
+        <span>Haptic Feedback</span>
+        <input type="checkbox" id="settingHaptics" checked />
+      </div>
+      <div class="setting-row">
+        <span>Relax Mode (Infinite Lives)</span>
+        <input type="checkbox" id="settingRelaxMode" />
+      </div>
+      <div class="setting-row">
+        <span>Developer Mode</span>
+        <input type="checkbox" id="settingDevMode" />
+      </div>
+    </div>
+    <div class="card-actions" style="margin-top: 20px;">
+      <button class="btn primary" id="closeSettingsBtn" style="flex:1">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rules / Tutorial Modal -->
+<div class="overlay" id="rulesModal">
+  <div class="card" style="max-width: 380px;">
+    <div class="eyebrow">HOW TO PLAY</div>
+    <h2>The Number is the Distance</h2>
+    <div class="rules-scroll-body">
+      <p>Whatever number is under your token is <strong>exactly</strong> how far you leap in any cardinal direction (↑, ↓, ←, →).</p>
+      <p>Reachable cells glow <strong>blue</strong>. Plan your jumps to navigate through numbers that lead towards the <strong>teal goal cell</strong>!</p>
+      <p>Undo and restart are always free.</p>
+    </div>
+    <div class="card-actions" style="margin-top: 16px;">
+      <button class="btn primary" id="closeRulesBtn" style="flex:1">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Developer Diagnostics Modal Overlay -->
+<div class="overlay" id="devModal">
+  <div class="card dev-modal-card">
+    <div class="eyebrow">DEVELOPER DIAGNOSTICS</div>
+    <h2>Diagnostics</h2>
+    <div class="dev-grid">
+      <div class="dev-item"><span class="dev-label">Level:</span><span class="dev-val" id="devLevelVal">01</span></div>
+      <div class="dev-item"><span class="dev-label">Cell:</span><span class="dev-val" id="devCellVal">[0, 0]</span></div>
+      <div class="dev-item"><span class="dev-label">Value:</span><span class="dev-val" id="devValueVal">1</span></div>
+      <div class="dev-item"><span class="dev-label">Optimal:</span><span class="dev-val" id="devOptimalVal">--</span></div>
+      <div class="dev-item"><span class="dev-label">Efficiency:</span><span class="dev-val" id="devEfficiencyVal">100%</span></div>
+    </div>
+    <div class="dev-moves-title">LEGAL EXITS:</div>
+    <div class="dev-dirs">
+      <div class="dev-dir-badge" id="devDirUp">↑ INVALID</div>
+      <div class="dev-dir-badge" id="devDirDown">↓ INVALID</div>
+      <div class="dev-dir-badge" id="devDirLeft">← INVALID</div>
+      <div class="dev-dir-badge" id="devDirRight">→ INVALID</div>
+    </div>
+    <div class="card-actions" style="margin-top: 20px; flex-direction: column; gap: 8px;">
+      <button class="btn" id="devShowSolutionBtn">Show Solution Path</button>
+      <button class="btn primary" id="closeDevBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Prototype Complete Modal -->
+<div class="overlay" id="finalOverlay">
+  <div class="card">
+    <div class="eyebrow">PROTOTYPE COMPLETE</div>
+    <h2>All 10 levels cleared</h2>
+    <p style="color:var(--paper-dim); line-height: 1.5; margin-bottom: 20px;">
+      You conquered all chapters — tutorial, planning, deceptive dead ends, and deep leaps!
+    </p>
+    <div class="card-actions">
+      <button class="btn primary" id="finalRestartBtn" style="flex:1">Play again</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editor JSON Export / Import Modal -->
+<div class="overlay" id="editorJsonModal">
+  <div class="card" style="max-width: 440px; text-align: left;">
+    <div class="eyebrow">LEVEL JSON DATA</div>
+    <h2 id="editorJsonTitle">Export Level Code</h2>
+    <textarea class="editor-json-area" id="editorJsonText" rows="10" spellcheck="false" style="width:100%; background:var(--ink-950); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px; font-family:monospace; font-size:11px; resize:vertical;"></textarea>
+    <div class="card-actions" style="margin-top: 14px;">
+      <button class="btn primary" id="editorJsonCopyBtn">Copy Code</button>
+      <button class="btn" id="editorJsonApplyBtn" style="display:none;">Apply JSON</button>
+      <button class="btn" id="closeEditorJsonBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+
+</body>
+</html>
