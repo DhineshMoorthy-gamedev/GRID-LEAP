@@ -56,8 +56,10 @@ export class StorageService {
         devModeEnabled: false,
         soundEnabled: true,
         hapticsEnabled: true,
-        relaxMode: false
-      }
+        relaxMode: false,
+        showTrail: false
+      },
+      activeSession: null
     };
   }
 
@@ -86,6 +88,20 @@ export class StorageService {
       });
     }
 
+    let activeSession = null;
+    if (data.activeSession && typeof data.activeSession === "object") {
+      const s = data.activeSession;
+      if (typeof s.levelIndex === "number" && Array.isArray(s.player) && typeof s.moveCount === "number") {
+        activeSession = {
+          levelIndex: s.levelIndex,
+          player: [s.player[0], s.player[1]],
+          moveCount: s.moveCount,
+          history: Array.isArray(s.history) ? s.history : [],
+          lives: typeof s.lives === "number" ? s.lives : 3
+        };
+      }
+    }
+
     return {
       schemaVersion: 2,
       lastUpdated: data.lastUpdated || Date.now(),
@@ -93,12 +109,14 @@ export class StorageService {
       completed,
       stars,
       bestMoves,
+      activeSession,
       settings: {
         hasSeenRules: Boolean(data.settings?.hasSeenRules),
         devModeEnabled: Boolean(data.settings?.devModeEnabled),
         soundEnabled: data.settings?.soundEnabled !== false,
         hapticsEnabled: data.settings?.hapticsEnabled !== false,
-        relaxMode: Boolean(data.settings?.relaxMode)
+        relaxMode: Boolean(data.settings?.relaxMode),
+        showTrail: Boolean(data.settings?.showTrail)
       }
     };
   }

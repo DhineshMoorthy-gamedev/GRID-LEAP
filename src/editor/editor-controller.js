@@ -25,6 +25,9 @@ export const EditorController = {
 
   selectedBrush: "1", // "1".."7" | "start" | "goal"
   onPlaytestCallback: null,
+  solutionPath: [],
+  stepIndex: 0,
+  autoPlayTimer: null,
 
   init({ onPlaytest }) {
     this.onPlaytestCallback = onPlaytest;
@@ -106,6 +109,17 @@ export const EditorController = {
         }
       });
     }
+
+    // Dev Stepper Controls
+    const stepBackBtn = document.getElementById("editorStepBackBtn");
+    const autoPlayBtn = document.getElementById("editorAutoPlayBtn");
+    const stepForwardBtn = document.getElementById("editorStepForwardBtn");
+    const stepResetBtn = document.getElementById("editorStepResetBtn");
+
+    if (stepBackBtn) stepBackBtn.addEventListener("click", () => this.stepBackward());
+    if (autoPlayBtn) autoPlayBtn.addEventListener("click", () => this.toggleAutoPlay());
+    if (stepForwardBtn) stepForwardBtn.addEventListener("click", () => this.stepForward());
+    if (stepResetBtn) stepResetBtn.addEventListener("click", () => this.resetStep());
   },
 
   populatePresets() {
@@ -190,7 +204,9 @@ export const EditorController = {
         if (isGoal) cell.classList.add("goal-cell");
 
         const val = this.level.grid[r][c];
-        if (val === 0 && !isGoal) {
+        if (isGoal) {
+          cell.textContent = "GOAL";
+        } else if (val === 0) {
           cell.classList.add("void-cell");
           cell.textContent = "·";
         } else {
@@ -230,6 +246,10 @@ export const EditorController = {
 
     if (result.solvable) {
       this.level.optimal = result.moves;
+      this.solutionPath = result.path;
+      if (this.stepIndex >= this.solutionPath.length) {
+        this.stepIndex = 0;
+      }
       const diff = result.difficulty;
 
       if (badge) {
@@ -251,8 +271,15 @@ export const EditorController = {
 
       const trail = result.path.map(([r, c]) => `[${r},${c}]`).join(" → ");
       if (pathTrailEl) pathTrailEl.textContent = `Solution: ${trail}`;
+
+      this.updateStepperControls();
+      this.updateGridStepperHighlight();
     } else {
       this.level.optimal = 0;
+      this.stopAutoPlay();
+      this.solutionPath = [];
+      this.stepIndex = 0;
+
       if (badge) {
         badge.className = "diag-badge invalid";
         badge.textContent = "UNSOLVABLE";
@@ -270,6 +297,129 @@ export const EditorController = {
       if (trapDepthEl) trapDepthEl.textContent = "--";
       if (branchLoadEl) branchLoadEl.textContent = "--";
       if (pathTrailEl) pathTrailEl.textContent = "No valid path connects START to GOAL.";
+
+      this.updateStepperControls();
+      this.updateGridStepperHighlight();
+    }
+  },
+
+  stepForward() {
+    if (!this.solutionPath.length) return;
+    if (this.stepIndex < this.solutionPath.length - 1) {
+      this.stepIndex++;
+      this.updateStepperControls();
+      this.updateGridStepperHighlight();
+    } else if (this.autoPlayTimer) {
+      this.stopAutoPlay();
+    }
+  },
+
+  stepBackward() {
+    if (!this.solutionPath.length) return;
+    if (this.stepIndex > 0) {
+      this.stepIndex--;
+      this.updateStepperControls();
+      this.updateGridStepperHighlight();
+    }
+  },
+
+  toggleAutoPlay() {
+    if (this.autoPlayTimer) {
+      this.stopAutoPlay();
+    } else {
+      this.startAutoPlay();
+    }
+  },
+
+  startAutoPlay() {
+    if (!this.solutionPath.length) return;
+    if (this.stepIndex >= this.solutionPath.length - 1) {
+      this.stepIndex = 0;
+    }
+    this.updateStepperControls();
+    this.updateGridStepperHighlight();
+
+    const autoPlayBtn = document.getElementById("editorAutoPlayBtn");
+    if (autoPlayBtn) {
+      autoPlayBtn.textContent = "❚❚ PAUSE";
+      autoPlayBtn.classList.add("playing");
+    }
+
+    this.autoPlayTimer = setInterval(() => {
+      if (this.stepIndex < this.solutionPath.length - 1) {
+        this.stepForward();
+      } else {
+        this.stopAutoPlay();
+      }
+    }, 420);
+  },
+
+  stopAutoPlay() {
+    if (this.autoPlayTimer) {
+      clearInterval(this.autoPlayTimer);
+      this.autoPlayTimer = null;
+    }
+    const autoPlayBtn = document.getElementById("editorAutoPlayBtn");
+    if (autoPlayBtn) {
+      autoPlayBtn.textContent = "▶ AUTO";
+      autoPlayBtn.classList.remove("playing");
+    }
+  },
+
+  resetStep() {
+    this.stopAutoPlay();
+    this.stepIndex = 0;
+    this.updateStepperControls();
+    this.updateGridStepperHighlight();
+  },
+
+  updateStepperControls() {
+    const stepBackBtn = document.getElementById("editorStepBackBtn");
+    const autoPlayBtn = document.getElementById("editorAutoPlayBtn");
+    const stepForwardBtn = document.getElementById("editorStepForwardBtn");
+    const stepResetBtn = document.getElementById("editorStepResetBtn");
+    const indicator = document.getElementById("editorStepIndicator");
+
+    const totalSteps = Math.max(0, this.solutionPath.length - 1);
+    const hasPath = this.solutionPath.length > 0;
+
+    if (stepBackBtn) stepBackBtn.disabled = !hasPath || this.stepIndex === 0;
+    if (stepForwardBtn) stepForwardBtn.disabled = !hasPath || this.stepIndex >= totalSteps;
+    if (autoPlayBtn) autoPlayBtn.disabled = !hasPath;
+    if (stepResetBtn) stepResetBtn.disabled = !hasPath || this.stepIndex === 0;
+
+    if (indicator) {
+      if (hasPath) {
+        const curr = this.solutionPath[this.stepIndex];
+        indicator.textContent = `Step: ${this.stepIndex} / ${totalSteps} [${curr[0]},${curr[1]}]`;
+      } else {
+        indicator.textContent = "Step: -- / --";
+      }
+    }
+  },
+
+  updateGridStepperHighlight() {
+    const gridEl = document.getElementById("editorGrid");
+    if (!gridEl) return;
+
+    gridEl.querySelectorAll(".editor-cell").forEach(cell => {
+      cell.classList.remove("stepper-active", "stepper-path");
+    });
+
+    if (!this.solutionPath.length) return;
+
+    // Highlight previous path
+    for (let i = 0; i < this.stepIndex; i++) {
+      const [pr, pc] = this.solutionPath[i];
+      const cell = gridEl.querySelector(`.editor-cell[data-r="${pr}"][data-c="${pc}"]`);
+      if (cell) cell.classList.add("stepper-path");
+    }
+
+    // Highlight current active step
+    const curr = this.solutionPath[this.stepIndex];
+    if (curr) {
+      const cell = gridEl.querySelector(`.editor-cell[data-r="${curr[0]}"][data-c="${curr[1]}"]`);
+      if (cell) cell.classList.add("stepper-active");
     }
   },
 

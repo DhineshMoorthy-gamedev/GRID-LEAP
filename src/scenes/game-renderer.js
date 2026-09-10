@@ -1,4 +1,6 @@
 import { solve } from "../core/solver.js";
+import { TargetConfig } from "../platform/target-config.js";
+import { PlatformBridge } from "../platform/lifecycle.js";
 
 /**
  * UI Renderer & DOM Bindings
@@ -10,27 +12,52 @@ export const DOM = {
   screenGame: document.getElementById("screenGame"),
 
   // Home Hub
+  targetModePill: document.getElementById("targetModePill"),
   homeHelpBtn: document.getElementById("homeHelpBtn"),
   homeSettingsBtn: document.getElementById("homeSettingsBtn"),
+  homeThemeToggleBtn: document.getElementById("homeThemeToggleBtn"),
   heroBanner: document.getElementById("heroBanner"),
   heroBadge: document.getElementById("heroBadge"),
   heroTitle: document.getElementById("heroTitle"),
   heroSub: document.getElementById("heroSub"),
   heroPlayBtn: document.getElementById("heroPlayBtn"),
+  editorLevelSelectSection: document.getElementById("editorLevelSelectSection"),
   completionPill: document.getElementById("completionPill"),
   levelStrip: document.getElementById("levelStrip"),
+  consumerLaunchSection: document.getElementById("consumerLaunchSection"),
+  consumerBadge: document.getElementById("consumerBadge"),
+  consumerClearedCount: document.getElementById("consumerClearedCount"),
+  consumerTitle: document.getElementById("consumerTitle"),
+  consumerSub: document.getElementById("consumerSub"),
+  consumerPlayBtn: document.getElementById("consumerPlayBtn"),
 
   // Game Play Screen
   gameBackBtn: document.getElementById("gameBackBtn"),
+  trailToggleBtn: document.getElementById("trailToggleBtn"),
+  gameThemeToggleBtn: document.getElementById("gameThemeToggleBtn"),
   gameTitle: document.getElementById("gameTitle"),
   gameChapter: document.getElementById("gameChapter"),
   gamePauseBtn: document.getElementById("gamePauseBtn"),
   hudLives: document.getElementById("hudLives"),
   hudMoves: document.getElementById("hudMoves"),
+  hudPathStatus: document.getElementById("hudPathStatus"),
+  hudPathDot: document.getElementById("hudPathDot"),
+  hudPathText: document.getElementById("hudPathText"),
   board: document.getElementById("board"),
+  gameToolBar: document.getElementById("gameToolBar"),
+  adBannerSlot: document.getElementById("adBannerSlot"),
   undoBtn: document.getElementById("undoBtn"),
   hintBtn: document.getElementById("hintBtn"),
   restartBtn: document.getElementById("restartBtn"),
+
+  // Dev Playtest Stepper Bar
+  devPlaytestBar: document.getElementById("devPlaytestBar"),
+  devStepBackBtn: document.getElementById("devStepBackBtn"),
+  devAutoPlayBtn: document.getElementById("devAutoPlayBtn"),
+  devStepForwardBtn: document.getElementById("devStepForwardBtn"),
+  devStepResetBtn: document.getElementById("devStepResetBtn"),
+  devThemeToggleBtn: document.getElementById("devThemeToggleBtn"),
+  devStepInfo: document.getElementById("devStepInfo"),
 
   // Dev Panel
   devPanel: document.getElementById("devPanel"),
@@ -71,9 +98,12 @@ export const DOM = {
   pauseHomeBtn: document.getElementById("pauseHomeBtn"),
 
   settingsModal: document.getElementById("settingsModal"),
+  pillThemeObsidian: document.getElementById("pillThemeObsidian"),
+  pillThemeVellum: document.getElementById("pillThemeVellum"),
   settingSound: document.getElementById("settingSound"),
   settingHaptics: document.getElementById("settingHaptics"),
   settingRelaxMode: document.getElementById("settingRelaxMode"),
+  settingTrail: document.getElementById("settingTrail"),
   settingDevMode: document.getElementById("settingDevMode"),
   closeSettingsBtn: document.getElementById("closeSettingsBtn"),
 
@@ -94,6 +124,10 @@ export const DOM = {
 
 let cellEls = [];
 let tokenEl = null;
+let trailSvgEl = null;
+let lastRenderedCoords = [];
+let lastRenderedViable = true;
+let lastRenderedShowTrail = false;
 let deadEndToastTimeout = null;
 
 export function getCellElements() {
@@ -104,65 +138,235 @@ export function getTokenElement() {
   return tokenEl;
 }
 
-export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSelect) {
-  // 1. Update Hero Card
-  const currentLv = levels[lastPlayedIndex] || levels[0];
+export function applyTheme(themeName) {
+  const theme = themeName === "vellum" ? "vellum" : "obsidian";
+  document.documentElement.setAttribute("data-theme", theme);
+
+  // Status bar meta color
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute("content", theme === "vellum" ? "#F7F5F0" : "#121316");
+  }
+
+  const isVellum = theme === "vellum";
+  const icon = isVellum ? "☀️" : "🌙";
+  const label = isVellum ? "VELLUM" : "OBSIDIAN";
+
+  if (DOM.homeThemeToggleBtn) {
+    const iconEl = DOM.homeThemeToggleBtn.querySelector(".theme-icon");
+    const labelEl = DOM.homeThemeToggleBtn.querySelector(".theme-label");
+    if (iconEl) iconEl.textContent = icon;
+    if (labelEl) labelEl.textContent = label;
+  }
+
+  if (DOM.gameThemeToggleBtn) {
+    const iconEl = DOM.gameThemeToggleBtn.querySelector(".theme-icon");
+    if (iconEl) iconEl.textContent = icon;
+    DOM.gameThemeToggleBtn.setAttribute("title", `Theme: ${label} (Tap to switch)`);
+  }
+
+  if (DOM.devThemeToggleBtn) {
+    DOM.devThemeToggleBtn.textContent = `🎨 ${label}`;
+  }
+
+  if (DOM.pillThemeObsidian) {
+    DOM.pillThemeObsidian.classList.toggle("active", !isVellum);
+  }
+  if (DOM.pillThemeVellum) {
+    DOM.pillThemeVellum.classList.toggle("active", isVellum);
+  }
+
+  // Update SVG filter color dynamically
+  const glowTrail = document.getElementById("glowTrail") || document.getElementById("glowSky");
+  if (glowTrail) {
+    const shadow = glowTrail.querySelector("feDropShadow");
+    if (shadow) {
+      if (isVellum) {
+        shadow.setAttribute("flood-color", "#1D4E6D");
+        shadow.setAttribute("flood-opacity", "0.45");
+      } else {
+        shadow.setAttribute("flood-color", "#FFB800");
+        shadow.setAttribute("flood-opacity", "0.85");
+      }
+    }
+  }
+
+  refreshTrail();
+}
+
+export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSelect, session = null) {
+  const isEditor = TargetConfig.isEditor;
   const isAllCleared = completedArr.every(Boolean);
   const clearedCount = completedArr.filter(Boolean).length;
 
-  if (DOM.heroTitle) DOM.heroTitle.textContent = `Level ${String(lastPlayedIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0")}`;
-  if (DOM.heroSub) DOM.heroSub.textContent = `${currentLv.phase} • ${currentLv.name}`;
-  if (DOM.heroBadge) DOM.heroBadge.textContent = isAllCleared ? "COMPLETED" : (completedArr[lastPlayedIndex] ? "REPLAY" : "RESUME");
-  if (DOM.completionPill) DOM.completionPill.textContent = `${clearedCount} / ${levels.length} CLEARED`;
+  if (isEditor) {
+    // ----------------------------------------------------
+    // EDITOR MODE: Show Dev Controls, Hero Card, Level Selector
+    // ----------------------------------------------------
+    if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "block";
+    if (DOM.heroBanner) DOM.heroBanner.style.display = "flex";
+    if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "none";
 
-  // 2. Render Numbered Circle Dots with Difficulty Score
-  if (DOM.levelStrip) {
-    DOM.levelStrip.innerHTML = "";
-    levels.forEach((lv, i) => {
-      const dot = document.createElement("div");
-      const isDone = Boolean(completedArr[i]);
-      const isActive = i === lastPlayedIndex;
-      const solverRes = solve(lv);
-      const diff = solverRes?.difficulty || { score: 1.0, tier: "EASY", color: "var(--teal)" };
+    // 1. Update Hero Card
+    const currentLv = levels[lastPlayedIndex] || levels[0];
+    const hasSession = Boolean(session && session.levelIndex === lastPlayedIndex && session.moveCount > 0);
 
-      const tierClass = `tier-${diff.tier.toLowerCase()}`;
-      dot.className = `level-dot ${tierClass}` + (isDone ? " done" : "") + (isActive ? " active" : "");
-      dot.style.setProperty("--tier-color", diff.color);
+    if (DOM.heroTitle) DOM.heroTitle.textContent = `Level ${String(lastPlayedIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0")}`;
+    if (DOM.heroSub) {
+      DOM.heroSub.textContent = hasSession
+        ? `${currentLv.phase} • Move ${session.moveCount} in progress`
+        : `${currentLv.phase} • ${currentLv.name}`;
+    }
+    if (DOM.heroBadge) {
+      if (isAllCleared) {
+        DOM.heroBadge.textContent = "COMPLETED";
+      } else if (hasSession) {
+        DOM.heroBadge.textContent = "RESUME";
+      } else if (completedArr[lastPlayedIndex]) {
+        DOM.heroBadge.textContent = "REPLAY";
+      } else {
+        DOM.heroBadge.textContent = "PLAY";
+      }
+    }
+    if (DOM.completionPill) DOM.completionPill.textContent = `${clearedCount} / ${levels.length} CLEARED`;
 
-      const numStr = String(i + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
-      dot.innerHTML = `
-        <span class="dot-num ${numStr.length >= 3 ? "three-digit" : ""}">${numStr}</span>
-        <span class="dot-score">${diff.score.toFixed(1)}</span>
-        ${isDone ? '<span class="dot-check">✓</span>' : ""}
-      `;
+    // 2. Render Numbered Circle Dots with Difficulty Score
+    if (DOM.levelStrip) {
+      DOM.levelStrip.innerHTML = "";
+      levels.forEach((lv, i) => {
+        const dot = document.createElement("div");
+        const isDone = Boolean(completedArr[i]);
+        const isActive = i === lastPlayedIndex;
+        const solverRes = solve(lv);
+        const diff = solverRes?.difficulty || { score: 1.0, tier: "EASY", color: "var(--teal)" };
 
-      dot.addEventListener("click", () => onLevelSelect(i));
-      DOM.levelStrip.appendChild(dot);
-    });
+        const tierClass = `tier-${diff.tier.toLowerCase()}`;
+        dot.className = `level-dot ${tierClass}` + (isDone ? " done" : "") + (isActive ? " active" : "");
+        dot.style.setProperty("--tier-color", diff.color);
+
+        const numStr = String(i + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
+        dot.innerHTML = `
+          <span class="dot-num ${numStr.length >= 3 ? "three-digit" : ""}">${numStr}</span>
+          <span class="dot-score">${diff.score.toFixed(1)}</span>
+          ${isDone ? '<span class="dot-check">✓</span>' : ""}
+        `;
+
+        dot.addEventListener("click", () => onLevelSelect(i));
+        DOM.levelStrip.appendChild(dot);
+      });
+    }
+  } else {
+    // ----------------------------------------------------
+    // CONSUMER PLATFORMS (Play Store, Itch, Web):
+    // Dedicated single Next-Level Launch Card
+    // ----------------------------------------------------
+    if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "none";
+    if (DOM.heroBanner) DOM.heroBanner.style.display = "none";
+    if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "flex";
+
+    // Resolve next uncompleted level index
+    const firstUnfinished = completedArr.findIndex(done => !done);
+    const nextIndex = firstUnfinished !== -1 ? firstUnfinished : 0;
+    const nextLv = levels[nextIndex] || levels[0];
+
+    // Check if player has an in-progress session with moves made on this level
+    const hasSession = Boolean(session && session.levelIndex === nextIndex && session.moveCount > 0);
+
+    const numStr = String(nextIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
+    if (DOM.consumerTitle) DOM.consumerTitle.textContent = `Level ${numStr}`;
+    if (DOM.consumerSub) {
+      if (hasSession) {
+        DOM.consumerSub.textContent = `${nextLv.phase || "Puzzle"} • Move ${session.moveCount} in progress`;
+      } else {
+        DOM.consumerSub.textContent = `${nextLv.phase || "Puzzle"} • ${nextLv.name || "Challenge"}`;
+      }
+    }
+    if (DOM.consumerClearedCount) DOM.consumerClearedCount.textContent = `${clearedCount} / ${levels.length} CLEARED`;
+    if (DOM.consumerBadge) {
+      if (isAllCleared) {
+        DOM.consumerBadge.textContent = "ALL CLEARED";
+      } else if (hasSession) {
+        DOM.consumerBadge.textContent = "RESUME";
+      } else if (completedArr[nextIndex]) {
+        DOM.consumerBadge.textContent = "REPLAY";
+      } else {
+        DOM.consumerBadge.textContent = "UP NEXT";
+      }
+    }
+    const playLabel = DOM.consumerPlayBtn?.querySelector(".consumer-play-label");
+    if (playLabel) {
+      if (isAllCleared) {
+        playLabel.textContent = "REPLAY";
+      } else if (hasSession) {
+        playLabel.textContent = "CONTINUE";
+      } else {
+        playLabel.textContent = "PLAY";
+      }
+    }
   }
 }
 
 export function renderLivesHUD(lives, maxLives, isRelaxMode = false) {
   if (!DOM.hudLives) return;
+  const heartSvg = (isActive) => `
+    <span class="heart-slot ${isActive ? "active" : "lost"}">
+      <svg class="heart-icon ${isActive ? "active" : "lost"}" width="24" height="24" viewBox="0 0 24 24" fill="${isActive ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </span>`;
+
   if (isRelaxMode) {
-    DOM.hudLives.innerHTML = '<span class="heart active">❤️</span> <span style="font-size:10px; font-weight:700; color:var(--paper-dim);">∞</span>';
+    DOM.hudLives.innerHTML = `${heartSvg(true)} <span class="infinite-symbol">∞</span>`;
     return;
   }
   let html = "";
   for (let i = 0; i < maxLives; i++) {
-    const isActive = i < lives;
-    html += `<span class="heart ${isActive ? "active" : "lost"}">${isActive ? "❤️" : "🖤"}</span>`;
+    html += heartSvg(i < lives);
   }
   DOM.hudLives.innerHTML = html;
 }
 
-export function renderBoard(level, onCellClick) {
-  DOM.board.style.gridTemplateColumns = `repeat(${level.w}, 1fr)`;
-  const size = Math.min(380, window.innerWidth - 64);
+let creationAnimationTimer = null;
+let hapticDropTimer = null;
+
+export function flushLevelCreationAnimation() {
+  if (creationAnimationTimer) {
+    clearTimeout(creationAnimationTimer);
+    creationAnimationTimer = null;
+  }
+  if (hapticDropTimer) {
+    clearTimeout(hapticDropTimer);
+    hapticDropTimer = null;
+  }
+  if (DOM.board) {
+    DOM.board.classList.remove("creating");
+  }
+}
+
+export function renderBoard(level, onCellClick, { animate = true } = {}) {
+  flushLevelCreationAnimation();
+
+  const maxDim = Math.max(level.w, level.h);
+  DOM.board.dataset.gridSize = maxDim;
+  const boardMax = maxDim >= 7 ? 405 : (maxDim >= 5 ? 385 : 360);
+  const size = Math.min(boardMax, window.innerWidth - (window.innerWidth < 420 ? 24 : 44));
   DOM.board.style.width = size + "px";
+  DOM.board.style.gridTemplateColumns = `repeat(${level.w}, 1fr)`;
   DOM.board.innerHTML = "";
   cellEls = [];
 
+  const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shouldAnimate = animate && !prefersReducedMotion;
+
+
+  // Calculate center of grid for radial outward ordering
+  const centerR = (level.h - 1) / 2;
+  const centerC = (level.w - 1) / 2;
+  let maxDelay = 0;
+
+  // Collect all cells with their distances, then sort and rank them
+  // so EVERY single cell gets a unique delay — true individual per-cell growth
+  const cellData = [];
   for (let r = 0; r < level.h; r++) {
     cellEls.push([]);
     for (let c = 0; c < level.w; c++) {
@@ -178,29 +382,201 @@ export function renderBoard(level, onCellClick) {
       if (isGoal) cell.classList.add("goal-cell");
 
       const val = level.grid[r][c];
-      if (val === 0 && !isGoal) {
+      if (isGoal) {
+        cell.innerHTML = '<span class="cell-glyph goal-label">GOAL</span>';
+      } else if (val === 0) {
         cell.classList.add("void-cell");
-        cell.textContent = "·";
+        cell.innerHTML = '<span class="cell-glyph void">·</span>';
       } else {
-        cell.textContent = val;
+        cell.innerHTML = `<span class="cell-glyph">${val}</span>`;
       }
 
-      cell.addEventListener("click", () => onCellClick(r, c));
+      cell.addEventListener("click", () => {
+        flushLevelCreationAnimation();
+        onCellClick(r, c);
+      });
       DOM.board.appendChild(cell);
       cellEls[r].push(cell);
+
+      if (shouldAnimate) {
+        const dist = Math.hypot(r - centerR, c - centerC);
+        // Use angle to break ties within the same ring (top → clockwise)
+        const angle = Math.atan2(c - centerC, r - centerR);
+        cellData.push({ cell, dist, angle });
+      }
     }
   }
 
-  tokenEl = document.createElement("div");
-  tokenEl.className = "token";
-  tokenEl.innerHTML = `
-    <div class="dot"></div>
-    <div class="token-dir-arrow up" id="tokenDirUp">▲</div>
-    <div class="token-dir-arrow down" id="tokenDirDown">▼</div>
-    <div class="token-dir-arrow left" id="tokenDirLeft">◀</div>
-    <div class="token-dir-arrow right" id="tokenDirRight">▶</div>
-  `;
-  DOM.board.appendChild(tokenEl);
+  // Group cells into concentric rings by Euclidean distance from center.
+  // All cells in the same ring reveal simultaneously; rings expand outward one-by-one.
+  if (shouldAnimate) {
+    // Round distance to 2 decimal places to reliably bucket cells into rings
+    cellData.sort((a, b) => a.dist - b.dist);
+
+    // Build ordered list of unique ring distances
+    const rings = [];
+    let lastDist = -1;
+    cellData.forEach(({ cell, dist }) => {
+      const rounded = Math.round(dist * 100) / 100;
+      if (Math.abs(rounded - lastDist) > 0.05) {
+        rings.push({ dist: rounded, cells: [] });
+        lastDist = rounded;
+      }
+      rings[rings.length - 1].cells.push(cell);
+    });
+
+    let startCellDelay = 0;
+    const [startR, startC] = level.start;
+    const ringStepMs = 90;
+    rings.forEach((ring, ringIndex) => {
+      const delayMs = ringIndex * ringStepMs;
+      if (delayMs > maxDelay) maxDelay = delayMs;
+      ring.cells.forEach(cell => {
+        cell.style.setProperty("--cell-spawn-delay", `${delayMs}ms`);
+        if (parseInt(cell.dataset.r, 10) === startR && parseInt(cell.dataset.c, 10) === startC) {
+          startCellDelay = delayMs;
+        }
+      });
+    });
+
+    // Breadcrumb Trail SVG layer (Multi-lane Overpass Architecture)
+    const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
+    const glowColor = isVellum ? "#1D4E6D" : "#FFB800";
+    const glowOpacity = isVellum ? "0.45" : "0.85";
+    const dangerColor = isVellum ? "#505A64" : "#F43F5E";
+
+    trailSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    trailSvgEl.setAttribute("class", "trail-svg");
+    trailSvgEl.setAttribute("id", "trailSvg");
+    trailSvgEl.innerHTML = `
+      <defs>
+        <filter id="glowTrail" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${glowColor}" flood-opacity="${glowOpacity}"/>
+        </filter>
+        <filter id="glowSky" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${glowColor}" flood-opacity="${glowOpacity}"/>
+        </filter>
+        <filter id="glowDanger" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${dangerColor}" flood-opacity="0.9"/>
+        </filter>
+        <filter id="vellumInkDepth" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1E1C1A" flood-opacity="0.22"/>
+        </filter>
+      </defs>
+      <g id="trailUnderHalos"></g>
+      <g id="trailSegments"></g>
+      <g id="trailChevrons"></g>
+      <g id="trailNodes"></g>
+    `;
+    DOM.board.appendChild(trailSvgEl);
+
+    tokenEl = document.createElement("div");
+    tokenEl.className = "token";
+    tokenEl.style.setProperty("--cell-spawn-delay", `${startCellDelay}ms`);
+    tokenEl.innerHTML = `
+      <div class="token-inner">
+        <div class="token-frame"></div>
+        <div class="token-dir-arrow up" id="tokenDirUp" aria-label="Up">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M2.5 7.5 L6 3.5 L9.5 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow down" id="tokenDirDown" aria-label="Down">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M2.5 4.5 L6 8.5 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow left" id="tokenDirLeft" aria-label="Left">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M7.5 2.5 L3.5 6 L7.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow right" id="tokenDirRight" aria-label="Right">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M4.5 2.5 L8.5 6 L4.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    `;
+    DOM.board.appendChild(tokenEl);
+
+    // Force reflow BEFORE adding .creating — this locks cells and token-inner at scale(0)
+    // so the browser has a registered "initial state" to animate FROM.
+    void DOM.board.offsetWidth;
+    DOM.board.classList.add("creating");
+
+    const revealDuration = maxDelay + 280;
+
+    creationAnimationTimer = setTimeout(() => {
+      if (DOM.board) DOM.board.classList.remove("creating");
+      creationAnimationTimer = null;
+    }, revealDuration);
+
+    hapticDropTimer = setTimeout(() => {
+      PlatformBridge.vibrateLight();
+      hapticDropTimer = null;
+    }, startCellDelay + 180);
+  } else {
+    // Non-animated board build (e.g. editor or reduced motion)
+    const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
+    const glowColor = isVellum ? "#1D4E6D" : "#FFB800";
+    const glowOpacity = isVellum ? "0.45" : "0.85";
+    const dangerColor = isVellum ? "#505A64" : "#F43F5E";
+
+    trailSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    trailSvgEl.setAttribute("class", "trail-svg");
+    trailSvgEl.setAttribute("id", "trailSvg");
+    trailSvgEl.innerHTML = `
+      <defs>
+        <filter id="glowTrail" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${glowColor}" flood-opacity="${glowOpacity}"/>
+        </filter>
+        <filter id="glowSky" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${glowColor}" flood-opacity="${glowOpacity}"/>
+        </filter>
+        <filter id="glowDanger" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="${dangerColor}" flood-opacity="0.9"/>
+        </filter>
+        <filter id="vellumInkDepth" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1E1C1A" flood-opacity="0.22"/>
+        </filter>
+      </defs>
+      <g id="trailUnderHalos"></g>
+      <g id="trailSegments"></g>
+      <g id="trailChevrons"></g>
+      <g id="trailNodes"></g>
+    `;
+    DOM.board.appendChild(trailSvgEl);
+
+    tokenEl = document.createElement("div");
+    tokenEl.className = "token";
+    tokenEl.innerHTML = `
+      <div class="token-inner">
+        <div class="token-frame"></div>
+        <div class="token-dir-arrow up" id="tokenDirUp" aria-label="Up">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M2.5 7.5 L6 3.5 L9.5 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow down" id="tokenDirDown" aria-label="Down">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M2.5 4.5 L6 8.5 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow left" id="tokenDirLeft" aria-label="Left">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M7.5 2.5 L3.5 6 L7.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="token-dir-arrow right" id="tokenDirRight" aria-label="Right">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <path d="M4.5 2.5 L8.5 6 L4.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    `;
+    DOM.board.appendChild(tokenEl);
+  }
 }
 
 export function cellMetrics() {
@@ -211,20 +587,30 @@ export function cellMetrics() {
   return { step, cellSize: rect.width };
 }
 
+export function setArrowsMoving(isMoving) {
+  if (tokenEl) {
+    tokenEl.classList.toggle("moving", Boolean(isMoving));
+  }
+}
+
 export function placeToken(playerPos, instant = false) {
   if (!tokenEl || !playerPos) return;
-  const { step, cellSize } = cellMetrics();
   const [r, c] = playerPos;
-  const x = c * step;
-  const y = r * step;
+  const targetCell = cellEls[r]?.[c];
+  if (!targetCell) return;
+
+  const x = targetCell.offsetLeft;
+  const y = targetCell.offsetTop;
+  const w = targetCell.offsetWidth;
+  const h = targetCell.offsetHeight;
 
   if (instant) {
     tokenEl.style.transition = "none";
   } else {
-    tokenEl.style.transition = "";
+    tokenEl.style.transition = "transform 190ms cubic-bezier(0.22, 1, 0.36, 1)";
   }
-  tokenEl.style.width = cellSize + "px";
-  tokenEl.style.height = cellSize + "px";
+  tokenEl.style.width = w + "px";
+  tokenEl.style.height = h + "px";
   tokenEl.style.transform = `translate(${x}px, ${y}px)`;
   if (instant) {
     tokenEl.getBoundingClientRect();
@@ -264,4 +650,245 @@ export function clearDeadEndFeedback() {
   }
   if (DOM.undoBtn) DOM.undoBtn.classList.remove("attention-pulse");
   if (DOM.restartBtn) DOM.restartBtn.classList.remove("attention-pulse");
+}
+
+export function renderTrail(historyCoords = [], isViable = true, showTrail = false) {
+  if (!trailSvgEl || !cellEls.length) return;
+  lastRenderedCoords = historyCoords;
+  lastRenderedViable = isViable;
+  lastRenderedShowTrail = Boolean(showTrail);
+
+  const halosGroup = trailSvgEl.querySelector("#trailUnderHalos");
+  const segmentsGroup = trailSvgEl.querySelector("#trailSegments");
+  const chevronsGroup = trailSvgEl.querySelector("#trailChevrons");
+  const nodesGroup = trailSvgEl.querySelector("#trailNodes");
+  if (!halosGroup || !segmentsGroup || !chevronsGroup || !nodesGroup) return;
+
+  // 1. Mark ALL historical cells visited (persistent footprints)
+  for (let r = 0; r < cellEls.length; r++) {
+    for (let c = 0; c < cellEls[r].length; c++) {
+      if (cellEls[r][c]) {
+        cellEls[r][c].classList.remove("visited");
+      }
+    }
+  }
+
+  for (let i = 0; i < historyCoords.length - 1; i++) {
+    const [r, c] = historyCoords[i];
+    if (cellEls[r]?.[c]) {
+      cellEls[r][c].classList.add("visited");
+    }
+  }
+
+  // If breadcrumbs visualization is toggled OFF: keep cards completely clean and uncluttered
+  if (!showTrail) {
+    trailSvgEl.style.display = "none";
+    halosGroup.innerHTML = "";
+    segmentsGroup.innerHTML = "";
+    chevronsGroup.innerHTML = "";
+    nodesGroup.innerHTML = "";
+    return;
+  }
+
+  trailSvgEl.style.display = "";
+
+  // If no moves made yet (only start cell)
+  const totalSegments = historyCoords.length - 1;
+  if (totalSegments <= 0) {
+    halosGroup.innerHTML = "";
+    segmentsGroup.innerHTML = "";
+    chevronsGroup.innerHTML = "";
+    nodesGroup.innerHTML = "";
+    return;
+  }
+
+  // 2. Rolling Recency Window: show up to last 4 segments (Comet Tail)
+  const maxVisible = 4;
+  const startSegmentIdx = Math.max(0, totalSegments - maxVisible);
+  const visibleCount = totalSegments - startSegmentIdx;
+
+  let halosHtml = "";
+  let segmentsHtml = "";
+  let chevronsHtml = "";
+  let nodesHtml = "";
+
+  // Dynamic scaling based on grid density
+  const gridDim = Math.max(cellEls.length, cellEls[0]?.length || 4);
+  let offsetVal = 3.8;
+  let strokeW = 3.6;
+  let haloW = 6.6;
+  let nodeR = 3.4;
+  let chevScale = 1.2;
+
+  if (gridDim >= 7) {
+    offsetVal = 1.8;
+    strokeW = 1.8;
+    haloW = 3.6;
+    nodeR = 1.8;
+    chevScale = 0.75;
+  } else if (gridDim >= 5) {
+    offsetVal = 2.4;
+    strokeW = 2.2;
+    haloW = 4.4;
+    nodeR = 2.2;
+    chevScale = 0.9;
+  } else {
+    offsetVal = 3.0;
+    strokeW = 2.6;
+    haloW = 5.2;
+    nodeR = 2.6;
+    chevScale = 1.05;
+  }
+
+  const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
+
+  for (let segIdx = startSegmentIdx; segIdx < totalSegments; segIdx++) {
+    const [r1, c1] = historyCoords[segIdx];
+    const [r2, c2] = historyCoords[segIdx + 1];
+    const cell1 = cellEls[r1]?.[c1];
+    const cell2 = cellEls[r2]?.[c2];
+    if (!cell1 || !cell2) continue;
+
+    const w1 = cell1.offsetWidth;
+    const h1 = cell1.offsetHeight;
+    const w2 = cell2.offsetWidth;
+    const h2 = cell2.offsetHeight;
+    const cx1 = cell1.offsetLeft + w1 / 2;
+    const cy1 = cell1.offsetTop + h1 / 2;
+    const cx2 = cell2.offsetLeft + w2 / 2;
+    const cy2 = cell2.offsetTop + h2 / 2;
+
+    let x1 = cx1;
+    let y1 = cy1;
+    let x2 = cx2;
+    let y2 = cy2;
+    const isHorizontal = (r1 === r2);
+
+    // Multi-lane corridor routing: parallel tracks for outbound vs return leaps
+    if (isHorizontal) {
+      const shift = (c2 > c1 ? offsetVal : -offsetVal);
+      y1 += shift;
+      y2 += shift;
+    } else {
+      const shift = (r2 > r1 ? offsetVal : -offsetVal);
+      x1 += shift;
+      x2 += shift;
+    }
+
+    // Recency opacity: older visible segments stay dark and clear in Vellum
+    const recencyRank = segIdx - startSegmentIdx; // 0 to visibleCount - 1
+    const minOpacity = isVellum ? 0.70 : 0.40;
+    const opacity = (visibleCount === 1) 
+      ? 1.0 
+      : Math.min(1.0, minOpacity + (1.0 - minOpacity) * ((recencyRank + 1) / visibleCount));
+
+    const isLatest = (segIdx === totalSegments - 1);
+    const isTrapped = isLatest && !isViable;
+    const defaultColor = isVellum ? "var(--trail-stroke, var(--accent-primary))" : "var(--trail-stroke, var(--amber))";
+    const strokeColor = isTrapped ? "var(--danger)" : defaultColor;
+    const strokeDash = isTrapped ? 'stroke-dasharray="5 3"' : "";
+
+    // 3D Overpass Halo: Precise bridge cut so crossing lines remain legible without thick stripes
+    const haloStroke = isVellum ? "var(--trail-halo, #EFECE4)" : "var(--trail-halo, #0B131A)";
+    const haloWidth = isVellum ? (strokeW + 1.2) : (strokeW + 2.0);
+    halosHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${haloStroke}" stroke-width="${haloWidth}" stroke-linecap="round" />`;
+
+    // Core vector line (Pure hardware-accelerated SVG line, no zero-dimension filter bugs)
+    segmentsHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-linecap="round" opacity="${opacity}" ${strokeDash} />`;
+
+    // Directional Chevron Marker at midpoint (only if segment has sufficient length)
+    const dist = Math.hypot(x2 - x1, y2 - y1);
+    const markerOpacity = Math.max(opacity, isVellum ? 0.88 : 0.75);
+    if (dist >= 14) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+      const cp1 = (-3 * chevScale).toFixed(1);
+      const cp2 = (-2.5 * chevScale).toFixed(1);
+      const cp3 = (3 * chevScale).toFixed(1);
+      const cp4 = (2.5 * chevScale).toFixed(1);
+      const cp5 = (-1.2 * chevScale).toFixed(1);
+      chevronsHtml += `<polygon points="${cp1},${cp2} ${cp3},0 ${cp1},${cp4} ${cp5},0" transform="translate(${mx}, ${my}) rotate(${angle})" fill="${strokeColor}" opacity="${markerOpacity}" />`;
+    }
+
+    // Turn Node Pip at origin
+    nodesHtml += `<circle cx="${x1}" cy="${y1}" r="${nodeR}" fill="${strokeColor}" opacity="${markerOpacity}" />`;
+  }
+
+  halosGroup.innerHTML = halosHtml;
+  segmentsGroup.innerHTML = segmentsHtml;
+  chevronsGroup.innerHTML = chevronsHtml;
+  nodesGroup.innerHTML = nodesHtml;
+}
+
+export function refreshTrail(showTrail = lastRenderedShowTrail) {
+  if (lastRenderedCoords && lastRenderedCoords.length) {
+    renderTrail(lastRenderedCoords, lastRenderedViable, showTrail);
+  }
+}
+
+export function updateTrailButton(showTrail = false) {
+  if (DOM.trailToggleBtn) {
+    DOM.trailToggleBtn.classList.toggle("active", Boolean(showTrail));
+    DOM.trailToggleBtn.setAttribute(
+      "title",
+      showTrail ? "Breadcrumbs: ON (Press T to turn off)" : "Breadcrumbs: OFF (Press T to turn on)"
+    );
+  }
+  if (DOM.settingTrail) {
+    DOM.settingTrail.checked = Boolean(showTrail);
+  }
+}
+
+export function renderViability(viability, isGoal = false, isDeadEnd = false, playerPos = null) {
+  const dot = tokenEl?.querySelector(".dot");
+  const isTrapped = (!viability?.solvable && !isGoal) || isDeadEnd;
+
+  // 1. Update Token Dot Resonance
+  if (dot) {
+    dot.classList.remove("viable", "trapped", "goal");
+    if (isGoal) {
+      dot.classList.add("goal");
+    } else if (isTrapped) {
+      dot.classList.add("trapped");
+    } else {
+      dot.classList.add("viable");
+    }
+  }
+
+  // 2. Update Current Cell Trapped Branch marker
+  if (playerPos && cellEls.length) {
+    const [pr, pc] = playerPos;
+    const currCell = cellEls[pr]?.[pc];
+    if (currCell) {
+      if (isTrapped) {
+        currCell.classList.add("trapped-branch");
+      } else {
+        currCell.classList.remove("trapped-branch");
+      }
+    }
+  }
+
+  // 3. Update HUD Path Status Bubble
+  if (DOM.hudPathStatus && DOM.hudPathText) {
+    DOM.hudPathStatus.classList.remove("viable", "trapped", "goal");
+    if (isGoal) {
+      DOM.hudPathStatus.classList.add("goal");
+      DOM.hudPathText.textContent = "★ GOAL";
+      if (DOM.hudPathDot) DOM.hudPathDot.textContent = "★";
+    } else if (isTrapped) {
+      DOM.hudPathStatus.classList.add("trapped");
+      DOM.hudPathText.textContent = "⚠️ TRAP";
+      if (DOM.hudPathDot) DOM.hudPathDot.textContent = "!";
+      if (DOM.undoBtn) DOM.undoBtn.classList.add("attention-pulse");
+    } else {
+      DOM.hudPathStatus.classList.add("viable");
+      if (viability && typeof viability.moves === "number" && viability.moves > 0) {
+        DOM.hudPathText.textContent = `${viability.moves} LEFT`;
+      } else {
+        DOM.hudPathText.textContent = "ON TRACK";
+      }
+      if (DOM.hudPathDot) DOM.hudPathDot.textContent = "●";
+    }
+  }
 }

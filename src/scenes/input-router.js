@@ -14,10 +14,50 @@ export function setupInputRouter({
   onShowLevelSelect,
   onNextLevel,
   onCloseRules,
-  boardElement
+  boardElement,
+  onStepForward,
+  onStepBackward,
+  onToggleAutoPlay,
+  onToggleTheme,
+  onToggleTrail
 }) {
   // Keyboard navigation
   window.addEventListener("keydown", (e) => {
+    // Stepper hotkeys in dev/editor: [, ], ,, ., Space
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+      return;
+    }
+
+    if (e.key === "t" || e.key === "T" || e.key === "b" || e.key === "B") {
+      if (onToggleTrail) {
+        e.preventDefault();
+        onToggleTrail();
+        return;
+      }
+    }
+
+    if (e.key === "[" || e.key === ",") {
+      if (onStepBackward) {
+        e.preventDefault();
+        onStepBackward();
+        return;
+      }
+    }
+    if (e.key === "]" || e.key === ".") {
+      if (onStepForward) {
+        e.preventDefault();
+        onStepForward();
+        return;
+      }
+    }
+    if (e.key === " ") {
+      if (onToggleAutoPlay) {
+        e.preventDefault();
+        onToggleAutoPlay();
+        return;
+      }
+    }
+
     if (e.key === "d" || e.key === "D" || e.key === "`") {
       e.preventDefault();
       onToggleDev();

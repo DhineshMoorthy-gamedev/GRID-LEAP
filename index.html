@@ -22,6 +22,11 @@
         <span class="logo-text">GRID<span class="dot">.</span>LEAP</span>
       </div>
       <div class="topbar-right">
+        <button class="theme-toggle-btn" id="homeThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)">
+          <span class="theme-icon">🌙</span>
+          <span class="theme-label">OBSIDIAN</span>
+        </button>
+        <button class="nav-icon-btn" id="homeSettingsBtn" title="Settings" aria-label="Settings">⚙</button>
         <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
       </div>
     </header>
@@ -29,7 +34,24 @@
     <!-- Scrollable Hub Content -->
     <div class="home-scroll-area">
 
-      <!-- Hero "Continue" Banner -->
+      <!-- Consumer Launch Section (Visible on Play Store, Itch, Web) -->
+      <div class="consumer-launch-section" id="consumerLaunchSection" style="display:none;">
+        <div class="consumer-launch-card">
+          <div class="consumer-eyebrow-row">
+            <span class="consumer-badge" id="consumerBadge">UP NEXT</span>
+            <span class="consumer-cleared-count" id="consumerClearedCount">0 / 10 CLEARED</span>
+          </div>
+          <h2 class="consumer-level-title" id="consumerTitle">Level 01</h2>
+          <p class="consumer-level-sub" id="consumerSub">Tutorial • Learn Distance</p>
+          
+          <button class="consumer-play-btn" id="consumerPlayBtn" aria-label="Play Next Level">
+            <span class="consumer-play-icon">▶</span>
+            <span class="consumer-play-label">PLAY</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero "Continue" Banner (Editor Mode) -->
       <div class="hero-banner" id="heroBanner">
         <div class="hero-info">
           <div class="hero-badge-row">
@@ -43,22 +65,24 @@
         </button>
       </div>
 
-      <!-- Dev Level Selector (Temporary) -->
-      <div class="section-title-wrap">
-        <h3 class="section-title">SELECT LEVEL (DEV)</h3>
-        <span class="completion-pill" id="completionPill">0 / 10 CLEARED</span>
-      </div>
+      <!-- Editor Level Selector Section -->
+      <div class="editor-level-select-section" id="editorLevelSelectSection">
+        <div class="section-title-wrap">
+          <h3 class="section-title">SELECT LEVEL (DEV)</h3>
+          <span class="completion-pill" id="completionPill">0 / 10 CLEARED</span>
+        </div>
 
-      <!-- Difficulty Color Code Legend -->
-      <div class="diff-legend-strip">
-        <span class="legend-badge tier-easy"><span class="legend-dot"></span>1.0–2.9 EASY</span>
-        <span class="legend-badge tier-medium"><span class="legend-dot"></span>3.0–5.4 MED</span>
-        <span class="legend-badge tier-hard"><span class="legend-dot"></span>5.5–7.9 HARD</span>
-        <span class="legend-badge tier-master"><span class="legend-dot"></span>8.0–10.0 MASTER</span>
-      </div>
+        <!-- Difficulty Color Code Legend -->
+        <div class="diff-legend-strip">
+          <span class="legend-badge tier-easy"><span class="legend-dot"></span>1.0–2.9 EASY</span>
+          <span class="legend-badge tier-medium"><span class="legend-dot"></span>3.0–5.4 MED</span>
+          <span class="legend-badge tier-hard"><span class="legend-dot"></span>5.5–7.9 HARD</span>
+          <span class="legend-badge tier-master"><span class="legend-dot"></span>8.0–10.0 MASTER</span>
+        </div>
 
-      <div class="dev-level-strip" id="levelStrip">
-        <!-- Rendered dynamically as numbered circle dots -->
+        <div class="dev-level-strip" id="levelStrip">
+          <!-- Rendered dynamically as numbered circle dots -->
+        </div>
       </div>
 
       <!-- Level Editor Hub Entry (Visible only in Editor Mode) -->
@@ -81,34 +105,51 @@
 
     <!-- Top In-Game App Bar -->
     <header class="game-topbar">
+      <div class="game-topbar-left">
+        <button class="nav-back-btn" id="gameBackBtn" title="Back to Home Hub" aria-label="Home">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
       <div class="game-meta">
         <span class="meta-title" id="gameTitle">Level 01</span>
         <span class="meta-chapter" id="gameChapter">Tutorial</span>
       </div>
 
       <div class="game-top-actions">
+        <button class="nav-icon-btn trail-btn" id="trailToggleBtn" title="Breadcrumbs: OFF (Press T to toggle)" aria-label="Toggle Breadcrumbs">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19c4-4 2-8 7-8s3 4 7 4 2-8 2-8"/>
+            <circle cx="4" cy="19" r="1.5" fill="currentColor"/>
+            <circle cx="20" cy="7" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="theme-toggle-btn icon-only" id="gameThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)" aria-label="Toggle Theme">
+          <span class="theme-icon">🌙</span>
+        </button>
         <button class="nav-icon-btn" id="gameFullscreenBtn" title="Toggle Fullscreen" style="display:none;">⛶</button>
         <button class="dev-tag-btn" id="devToggleBtn" title="Dev Diagnostics" style="display:none;">DEV</button>
         <button class="nav-icon-btn" id="gamePauseBtn" title="Pause Game" aria-label="Pause">❚❚</button>
+
+        <!-- Top Right: Moves Left / Distance to Goal Counter -->
+        <div class="stat-bubble path-bubble" id="hudPathStatus" title="Path Viability & Distance">
+          <span class="path-status-dot" id="hudPathDot">●</span>
+          <span class="path-status-text" id="hudPathText">ON TRACK</span>
+        </div>
       </div>
     </header>
 
-    <!-- In-Game Stat Bar (Lives & Moves) -->
-    <div class="game-stat-bar">
-      <div class="stat-bubble lives-bubble" id="hudLives" title="Remaining Lives">
-        <span class="heart active">❤️</span>
-        <span class="heart active">❤️</span>
-        <span class="heart active">❤️</span>
-      </div>
-
-      <div class="stat-bubble moves-bubble">
-        <span class="label">MOVES</span>
-        <span class="val" id="hudMoves">0</span>
-      </div>
-    </div>
-
     <!-- Centered Puzzle Grid Stage -->
     <main class="grid-stage">
+      <!-- Green Hearts Header (Positioned at top center of the grid) -->
+      <div class="grid-lives-row">
+        <div class="stat-bubble lives-bubble" id="hudLives" title="Remaining Lives">
+          <!-- Rendered dynamically as vector green hearts -->
+        </div>
+      </div>
+
       <div class="board-frame">
         <div class="board" id="board"></div>
       </div>
@@ -116,26 +157,42 @@
 
     <!-- Desktop / Itch Key Legend -->
     <div class="desktop-key-legend" id="desktopKeyLegend" style="display:none;">
-      <span>[Arrows / WASD] Move</span> • <span>[Z] Undo</span> • <span>[R] Restart</span> • <span>[H] Hint</span>
+      <span>[Arrows / WASD] Move</span> • <span>[Z] Undo</span> • <span>[R] Restart</span> • <span>[T] Trail</span> • <span>[H] Hint</span>
     </div>
 
-    <!-- Bottom Thumb-Zone Tool Bar -->
-    <footer class="game-bottom-bar">
+    <!-- Ergonomic In-Game Tool Bar (Elevated directly below grid, above bottom ads) -->
+    <div class="game-tool-bar" id="gameToolBar">
       <button class="tool-btn" id="undoBtn" aria-label="Undo Move">
         <span class="tool-icon">↺</span>
         <span class="tool-label">UNDO</span>
-      </button>
-
-      <button class="tool-btn" id="hintBtn" aria-label="Show Solution Path">
-        <span class="tool-icon">💡</span>
-        <span class="tool-label">HINT</span>
       </button>
 
       <button class="tool-btn" id="restartBtn" aria-label="Restart Puzzle">
         <span class="tool-icon">⟲</span>
         <span class="tool-label">RESTART</span>
       </button>
-    </footer>
+
+      <button class="tool-btn" id="hintBtn" aria-label="Show Solution Path">
+        <span class="tool-icon">💡</span>
+        <span class="tool-label">HINT</span>
+      </button>
+    </div>
+
+    <!-- Dev Playtest Auto-Play & Stepper Bar (Active in Playtest / Dev Mode) -->
+    <div class="dev-playtest-bar" id="devPlaytestBar" style="display:none;">
+      <span class="dev-bar-tag">DEV STEPPER</span>
+      <div class="dev-bar-controls">
+        <button class="dev-bar-btn" id="devStepBackBtn" title="Step Back (Left Arrow / [)">⏮</button>
+        <button class="dev-bar-btn auto-play" id="devAutoPlayBtn" title="Auto-Play / Pause (Space)">▶ AUTO</button>
+        <button class="dev-bar-btn" id="devStepForwardBtn" title="Step Forward (Right Arrow / ])">⏭</button>
+        <button class="dev-bar-btn" id="devStepResetBtn" title="Reset to Start">↺</button>
+        <button class="dev-bar-btn" id="devThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)">🎨 THEME</button>
+      </div>
+      <span class="dev-bar-info" id="devStepInfo">Step 0/0</span>
+    </div>
+
+    <!-- Reserved Mobile Ad Banner Slot (56px) -->
+    <div class="ad-banner-slot" id="adBannerSlot"></div>
 
   </section>
 
@@ -217,6 +274,17 @@
           <div class="diag-col"><span class="label">BRANCH LOAD:</span><span class="val" id="editorBranchLoad">2.4 exits/step</span></div>
         </div>
         <div class="diag-path-trail" id="editorPathTrail">Path: [0,0] → [0,2] → [2,2] → [2,0] → [3,0]</div>
+
+        <!-- Dev Auto-Play & Stepper Controls -->
+        <div class="editor-stepper-bar" id="editorStepperBar">
+          <div class="stepper-actions">
+            <button class="stepper-btn" id="editorStepBackBtn" title="Step Back (Left Arrow / [)">⏮</button>
+            <button class="stepper-btn auto-play" id="editorAutoPlayBtn" title="Auto-Play / Pause (Space)">▶ AUTO</button>
+            <button class="stepper-btn" id="editorStepForwardBtn" title="Step Forward (Right Arrow / ])">⏭</button>
+            <button class="stepper-btn" id="editorStepResetBtn" title="Reset to Start">↺</button>
+          </div>
+          <div class="stepper-indicator" id="editorStepIndicator">Step: 0 / 4</div>
+        </div>
       </div>
 
       <!-- Actions -->
@@ -312,6 +380,13 @@
     <h2>Settings</h2>
     <div class="settings-list">
       <div class="setting-row">
+        <span>Visual Theme</span>
+        <div class="theme-pill-group">
+          <button class="theme-pill-btn active" id="pillThemeObsidian" data-theme="obsidian">🌙 Obsidian</button>
+          <button class="theme-pill-btn" id="pillThemeVellum" data-theme="vellum">☀️ Vellum</button>
+        </div>
+      </div>
+      <div class="setting-row">
         <span>Sound Effects</span>
         <input type="checkbox" id="settingSound" checked />
       </div>
@@ -322,6 +397,10 @@
       <div class="setting-row">
         <span>Relax Mode (Infinite Lives)</span>
         <input type="checkbox" id="settingRelaxMode" />
+      </div>
+      <div class="setting-row">
+        <span>Show Breadcrumbs Trail</span>
+        <input type="checkbox" id="settingTrail" />
       </div>
       <div class="setting-row">
         <span>Developer Mode</span>

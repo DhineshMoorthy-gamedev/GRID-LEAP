@@ -1,0 +1,84 @@
+## 1. Main Full-Page Screens (Managed by scene-router.js)
+
+  The game has 3 primary full-screen views:
+   Screen ID    | Display Name      | Purpose
+  --------------|-------------------|---------------------------
+   screenHome   | Home Hub          | The main menu /
+                |                   | dashboard. Contains the
+                |                   | Continue/Resume hero
+                |                   | banner, Chapter level-
+                |                   | select carousel, Level
+                |                   | Editor card, player
+                |                   | stats, and settings
+                |                   | access.
+   screenGame   | Gameplay Screen   | The active puzzle board.
+                |                   | Contains the header HUD,
+                |                   | lives counter, game grid,
+                |                   | player token,
+                |                   | undo/restart controls,
+                |                   | and breadcrumb trail.
+   screenEditor | Level Editor      | The level creation
+                | Screen            | workshop. Contains the
+                |                   | grid dimension sliders,
+                |                   | difficulty picker,
+                |                   | interactive matrix
+                |                   | painting, live playtest
+                |                   | stepper, and JSON
+                |                   | import/export.
+  ──────
+  ### 2. Modals & Popup Overlays
+
+  These are floating overlays that appear on top of the screens:
+
+   Router Name  | HTML Element ID | Purpose
+  --------------|-----------------|-----------------------------
+   WIN          | winOverlay      | Level Complete Screen:
+                |                 | Shows move count, optimal
+                |                 | moves, efficiency %, and
+                |                 | "Next Level" button.
+   OUT_OF_LIVES | outOfLivesModal | Game Over Screen: Appears
+                |                 | when all hearts are lost,
+                |                 | offering to restart or
+                |                 | continue in Relax Mode.
+   PAUSE        | pauseModal      | Pause Menu: Options to
+                |                 | Resume, Restart, return to
+                |                 | Chapter Select, or open
+                |                 | Settings.
+   SETTINGS     | settingsModal   | Settings Screen: Sound FX,
+                |                 | Haptic feedback, Relax
+                |                 | Mode, Breadcrumbs toggle,
+                |                 | and Reset Progress.
+   RULES        | rulesModal      | How to Play Guide: Explains
+                |                 | the core jump rules,
+                |                 | orthogonal movement, and
+                |                 | reaching the green goal.
+   DEV          | devModal        | Developer Diagnostics:
+                |                 | Quick level warp selector
+                |                 | and level solver metrics.
+   FINAL        | finalOverlay    | Campaign Victory Screen:
+                |                 | Appears when completing the
+                |                 | final level of the game.
+   EDITOR_JSON  | editorJsonModal | Editor Export Dialog:
+                |                 | Allows copying or pasting
+                |                 | custom level JSON code.
+  ──────
+  ### 3. Key Sub-Components You Can Customize Per Platform
+
+   Component ID / Class | Location    | What It Controls
+  ----------------------|-------------|-------------------------
+   targetModePill       | Home Topbar | The badge displaying
+                        |             | MODE: PLAYSTORE / MODE:
+                        |             | EDITOR.
+   editorHubCard        | Home Hub    | The card in the Home
+                        |             | menu that opens the
+                        |             | Level Editor.
+   devToggleBtn         | Game Header | The developer
+                        |             | diagnostic tool button
+                        |             | (DEV).
+   devPlaytestBar       | Game Board  | The in-game auto-play /
+                        |             | step-forward bar.
+   gameFullscreenBtn    | Game Header | The desktop fullscreen
+                        |             | toggle button.
+   desktopKeyLegend     | Game Footer | The keyboard shortcut
+                        |             | hint pill (Arrow Keys,
+                        |             | U, R).

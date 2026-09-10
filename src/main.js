@@ -15,13 +15,20 @@ import {
   DOM,
   renderHomeHub,
   renderBoard,
+  flushLevelCreationAnimation,
   placeToken,
+  setArrowsMoving,
   updateGameHeader,
   getCellElements,
   showToast,
   showDeadEndToast,
   clearDeadEndFeedback,
-  renderLivesHUD
+  renderLivesHUD,
+  renderTrail,
+  refreshTrail,
+  updateTrailButton,
+  renderViability,
+  applyTheme
 } from "./scenes/game-renderer.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 
@@ -29,16 +36,21 @@ import { setupInputRouter } from "./scenes/input-router.js";
 validateAll(LEVELS);
 
 export function openHome() {
+  if (SceneRouter.getCurrentScreen() === "screenGame") {
+    GameState.saveCurrentSession();
+  }
   GameState.customLevel = null;
   renderHomeHub(LEVELS, GameState.levelIndex, GameState.completed, (idx) => {
     startLevel(idx);
-  });
+  }, GameState.activeSession);
   SceneRouter.navigateTo("screenHome");
 }
 
 export function startLevel(i) {
+  devStopAutoPlay();
   GameState.customLevel = null;
   GameState.levelIndex = i;
+  GameState.clearSession();
   GameState.save();
 
   const lv = GameState.currentLevel();
@@ -55,15 +67,57 @@ export function startLevel(i) {
 
   clearDeadEndFeedback();
   renderBoard(lv, (r, c) => attemptMoveTo(r, c));
+  SceneRouter.navigateTo("screenGame");
+  placeToken(GameState.player, true);
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   tick();
+}
+
+export function resumeLevelSession() {
+  const session = GameState.activeSession;
+  if (!session || typeof session.levelIndex !== "number") {
+    return startLevel(GameState.getNextUncompletedLevelIndex());
+  }
+
+  devStopAutoPlay();
+  GameState.customLevel = null;
+  GameState.levelIndex = session.levelIndex;
+  GameState.player = [session.player[0], session.player[1]];
+  GameState.moveCount = session.moveCount;
+  GameState.history = Array.isArray(session.history) ? JSON.parse(JSON.stringify(session.history)) : [];
+  GameState.lives = typeof session.lives === "number" ? session.lives : GameState.maxLives;
+  GameState.solutionPathVisible = false;
+
+  const lv = GameState.currentLevel();
+  clearDeadEndFeedback();
+  renderBoard(lv, (r, c) => attemptMoveTo(r, c));
+
+  // Mark all visited cells on board
+  const cellEls = getCellElements();
+  if (cellEls && cellEls.length) {
+    if (cellEls[lv.start[0]]?.[lv.start[1]]) {
+      cellEls[lv.start[0]][lv.start[1]].classList.add("visited");
+    }
+    GameState.history.forEach(h => {
+      if (h.player && cellEls[h.player[0]]?.[h.player[1]]) {
+        cellEls[h.player[0]][h.player[1]].classList.add("visited");
+      }
+    });
+  }
 
   SceneRouter.navigateTo("screenGame");
+  placeToken(GameState.player, true);
+  requestAnimationFrame(() => placeToken(GameState.player, true));
+  updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
+  renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  refreshTrail();
+  tick();
 }
 
 export function playtestCustomLevel(customLv) {
+  devStopAutoPlay();
   GameState.customLevel = customLv;
   GameState.player = [customLv.start[0], customLv.start[1]];
   GameState.moveCount = 0;
@@ -78,14 +132,14 @@ export function playtestCustomLevel(customLv) {
 
   clearDeadEndFeedback();
   renderBoard(customLv, (r, c) => attemptMoveTo(r, c));
+  SceneRouter.navigateTo("screenGame");
+  placeToken(GameState.player, true);
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(999, customLv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   if (DOM.gameTitle) DOM.gameTitle.textContent = "PLAYTEST";
   if (DOM.gameChapter) DOM.gameChapter.textContent = `${customLv.phase || "Custom"} • ${customLv.name || "Maze"}`;
   tick();
-
-  SceneRouter.navigateTo("screenGame");
 }
 
 export function tick() {
@@ -105,7 +159,8 @@ export function tick() {
   if (cellEls[pr]?.[pc]) {
     cellEls[pr][pc].classList.add("current-cell");
   }
-  if (DOM.hudCurrent) DOM.hudCurrent.textContent = lv.grid[pr][pc];
+  const isGoal = isGoalCell(lv, GameState.player);
+  if (DOM.hudCurrent) DOM.hudCurrent.textContent = isGoal ? "GOAL" : lv.grid[pr][pc];
 
   // Calculate legal moves once
   const dests = calculateLegalDestinations(lv, GameState.player);
@@ -118,7 +173,6 @@ export function tick() {
   });
 
   // Dead-end check
-  const isGoal = isGoalCell(lv, GameState.player);
   const isDeadEnd = isDeadEndState(dests, isGoal);
   if (isDeadEnd) {
     if (cellEls[pr]?.[pc]) cellEls[pr][pc].classList.add("dead-end");
@@ -128,6 +182,13 @@ export function tick() {
   } else {
     clearDeadEndFeedback();
   }
+
+  // Viability and Breadcrumb Trail feedback
+  const viability = solve(lv, GameState.player);
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+  updateTrailButton(GameState.settings.showTrail);
+  renderViability(viability, isGoal, isDeadEnd, GameState.player);
 
   // Token directional arrows
   const hasUp = dests.some(d => d.dir === "up");
@@ -149,9 +210,24 @@ export function tick() {
   if (GameState.devModeEnabled) {
     updateDevHud(dests);
   }
+
+  // Dev Playtest Stepper Bar update
+  const isDevOrPlaytest = TargetConfig.features.gameDevControls && (Boolean(GameState.customLevel) || Boolean(GameState.devModeEnabled));
+  if (DOM.devPlaytestBar) {
+    DOM.devPlaytestBar.style.display = isDevOrPlaytest ? "flex" : "none";
+    if (isDevOrPlaytest) {
+      if (DOM.devStepInfo) {
+        DOM.devStepInfo.textContent = `Move ${GameState.moveCount} | ${viability.solvable ? `${viability.moves} to goal` : "Trap"}`;
+      }
+      if (DOM.devStepBackBtn) DOM.devStepBackBtn.disabled = GameState.history.length === 0;
+      if (DOM.devStepForwardBtn) DOM.devStepForwardBtn.disabled = !viability.solvable || viability.moves === 0;
+      if (DOM.devAutoPlayBtn) DOM.devAutoPlayBtn.disabled = !viability.solvable || viability.moves === 0;
+    }
+  }
 }
 
 export function attemptMoveTo(r, c) {
+  flushLevelCreationAnimation();
   if (GameState.animating || SceneRouter.isInputBlocked()) return;
   const match = GameState.legalDests.find(d => d.r === r && d.c === c);
   if (!match) return;
@@ -159,6 +235,8 @@ export function attemptMoveTo(r, c) {
 }
 
 export function doMove(r, c) {
+  if (GameState.animating || SceneRouter.isInputBlocked()) return;
+
   GameState.history.push({
     player: [...GameState.player],
     moveCount: GameState.moveCount
@@ -166,14 +244,33 @@ export function doMove(r, c) {
   GameState.player = [r, c];
   GameState.moveCount++;
   GameState.animating = true;
+
+  // 1. Hide arrows immediately & activate smooth traveling reticle
+  setArrowsMoving(true);
+
+  // 2. Smoothly glide the player reticle to destination
   placeToken(GameState.player, false);
+
   const lv = GameState.currentLevel();
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   PlatformBridge.vibrateLight();
 
+  // 3. Draw breadcrumb trail along with the glide
+  const viability = solve(lv, GameState.player);
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+
+  // 4. Upon arrival at 190ms:
   setTimeout(() => {
     GameState.animating = false;
+    setArrowsMoving(false);
     tick();
+
+    const cellEls = getCellElements();
+    if (cellEls[r]?.[c]) {
+      cellEls[r][c].classList.add("landed");
+      setTimeout(() => cellEls[r]?.[c]?.classList.remove("landed"), 160);
+    }
 
     const isGoal = isGoalCell(lv, GameState.player);
     const isDeadEnd = isDeadEndState(GameState.legalDests, isGoal);
@@ -192,7 +289,7 @@ export function doMove(r, c) {
     }
 
     checkWin();
-  }, 230);
+  }, 190);
 }
 
 export function checkWin() {
@@ -211,23 +308,40 @@ export function undo() {
   // Note: Lost hearts are not restored on undo to preserve gameplay stakes
   clearDeadEndFeedback();
   GameState.animating = true;
+  setArrowsMoving(true);
   placeToken(GameState.player, false);
   const lv = GameState.currentLevel();
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
+
+  const viability = solve(lv, GameState.player);
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+
   setTimeout(() => {
     GameState.animating = false;
+    setArrowsMoving(false);
     tick();
-  }, 230);
+    const [pr, pc] = GameState.player;
+    const cellEls = getCellElements();
+    if (cellEls[pr]?.[pc]) {
+      cellEls[pr][pc].classList.add("landed");
+      setTimeout(() => cellEls[pr]?.[pc]?.classList.remove("landed"), 160);
+    }
+  }, 190);
 }
 
 export function restart() {
+  flushLevelCreationAnimation();
+  devStopAutoPlay();
   if (GameState.animating) return;
+  GameState.clearSession();
   const lv = GameState.currentLevel();
   GameState.player = [lv.start[0], lv.start[1]];
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.resetLives();
   clearDeadEndFeedback();
+  setArrowsMoving(false);
   placeToken(GameState.player, true);
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
@@ -235,6 +349,7 @@ export function restart() {
 }
 
 export function showWin() {
+  devStopAutoPlay();
   const lv = GameState.currentLevel();
   const titleName = lv.name ? ` (${lv.name})` : "";
 
@@ -378,25 +493,160 @@ function updateDevHud(dests = GameState.legalDests) {
   }
 }
 
+// Dev-only Auto-Play & Stepping Controls
+let devAutoPlayTimer = null;
+
+export function devStepForward() {
+  if (GameState.animating || SceneRouter.isInputBlocked()) return;
+  const lv = GameState.currentLevel();
+  const sol = solve(lv, GameState.player);
+  if (!sol.solvable || sol.path.length < 2) {
+    devStopAutoPlay();
+    return;
+  }
+  const [nextR, nextC] = sol.path[1];
+  doMove(nextR, nextC);
+}
+
+export function devStepBackward() {
+  devStopAutoPlay();
+  undo();
+}
+
+export function devToggleAutoPlay() {
+  if (devAutoPlayTimer) {
+    devStopAutoPlay();
+  } else {
+    devStartAutoPlay();
+  }
+}
+
+export function devStartAutoPlay() {
+  if (devAutoPlayTimer) return;
+  const lv = GameState.currentLevel();
+  if (isGoalCell(lv, GameState.player)) {
+    restart();
+  }
+  if (DOM.devAutoPlayBtn) {
+    DOM.devAutoPlayBtn.textContent = "❚❚ PAUSE";
+    DOM.devAutoPlayBtn.classList.add("playing");
+  }
+
+  devStepForward();
+
+  devAutoPlayTimer = setInterval(() => {
+    const currentLv = GameState.currentLevel();
+    if (isGoalCell(currentLv, GameState.player) || GameState.lives <= 0) {
+      devStopAutoPlay();
+    } else {
+      devStepForward();
+    }
+  }, 420);
+}
+
+export function devStopAutoPlay() {
+  if (devAutoPlayTimer) {
+    clearInterval(devAutoPlayTimer);
+    devAutoPlayTimer = null;
+  }
+  if (DOM.devAutoPlayBtn) {
+    DOM.devAutoPlayBtn.textContent = "▶ AUTO";
+    DOM.devAutoPlayBtn.classList.remove("playing");
+  }
+}
+
+export function devStepReset() {
+  devStopAutoPlay();
+  restart();
+}
+
 export function handleResize() {
   if (SceneRouter.getCurrentScreen() === "screenGame") {
-    const size = Math.min(380, window.innerWidth - 64);
-    DOM.board.style.width = size + "px";
-    placeToken(GameState.player, true);
+    const lv = GameState.currentLevel();
+    if (lv && DOM.board) {
+      const maxDim = Math.max(lv.w, lv.h);
+      const boardMax = maxDim >= 7 ? 405 : (maxDim >= 5 ? 385 : 360);
+      const size = Math.min(boardMax, window.innerWidth - (window.innerWidth < 420 ? 24 : 44));
+      DOM.board.style.width = size + "px";
+      placeToken(GameState.player, true);
+      refreshTrail();
+    }
   }
+}
+
+export function handleToggleTheme(targetTheme) {
+  let nextTheme;
+  if (targetTheme) {
+    nextTheme = targetTheme;
+    GameState.setTheme(nextTheme);
+  } else {
+    nextTheme = GameState.toggleTheme();
+  }
+  applyTheme(nextTheme);
+  refreshTrail(GameState.settings.showTrail);
+  PlatformBridge.vibrateLight();
+  showToast(`Theme: ${nextTheme === "vellum" ? "☀️ Vellum & Deboss" : "🌙 Obsidian & Ochre"}`);
+}
+
+export function handleToggleTrail(explicitValue) {
+  const isNowOn = GameState.toggleTrail(explicitValue);
+  const lv = GameState.currentLevel();
+  if (lv && GameState.player) {
+    const viability = solve(lv, GameState.player);
+    const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+    renderTrail(visitedPath, viability.solvable, isNowOn);
+  }
+  updateTrailButton(isNowOn);
+  PlatformBridge.vibrateLight();
+  showToast(isNowOn ? "Breadcrumbs Trail ON" : "Breadcrumbs Trail OFF");
 }
 
 // App Boot Sequence
 export function bootApp() {
   GameState.init();
+  applyTheme(GameState.getTheme());
+  updateTrailButton(GameState.settings.showTrail);
+
+  // Theme & Trail toggle bindings
+  if (DOM.trailToggleBtn) DOM.trailToggleBtn.addEventListener("click", () => handleToggleTrail());
+  if (DOM.homeThemeToggleBtn) DOM.homeThemeToggleBtn.addEventListener("click", () => handleToggleTheme());
+  if (DOM.gameThemeToggleBtn) DOM.gameThemeToggleBtn.addEventListener("click", () => handleToggleTheme());
+  if (DOM.devThemeToggleBtn) DOM.devThemeToggleBtn.addEventListener("click", () => handleToggleTheme());
+  if (DOM.pillThemeObsidian) DOM.pillThemeObsidian.addEventListener("click", () => handleToggleTheme("obsidian"));
+  if (DOM.pillThemeVellum) DOM.pillThemeVellum.addEventListener("click", () => handleToggleTheme("vellum"));
 
   // Home Hub bindings
-  if (DOM.heroPlayBtn) DOM.heroPlayBtn.addEventListener("click", () => startLevel(GameState.levelIndex));
+  const launchHeroLevel = () => {
+    if (GameState.hasActiveSessionFor(GameState.levelIndex)) {
+      resumeLevelSession();
+    } else {
+      startLevel(GameState.levelIndex);
+    }
+  };
+  if (DOM.heroPlayBtn) DOM.heroPlayBtn.addEventListener("click", launchHeroLevel);
   if (DOM.heroBanner) DOM.heroBanner.addEventListener("click", (e) => {
-    if (e.target !== DOM.heroPlayBtn) startLevel(GameState.levelIndex);
+    if (e.target !== DOM.heroPlayBtn) launchHeroLevel();
   });
   if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => SceneRouter.pushModal("RULES"));
   if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SceneRouter.pushModal("SETTINGS"));
+
+  // Consumer Next Level Launch Action (Resumes if in progress, else starts fresh)
+  const launchConsumerNext = () => {
+    const nextIdx = GameState.getNextUncompletedLevelIndex();
+    if (GameState.hasActiveSessionFor(nextIdx)) {
+      resumeLevelSession();
+    } else {
+      startLevel(nextIdx);
+    }
+  };
+  if (DOM.consumerPlayBtn) DOM.consumerPlayBtn.addEventListener("click", launchConsumerNext);
+  if (DOM.consumerLaunchSection) {
+    DOM.consumerLaunchSection.addEventListener("click", (e) => {
+      if (!DOM.consumerPlayBtn?.contains(e.target)) {
+        launchConsumerNext();
+      }
+    });
+  }
 
   // In-Game navigation
   if (DOM.gameBackBtn) DOM.gameBackBtn.addEventListener("click", () => openHome());
@@ -474,6 +724,12 @@ export function bootApp() {
       renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
     });
   }
+  if (DOM.settingTrail) {
+    DOM.settingTrail.checked = Boolean(GameState.settings.showTrail);
+    DOM.settingTrail.addEventListener("change", (e) => {
+      handleToggleTrail(e.target.checked);
+    });
+  }
   if (DOM.settingDevMode) {
     DOM.settingDevMode.checked = Boolean(GameState.devModeEnabled);
     DOM.settingDevMode.addEventListener("change", (e) => {
@@ -497,12 +753,33 @@ export function bootApp() {
   }
 
   // Target-specific UI Features Configuration
+  document.body.dataset.targetMode = TargetConfig.mode;
+
   const modePill = document.getElementById("targetModePill");
   if (modePill) {
     modePill.textContent = `MODE: ${TargetConfig.mode.toUpperCase()}`;
+    modePill.style.display = TargetConfig.features.homeDevControls ? "inline-block" : "none";
+  }
+  if (DOM.homeSettingsBtn) {
+    DOM.homeSettingsBtn.style.display = TargetConfig.features.homeDevControls ? "inline-flex" : "none";
+  }
+  if (DOM.homeThemeToggleBtn) {
+    DOM.homeThemeToggleBtn.style.display = TargetConfig.features.homeDevControls ? "inline-flex" : "none";
   }
   if (DOM.devToggleBtn) {
     DOM.devToggleBtn.style.display = TargetConfig.features.devDiagnostics ? "block" : "none";
+  }
+  if (DOM.trailToggleBtn) {
+    DOM.trailToggleBtn.style.display = TargetConfig.features.gameDevControls ? "inline-flex" : "none";
+  }
+  if (DOM.gameThemeToggleBtn) {
+    DOM.gameThemeToggleBtn.style.display = TargetConfig.features.gameDevControls ? "inline-flex" : "none";
+  }
+  if (DOM.gamePauseBtn) {
+    DOM.gamePauseBtn.style.display = TargetConfig.features.gameDevControls ? "inline-flex" : "none";
+  }
+  if (DOM.devPlaytestBar) {
+    DOM.devPlaytestBar.style.display = TargetConfig.features.gameDevControls ? "flex" : "none";
   }
   if (DOM.editorHubCard) {
     DOM.editorHubCard.style.display = TargetConfig.features.levelEditor ? "flex" : "none";
@@ -524,9 +801,16 @@ export function bootApp() {
   if (DOM.devToggleBtn) DOM.devToggleBtn.addEventListener("click", toggleDevMode);
   if (DOM.devShowSolutionBtn) DOM.devShowSolutionBtn.addEventListener("click", toggleSolutionPath);
 
+  // In-Game Dev Playtest Stepper buttons
+  if (DOM.devStepBackBtn) DOM.devStepBackBtn.addEventListener("click", devStepBackward);
+  if (DOM.devAutoPlayBtn) DOM.devAutoPlayBtn.addEventListener("click", devToggleAutoPlay);
+  if (DOM.devStepForwardBtn) DOM.devStepForwardBtn.addEventListener("click", devStepForward);
+  if (DOM.devStepResetBtn) DOM.devStepResetBtn.addEventListener("click", devStepReset);
+
   // Setup keyboard & touch router
   setupInputRouter({
     onMoveDirection: (dir) => {
+      flushLevelCreationAnimation();
       if (GameState.animating) return;
       const match = GameState.legalDests.find(d => d.dir === dir);
       if (match) {
@@ -537,6 +821,29 @@ export function bootApp() {
     },
     onUndo: undo,
     onRestart: restart,
+    onStepForward: () => {
+      if (SceneRouter.getCurrentScreen() === "screenEditor") {
+        EditorController.stepForward();
+      } else {
+        devStepForward();
+      }
+    },
+    onStepBackward: () => {
+      if (SceneRouter.getCurrentScreen() === "screenEditor") {
+        EditorController.stepBackward();
+      } else {
+        devStepBackward();
+      }
+    },
+    onToggleAutoPlay: () => {
+      if (SceneRouter.getCurrentScreen() === "screenEditor") {
+        EditorController.toggleAutoPlay();
+      } else {
+        devToggleAutoPlay();
+      }
+    },
+    onToggleTheme: () => handleToggleTheme(),
+    onToggleTrail: () => handleToggleTrail(),
     onToggleDev: () => {
       if (TargetConfig.features.devDiagnostics) toggleDevMode();
     },
