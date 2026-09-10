@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Visual Level Designer & Diagnostics Lab
  */
 
@@ -189,7 +189,13 @@ export const EditorController = {
         if (isStart) cell.classList.add("start-cell");
         if (isGoal) cell.classList.add("goal-cell");
 
-        cell.textContent = this.level.grid[r][c];
+        const val = this.level.grid[r][c];
+        if (val === 0 && !isGoal) {
+          cell.classList.add("void-cell");
+          cell.textContent = "·";
+        } else {
+          cell.textContent = val;
+        }
 
         cell.addEventListener("click", () => this.onCellClick(r, c));
         gridEl.appendChild(cell);

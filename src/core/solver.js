@@ -26,11 +26,10 @@ export function solve(level, fromPos = null) {
         currKey = parent.get(currKey);
       }
     }
-    const val = grid[r][c];
-    const dirs = [[-val, 0], [val, 0], [0, -val], [0, val]];
-    for (const [dr, dc] of dirs) {
-      const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < h && nc >= 0 && nc < w && !dist.has(key(nr, nc))) {
+    const exits = calculateLegalDestinations(level, [r, c]);
+    for (const e of exits) {
+      const nr = e.r, nc = e.c;
+      if (!dist.has(key(nr, nc))) {
         dist.set(key(nr, nc), dist.get(key(r, c)) + 1);
         parent.set(key(nr, nc), key(r, c));
         q.push([nr, nc]);
@@ -68,22 +67,37 @@ export function solve(level, fromPos = null) {
   const avgBranching = (path.length > 1) ? Math.round((branchSum / (path.length - 1)) * 10) / 10 : 1;
 
   // Maximum trap depth
-  function canReachGoal(pos, visited = new Set()) {
-    const k = key(...pos);
-    if (pos[0] === goal[0] && pos[1] === goal[1]) return true;
-    if (visited.has(k)) return false;
-    visited.add(k);
-    const exits = calculateLegalDestinations(level, pos);
-    for (const e of exits) {
-      if (canReachGoal([e.r, e.c], visited)) return true;
+  // Fast O(V+E) reverse BFS to identify all cells that can reach the goal
+  const canReachGoalSet = new Set([key(...goal)]);
+  const revAdj = new Map();
+  for (let r = 0; r < h; r++) {
+    for (let c = 0; c < w; c++) {
+      const exits = calculateLegalDestinations(level, [r, c]);
+      for (const e of exits) {
+        const ek = key(e.r, e.c);
+        if (!revAdj.has(ek)) revAdj.set(ek, []);
+        revAdj.get(ek).push(key(r, c));
+      }
     }
-    return false;
+  }
+
+  const revQ = [key(...goal)];
+  let revHead = 0;
+  while (revHead < revQ.length) {
+    const currKey = revQ[revHead++];
+    const preds = revAdj.get(currKey) || [];
+    for (const p of preds) {
+      if (!canReachGoalSet.has(p)) {
+        canReachGoalSet.add(p);
+        revQ.push(p);
+      }
+    }
   }
 
   let maxTrapDepth = 0;
   for (const [k] of dist.entries()) {
-    const pos = unkey(k);
-    if (!canReachGoal(pos)) {
+    if (!canReachGoalSet.has(k)) {
+      const pos = unkey(k);
       const tDist = new Map();
       tDist.set(k, 1);
       const tQ = [pos];

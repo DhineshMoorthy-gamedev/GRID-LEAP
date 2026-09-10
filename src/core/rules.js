@@ -6,6 +6,7 @@ export function calculateLegalDestinations(level, playerPos) {
   if (!playerPos || !level) return [];
   const [r, c] = playerPos;
   const val = level.grid[r][c];
+  if (!val || val <= 0) return [];
   const options = [
     { dr: -val, dc: 0, dir: "up" },
     { dr: val, dc: 0, dir: "down" },
@@ -14,7 +15,13 @@ export function calculateLegalDestinations(level, playerPos) {
   ];
   return options
     .map(o => ({ ...o, r: r + o.dr, c: c + o.dc }))
-    .filter(o => o.r >= 0 && o.r < level.h && o.c >= 0 && o.c < level.w);
+    .filter(o => {
+      if (o.r < 0 || o.r >= level.h || o.c < 0 || o.c >= level.w) return false;
+      const destVal = level.grid[o.r][o.c];
+      const isGoal = isGoalCell(level, [o.r, o.c]);
+      if (destVal === 0 && !isGoal) return false;
+      return true;
+    });
 }
 
 export function isGoalCell(level, playerPos) {

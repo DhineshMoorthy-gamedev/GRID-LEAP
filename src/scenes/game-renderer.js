@@ -110,7 +110,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
   const isAllCleared = completedArr.every(Boolean);
   const clearedCount = completedArr.filter(Boolean).length;
 
-  if (DOM.heroTitle) DOM.heroTitle.textContent = `Level ${String(lastPlayedIndex + 1).padStart(2, "0")}`;
+  if (DOM.heroTitle) DOM.heroTitle.textContent = `Level ${String(lastPlayedIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0")}`;
   if (DOM.heroSub) DOM.heroSub.textContent = `${currentLv.phase} • ${currentLv.name}`;
   if (DOM.heroBadge) DOM.heroBadge.textContent = isAllCleared ? "COMPLETED" : (completedArr[lastPlayedIndex] ? "REPLAY" : "RESUME");
   if (DOM.completionPill) DOM.completionPill.textContent = `${clearedCount} / ${levels.length} CLEARED`;
@@ -129,8 +129,9 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
       dot.className = `level-dot ${tierClass}` + (isDone ? " done" : "") + (isActive ? " active" : "");
       dot.style.setProperty("--tier-color", diff.color);
 
+      const numStr = String(i + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
       dot.innerHTML = `
-        <span class="dot-num">${String(i + 1).padStart(2, "0")}</span>
+        <span class="dot-num ${numStr.length >= 3 ? "three-digit" : ""}">${numStr}</span>
         <span class="dot-score">${diff.score.toFixed(1)}</span>
         ${isDone ? '<span class="dot-check">✓</span>' : ""}
       `;
@@ -176,7 +177,14 @@ export function renderBoard(level, onCellClick) {
       if (isStart) cell.classList.add("start-cell");
       if (isGoal) cell.classList.add("goal-cell");
 
-      cell.textContent = level.grid[r][c];
+      const val = level.grid[r][c];
+      if (val === 0 && !isGoal) {
+        cell.classList.add("void-cell");
+        cell.textContent = "·";
+      } else {
+        cell.textContent = val;
+      }
+
       cell.addEventListener("click", () => onCellClick(r, c));
       DOM.board.appendChild(cell);
       cellEls[r].push(cell);
@@ -225,7 +233,7 @@ export function placeToken(playerPos, instant = false) {
 }
 
 export function updateGameHeader(levelIndex, level, moveCount, historyLength) {
-  if (DOM.gameTitle) DOM.gameTitle.textContent = `Level ${String(levelIndex + 1).padStart(2, "0")}`;
+  if (DOM.gameTitle) DOM.gameTitle.textContent = `Level ${String(levelIndex + 1).padStart(levelIndex + 1 >= 100 ? 3 : 2, "0")}`;
   if (DOM.gameChapter) DOM.gameChapter.textContent = `${level.phase || ""} • ${level.name || ""}`;
   if (DOM.hudMoves) DOM.hudMoves.textContent = moveCount;
   if (DOM.undoBtn) DOM.undoBtn.disabled = historyLength === 0;

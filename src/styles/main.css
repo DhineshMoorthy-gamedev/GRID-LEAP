@@ -353,6 +353,11 @@ body {
   color: var(--paper);
 }
 
+.level-dot .dot-num.three-digit {
+  font-size: 10px;
+  letter-spacing: -0.5px;
+}
+
 .level-dot .dot-score {
   font-family: var(--font-num);
   font-size: 8.5px;
@@ -634,6 +639,15 @@ body {
   letter-spacing: 0.08em;
   color: var(--teal);
   opacity: 0.85;
+}
+
+.cell.void-cell {
+  background: var(--ink-950);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  color: var(--paper-dim);
+  opacity: 0.35;
+  cursor: not-allowed;
+  user-select: none;
 }
 
 .cell.current-cell {

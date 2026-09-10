@@ -246,7 +246,7 @@ export function showWin() {
     }
   } else {
     GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
-    if (DOM.winTitle) DOM.winTitle.textContent = "Level " + String(GameState.levelIndex + 1).padStart(2, "0") + titleName + " cleared";
+    if (DOM.winTitle) DOM.winTitle.textContent = "Level " + String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0") + titleName + " cleared";
     if (DOM.winNextBtn) {
       DOM.winNextBtn.textContent = "Next Level";
       DOM.winNextBtn.style.display = (GameState.levelIndex === LEVELS.length - 1) ? "none" : "block";
@@ -271,7 +271,7 @@ export function showWin() {
 }
 
 export function showPause() {
-  if (DOM.pauseLevel) DOM.pauseLevel.textContent = GameState.customLevel ? "TEST" : String(GameState.levelIndex + 1).padStart(2, "0");
+  if (DOM.pauseLevel) DOM.pauseLevel.textContent = GameState.customLevel ? "TEST" : String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0");
   if (DOM.pauseMoves) DOM.pauseMoves.textContent = GameState.moveCount;
   SceneRouter.pushModal("PAUSE");
 }
