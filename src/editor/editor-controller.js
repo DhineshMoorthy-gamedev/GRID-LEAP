@@ -208,7 +208,7 @@ export const EditorController = {
           cell.textContent = "GOAL";
         } else if (val === 0) {
           cell.classList.add("void-cell");
-          cell.textContent = "·";
+          cell.textContent = "●";
         } else {
           cell.textContent = val;
         }

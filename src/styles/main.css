@@ -232,6 +232,12 @@ html, body, .app-root, .screen, .board, .cell, .cell-glyph, .stat-bubble, .card,
   display: flex;
 }
 
+#screenGame {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ======================================================== */
 /* SCREEN 1: HOME HUB (Nonogram / Easybrain Design)          */
 /* ======================================================== */
@@ -1219,6 +1225,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   padding: 4px 16px 8px;
   position: relative;
   overflow: hidden;
+  touch-action: none;
 }
 
 .board-frame {
@@ -1226,6 +1233,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   display: flex;
   justify-content: center;
   align-items: center;
+  touch-action: none;
 }
 
 .board {
@@ -1237,6 +1245,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   border: 1px solid var(--board-border);
   border-radius: 14px;
   box-shadow: var(--board-shadow);
+  touch-action: none;
 }
 
 /* ======================================================== */
@@ -1392,10 +1401,16 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 .cell.void-cell .cell-glyph {
-  background: transparent;
-  box-shadow: none;
-  color: var(--text-dim);
-  opacity: 0.35;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(240, 242, 245, 0.35) !important;
+  font-size: 0.65em !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
 }
 
 .cell.start-cell::after {
@@ -1408,8 +1423,9 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 .cell.goal-cell {
-  background: var(--goal-dim) !important;
+  background: rgba(16, 185, 129, 0.16) !important;
   color: var(--goal-color);
+  border: 1.5px solid var(--goal-color) !important;
   box-shadow: 0 0 0 1.5px var(--goal-color) inset, 0 0 12px var(--goal-glow);
   font-weight: 700;
   position: relative;
@@ -1420,13 +1436,12 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 .cell.void-cell {
-  background: var(--bg-void);
-  border: 1px dashed var(--line);
-  color: var(--text-dim);
-  opacity: 0.35;
+  background: #080A0D !important;
+  border: 1.5px dashed rgba(255, 255, 255, 0.16) !important;
+  opacity: 1 !important;
   cursor: not-allowed;
   user-select: none;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
 }
 
 .cell.current-cell {
@@ -1442,11 +1457,12 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   z-index: 11 !important;
 }
 
-.cell.current-cell.dead-end {
-  background: var(--danger);
-  box-shadow: 0 0 0 2px var(--danger) inset, 0 0 16px var(--danger-dim);
-  color: #FFFFFF;
-  animation: deadEndShake 0.4s ease-in-out;
+.cell.current-cell.dead-end,
+.cell.dead-end-hit {
+  background: var(--danger) !important;
+  box-shadow: 0 0 0 2px var(--danger) inset, 0 0 16px var(--danger-dim) !important;
+  color: #FFFFFF !important;
+  animation: deadEndShake 0.45s ease-in-out;
 }
 
 .cell.current-cell.trapped-branch {
@@ -1456,7 +1472,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 /* Visited Cells Footprint: Subtly recessed tile (NO circle dots or specks) */
-.cell.visited:not(.current-cell):not(.start-cell):not(.goal-cell) {
+.cell.visited:not(.current-cell):not(.start-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) {
   box-shadow: 0 0 0 1px var(--line) inset;
   background: var(--line-soft);
 }
@@ -1465,23 +1481,39 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   display: none !important;
 }
 
+.cell.visited.legal-dest {
+  cursor: pointer !important;
+}
+
+.cell.visited.hint-compass {
+  background: rgba(255, 184, 0, 0.22) !important;
+  border-color: #FFB800 !important;
+  box-shadow: 0 0 0 2px #FFB800 inset, 0 0 16px rgba(255, 184, 0, 0.45) !important;
+}
+
 @keyframes deadEndShake {
   0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-3px); }
-  40%, 80% { transform: translateX(3px); }
+  15%, 45%, 75% { transform: translateX(-3.5px); }
+  30%, 60%, 90% { transform: translateX(3.5px); }
 }
 
 .cell.legal-dest {
   cursor: pointer;
   color: var(--legal-dest-color);
-  background: var(--legal-dest-bg);
-  box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset;
+  background: rgba(56, 189, 248, 0.18) !important;
+  border-color: var(--legal-dest-border) !important;
+  box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset, 0 0 14px var(--legal-dest-glow);
 }
 
 .cell.legal-dest:hover {
-  background: var(--legal-dest-color);
-  color: var(--accent-contrast);
+  background: var(--legal-dest-color) !important;
+  color: #121316 !important;
   transform: scale(1.05);
+  box-shadow: 0 0 0 2px var(--legal-dest-color) inset, 0 0 20px var(--legal-dest-glow);
+}
+
+.cell.legal-dest:hover .cell-glyph {
+  color: #121316 !important;
 }
 
 .board:not(.creating) .cell.legal-dest.pulse {
@@ -1489,13 +1521,20 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset; }
-  50% { box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset, 0 0 12px 1px var(--legal-dest-glow); }
+  0%, 100% {
+    box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset, 0 0 6px var(--legal-dest-glow);
+    background: rgba(56, 189, 248, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--legal-dest-border) inset, 0 0 16px 2px var(--legal-dest-glow);
+    background: rgba(56, 189, 248, 0.28);
+  }
 }
 
 .board:not(.creating) .cell.goal-cell.legal-dest {
-  background: var(--goal-dim) !important;
-  box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 16px var(--goal-glow) !important;
+  background: rgba(16, 185, 129, 0.26) !important;
+  border-color: var(--goal-color) !important;
+  box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 18px var(--goal-glow) !important;
   animation: goalPulse 1.6s ease-in-out infinite;
 }
 
@@ -1506,6 +1545,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 .cell.goal-cell.legal-dest:hover {
   background: var(--goal-color) !important;
   color: #121316 !important;
+  box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 24px var(--goal-glow) !important;
 }
 
 .cell.goal-cell.legal-dest:hover .cell-glyph {
@@ -1513,23 +1553,79 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 @keyframes goalPulse {
-  0%, 100% { box-shadow: 0 0 0 1.5px var(--goal-color) inset, 0 0 6px var(--goal-glow); }
-  50% { box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 18px 3px var(--goal-glow); }
+  0%, 100% {
+    box-shadow: 0 0 0 1.5px var(--goal-color) inset, 0 0 8px var(--goal-glow);
+    background: rgba(16, 185, 129, 0.24);
+  }
+  50% {
+    box-shadow: 0 0 0 2.5px var(--goal-color) inset, 0 0 22px 4px var(--goal-glow);
+    background: rgba(16, 185, 129, 0.38);
+  }
 }
 
-.cell.path-cell {
-  background: var(--accent-primary-dim);
-  box-shadow: 0 0 0 2px var(--accent-primary) inset;
-  color: var(--text-main);
+/* ======================================================== */
+/* COMPASS HINT (SINGLE-STEP NEXT LEAP HIGHLIGHT)          */
+/* ======================================================== */
+
+.cell.hint-compass,
+.cell.hint-target {
+  position: relative;
+  z-index: 10 !important;
+  cursor: pointer;
 }
 
-.cell.path-cell::after {
-  content: "●";
-  position: absolute;
-  font-size: 8px;
-  top: 4px;
-  right: 5px;
-  color: var(--accent-primary);
+/* Obsidian Theme Compass Hint: Radiant Gold/Amber Pulsing Ring */
+[data-theme="obsidian"] .cell.hint-compass,
+[data-theme="obsidian"] .cell.hint-target {
+  background: rgba(255, 184, 0, 0.22) !important;
+  border-color: #FFB800 !important;
+  box-shadow: 0 0 0 2px #FFB800 inset, 0 0 16px rgba(255, 184, 0, 0.45) !important;
+}
+
+[data-theme="obsidian"] .board:not(.creating) .cell.hint-compass,
+[data-theme="obsidian"] .board:not(.creating) .cell.hint-target {
+  animation: compassPulseObsidian 1.5s ease-in-out infinite !important;
+}
+
+[data-theme="obsidian"] .cell.hint-compass:hover,
+[data-theme="obsidian"] .cell.hint-target:hover {
+  background: rgba(255, 184, 0, 0.32) !important;
+  box-shadow: 0 0 0 2.5px #FFB800 inset, 0 0 22px rgba(255, 184, 0, 0.65) !important;
+}
+
+@keyframes compassPulseObsidian {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px #FFB800 inset, 0 0 12px rgba(255, 184, 0, 0.40);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 2.5px #FFD043 inset, 0 0 24px 6px rgba(255, 184, 0, 0.70), 0 0 0 4px rgba(255, 184, 0, 0.25);
+  }
+}
+
+/* Goal cell when it is the compass target in Obsidian */
+[data-theme="obsidian"] .cell.hint-compass.goal-cell,
+[data-theme="obsidian"] .cell.hint-target.goal-cell {
+  background: rgba(16, 185, 129, 0.30) !important;
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 2px #10B981 inset, 0 0 20px rgba(16, 185, 129, 0.55), 0 0 0 3px rgba(255, 184, 0, 0.5) !important;
+}
+
+[data-theme="obsidian"] .board:not(.creating) .cell.hint-compass.goal-cell,
+[data-theme="obsidian"] .board:not(.creating) .cell.hint-target.goal-cell {
+  animation: compassPulseObsidianGoal 1.5s ease-in-out infinite !important;
+}
+
+@keyframes compassPulseObsidianGoal {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px #10B981 inset, 0 0 14px rgba(16, 185, 129, 0.45), 0 0 0 2.5px rgba(255, 184, 0, 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px #34D399 inset, 0 0 26px 4px rgba(16, 185, 129, 0.75), 0 0 0 5.5px rgba(255, 184, 0, 0.60);
+  }
 }
 
 /* Player Token: Active Reticle Cursor (Smooth Deceleration Interpolation) */
@@ -1713,17 +1809,45 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   opacity: 1 !important;
 }
 
+[data-theme="vellum"] .cell.current-cell.dead-end,
+[data-theme="vellum"] .cell.dead-end-hit {
+  background: #E05252 !important;
+  border-color: #C0392B !important;
+  box-shadow: 0 0 0 2px #FFFFFF inset, 0 4px 14px rgba(192, 57, 43, 0.35) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="vellum"] .cell.dead-end-hit .cell-glyph {
+  color: #FFFFFF !important;
+}
+
 [data-theme="vellum"] .cell.legal-dest {
-  background: #FFFFFF !important;
+  background: rgba(43, 93, 125, 0.15) !important;
   border: 2px solid var(--accent-primary) !important;
-  box-shadow: 0 0 0 3px rgba(43, 93, 125, 0.12), 0 3px 8px rgba(43, 93, 125, 0.10) !important;
+  box-shadow: 0 0 0 3px rgba(43, 93, 125, 0.18), 0 4px 12px rgba(43, 93, 125, 0.12) !important;
   cursor: pointer;
   position: relative;
 }
 
+[data-theme="vellum"] .board:not(.creating) .cell.legal-dest.pulse {
+  animation: vellumPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes vellumPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(43, 93, 125, 0.16), 0 3px 8px rgba(43, 93, 125, 0.10);
+    background: rgba(43, 93, 125, 0.14) !important;
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(43, 93, 125, 0.26), 0 6px 16px rgba(43, 93, 125, 0.20);
+    background: rgba(43, 93, 125, 0.22) !important;
+  }
+}
+
 [data-theme="vellum"] .cell.legal-dest:hover {
+  background: rgba(43, 93, 125, 0.28) !important;
   transform: translateY(-2px);
-  box-shadow: 0 0 0 4px rgba(43, 93, 125, 0.20), 0 6px 14px rgba(43, 93, 125, 0.18) !important;
+  box-shadow: 0 0 0 4px rgba(43, 93, 125, 0.25), 0 6px 16px rgba(43, 93, 125, 0.20) !important;
 }
 
 [data-theme="vellum"] .cell.legal-dest .cell-glyph {
@@ -1734,14 +1858,14 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 /* Visited Footprint Cards: Gently recessed paper well with soft faded ink (No fly specks!) */
-[data-theme="vellum"] .cell.visited:not(.current-cell):not(.goal-cell) {
+[data-theme="vellum"] .cell.visited:not(.current-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) {
   background: #E8E5DD !important;
   border: 1px solid rgba(30, 28, 26, 0.09) !important;
   box-shadow: inset 0 1px 3px rgba(30, 28, 26, 0.06) !important;
   position: relative;
 }
 
-[data-theme="vellum"] .cell.visited:not(.current-cell):not(.goal-cell) .cell-glyph {
+[data-theme="vellum"] .cell.visited:not(.current-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) .cell-glyph {
   background: transparent !important;
   color: #7A746B !important;
   font-weight: 600;
@@ -1753,11 +1877,56 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   display: none !important;
 }
 
+/* When a visited cell is a legal destination, active interactive cues MUST take precedence */
+[data-theme="vellum"] .cell.visited.legal-dest {
+  background: rgba(43, 93, 125, 0.15) !important;
+  border: 2px solid var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(43, 93, 125, 0.18), 0 4px 12px rgba(43, 93, 125, 0.12) !important;
+  cursor: pointer !important;
+}
+
+[data-theme="vellum"] .cell.visited.legal-dest .cell-glyph {
+  color: var(--accent-primary) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+[data-theme="vellum"] .board:not(.creating) .cell.visited.legal-dest.pulse {
+  animation: vellumPulse 1.6s ease-in-out infinite !important;
+}
+
+[data-theme="vellum"] .cell.visited.legal-dest:hover {
+  background: rgba(43, 93, 125, 0.28) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 4px rgba(43, 93, 125, 0.25), 0 6px 16px rgba(43, 93, 125, 0.20) !important;
+}
+
+[data-theme="vellum"] .cell.visited.legal-dest:hover .cell-glyph {
+  color: #FFFFFF !important;
+}
+
+[data-theme="vellum"] .cell.visited.hint-compass {
+  background: rgba(217, 119, 6, 0.18) !important;
+  border: 2px solid #D97706 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25), 0 4px 14px rgba(217, 119, 6, 0.20) !important;
+  cursor: pointer !important;
+}
+
+[data-theme="vellum"] .board:not(.creating) .cell.visited.hint-compass {
+  animation: compassPulseVellum 1.5s ease-in-out infinite !important;
+}
+
+[data-theme="vellum"] .cell.visited.hint-compass .cell-glyph {
+  color: #92400E !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
 /* Goal Stamp: Pristine letterpress botanical green card */
 [data-theme="vellum"] .cell.goal-cell {
-  background: #F2F8F4 !important;
+  background: rgba(45, 106, 79, 0.12) !important;
   border: 2px solid var(--goal-color) !important;
-  box-shadow: inset 0 0 0 1.5px rgba(45, 106, 79, 0.15), 0 3px 8px rgba(45, 106, 79, 0.12) !important;
+  box-shadow: inset 0 0 0 1.5px rgba(45, 106, 79, 0.18), 0 3px 8px rgba(45, 106, 79, 0.12) !important;
   position: relative;
 }
 
@@ -1776,9 +1945,9 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 }
 
 [data-theme="vellum"] .cell.goal-cell.legal-dest {
-  background: #EAF4EE !important;
+  background: rgba(45, 106, 79, 0.25) !important;
   border: 2px solid var(--goal-color) !important;
-  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.22), 0 4px 12px rgba(45, 106, 79, 0.20) !important;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.35), 0 6px 18px rgba(45, 106, 79, 0.25) !important;
   cursor: pointer;
 }
 
@@ -1789,24 +1958,98 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 [data-theme="vellum"] .cell.goal-cell.legal-dest:hover {
   background: var(--goal-color) !important;
   transform: translateY(-2px);
-  box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.28), 0 6px 16px rgba(45, 106, 79, 0.25) !important;
+  box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.40), 0 8px 20px rgba(45, 106, 79, 0.30) !important;
 }
 
 [data-theme="vellum"] .cell.goal-cell.legal-dest:hover .cell-glyph {
   color: #FFFFFF !important;
 }
 
+/* Vellum Theme Compass Hint: Editorial Warm Amber Pulsing Ring */
+[data-theme="vellum"] .cell.hint-compass,
+[data-theme="vellum"] .cell.hint-target {
+  background: rgba(217, 119, 6, 0.18) !important;
+  border: 2px solid #D97706 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25), 0 4px 14px rgba(217, 119, 6, 0.20) !important;
+}
+
+[data-theme="vellum"] .board:not(.creating) .cell.hint-compass,
+[data-theme="vellum"] .board:not(.creating) .cell.hint-target {
+  animation: compassPulseVellum 1.5s ease-in-out infinite !important;
+}
+
+[data-theme="vellum"] .cell.hint-compass .cell-glyph,
+[data-theme="vellum"] .cell.hint-target .cell-glyph {
+  color: #92400E !important;
+  font-weight: 800;
+}
+
+[data-theme="vellum"] .cell.hint-compass:hover,
+[data-theme="vellum"] .cell.hint-target:hover {
+  background: rgba(217, 119, 6, 0.28) !important;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.35), 0 6px 18px rgba(217, 119, 6, 0.30) !important;
+}
+
+@keyframes compassPulseVellum {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.22), 0 3px 10px rgba(217, 119, 6, 0.18);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 5px rgba(217, 119, 6, 0.40), 0 6px 20px rgba(217, 119, 6, 0.32);
+  }
+}
+
+/* Goal cell when it is the compass target in Vellum */
+[data-theme="vellum"] .cell.hint-compass.goal-cell,
+[data-theme="vellum"] .cell.hint-target.goal-cell {
+  background: rgba(45, 106, 79, 0.25) !important;
+  border: 2px solid #2D6A4F !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.35), 0 0 0 5px rgba(45, 106, 79, 0.25), 0 6px 18px rgba(45, 106, 79, 0.25) !important;
+}
+
+[data-theme="vellum"] .board:not(.creating) .cell.hint-compass.goal-cell,
+[data-theme="vellum"] .board:not(.creating) .cell.hint-target.goal-cell {
+  animation: compassPulseVellumGoal 1.5s ease-in-out infinite !important;
+}
+
+[data-theme="vellum"] .cell.hint-compass.goal-cell .cell-glyph,
+[data-theme="vellum"] .cell.hint-target.goal-cell .cell-glyph {
+  color: #2D6A4F !important;
+}
+
+@keyframes compassPulseVellumGoal {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.30), 0 3px 10px rgba(45, 106, 79, 0.20);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 5px rgba(217, 119, 6, 0.48), 0 0 0 7.5px rgba(45, 106, 79, 0.30), 0 8px 22px rgba(45, 106, 79, 0.35);
+  }
+}
+
+/* Void / Zero Cell: Crisp tactile letterpress debossed well */
 [data-theme="vellum"] .cell.void-cell {
-  background: var(--bg-void) !important;
-  border: 1px dashed var(--line) !important;
-  box-shadow: inset 0 2px 4px rgba(60, 50, 40, 0.12) !important;
+  background: #D8D1C2 !important;
+  border: 1.5px dashed rgba(60, 50, 40, 0.28) !important;
+  box-shadow: inset 0 2px 6px rgba(45, 35, 25, 0.16), inset 0 0 0 1px rgba(45, 35, 25, 0.06) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+  user-select: none;
 }
 
 [data-theme="vellum"] .cell.void-cell .cell-glyph {
-  color: var(--text-muted) !important;
+  color: rgba(43, 93, 125, 0.45) !important;
   background: transparent !important;
-  opacity: 0.45;
-  text-shadow: none;
+  font-size: 0.65em !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) !important;
 }
 
 /* ======================================================== */
@@ -1923,6 +2166,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 .board[data-grid-size="7"] .token-dir-arrow.right,
 .board[data-grid-size="8"] .token-dir-arrow.right { right: -4px; }
 
+
 /* Breadcrumb Vector Trail Overlay: Layered underneath numerals and active cell */
 .trail-svg {
   position: absolute;
@@ -2019,6 +2263,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
   user-select: none;
+  touch-action: manipulation;
 }
 
 [data-theme="vellum"] .tool-btn {
@@ -2064,6 +2309,50 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   opacity: 0.3;
   cursor: not-allowed;
   transform: none;
+}
+
+.tool-btn.attention-pulse {
+  border-color: var(--accent-primary, #FFB800) !important;
+  animation: toolBtnAttentionPulse 1.2s ease-in-out infinite !important;
+}
+
+[data-theme="vellum"] .tool-btn.attention-pulse {
+  border-color: #D97706 !important;
+  animation: toolBtnAttentionPulseVellum 1.2s ease-in-out infinite !important;
+}
+
+@keyframes toolBtnAttentionPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 1.5px #FFB800, 0 0 10px rgba(255, 184, 0, 0.45);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px #FFD043, 0 0 18px rgba(255, 184, 0, 0.70);
+  }
+}
+
+@keyframes toolBtnAttentionPulseVellum {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px #D97706, 0 2px 8px rgba(217, 119, 6, 0.35);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3.5px #B45309, 0 4px 16px rgba(217, 119, 6, 0.50);
+  }
+}
+
+.tool-btn.shake-subtle {
+  animation: btnShakeSubtle 0.4s ease-in-out !important;
+}
+
+@keyframes btnShakeSubtle {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
 }
 
 /* Reserved Mobile Banner Ad Slot (56px clearance at screen bottom) */
@@ -2145,81 +2434,383 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   font-size: 22px;
 }
 
-/* Win Stars Animation Row */
-.win-stars-row {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin: 10px 0 16px;
-}
+/* ======================================================== */
+/* LEVEL COMPLETE & CAMPAIGN COMPLETE PANELS (Reworked)      */
+/* ======================================================== */
 
-.win-star-slot {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--ink-900);
-  border: 1.5px solid var(--line-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: var(--paper-dim);
-  opacity: 0.3;
-  transition: all 260ms cubic-bezier(.175, .885, .32, 1.275);
-}
-
-.win-star-slot.earned {
-  color: var(--amber);
-  background: rgba(242, 166, 90, 0.18);
-  border-color: var(--amber);
-  opacity: 1;
-  transform: scale(1.15);
-  box-shadow: 0 0 20px 4px rgba(242, 166, 90, 0.4);
-  animation: starPop 350ms cubic-bezier(.175, .885, .32, 1.275);
-}
-
-@keyframes starPop {
-  0% { transform: scale(0.5); opacity: 0; }
-  60% { transform: scale(1.35); }
-  100% { transform: scale(1.15); opacity: 1; }
-}
-
-/* Star Criteria Checklist */
-.win-criteria-list {
-  background: var(--ink-950);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 16px;
+.win-card {
+  max-width: 380px;
+  width: 100%;
+  padding: 24px 20px 22px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  text-align: left;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--line);
 }
 
-.criteria-item {
+[data-theme="vellum"] .win-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 50px rgba(60, 50, 40, 0.16), 0 2px 8px rgba(60, 50, 40, 0.06);
+}
+
+/* ======================================================== */
+/* OPTION A: THE CONSTELLATION SIGIL & CHAPTER JOURNEY     */
+/* ======================================================== */
+
+.win-sigil-card {
+  max-width: 380px;
+  width: 100%;
+  padding: 22px 20px 20px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="vellum"] .win-sigil-card {
+  background: #FCFAF6;
+  border: 1px solid rgba(60, 50, 40, 0.12);
+  box-shadow: 0 20px 50px rgba(60, 50, 40, 0.18), 0 2px 10px rgba(60, 50, 40, 0.08);
+}
+
+/* 1. Centerpiece: The Constellation Sigil Medallion */
+.win-sigil-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0 16px;
+  position: relative;
+}
+
+.win-sigil-medallion {
+  width: 176px;
+  height: 176px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.18) 0%, rgba(11, 14, 19, 0.96) 75%);
+  border: 2px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 36px rgba(16, 185, 129, 0.28), inset 0 0 24px rgba(16, 185, 129, 0.14);
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--paper-dim);
-  opacity: 0.45;
+  justify-content: center;
 }
 
-.criteria-item .check {
-  font-size: 11px;
-  color: var(--paper-dim);
+.win-sigil-medallion.pop {
+  animation: medallionPop 550ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
 
-.criteria-item.earned {
-  color: var(--paper);
-  opacity: 1;
-  font-weight: 600;
+[data-theme="vellum"] .win-sigil-medallion {
+  background: radial-gradient(circle at 50% 45%, rgba(224, 138, 30, 0.14) 0%, #F5F1E9 75%);
+  border-color: rgba(180, 140, 60, 0.5);
+  box-shadow: 0 8px 32px rgba(60, 50, 40, 0.15), inset 0 0 20px rgba(224, 138, 30, 0.08);
 }
 
-.criteria-item.earned .check {
-  color: var(--teal);
+
+@keyframes medallionPop {
+  0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+  70% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.win-sigil-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* SVG Internal Styling */
+.sigil-ring {
+  fill: none;
+  stroke: var(--goal-color);
+  opacity: 0.3;
+}
+
+.sigil-outer-ring {
+  stroke-width: 1.2px;
+  stroke: rgba(16, 185, 129, 0.35);
+}
+
+.sigil-dash-ring {
+  stroke-width: 1px;
+  stroke: rgba(16, 185, 129, 0.25);
+  stroke-dasharray: 4 4;
+  animation: rotateSigil 36s linear infinite;
+  transform-origin: 100px 100px;
+}
+
+.sigil-core-ring {
+  stroke-width: 0.8px;
+  stroke: rgba(16, 185, 129, 0.2);
+}
+
+.sigil-cardinal-tick {
+  stroke: var(--goal-color);
+  stroke-width: 1.5px;
+  opacity: 0.6;
+  stroke-linecap: round;
+}
+
+.sigil-path-ghost {
+  fill: none;
+  stroke: rgba(16, 185, 129, 0.15);
+  stroke-width: 6px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sigil-path-beam {
+  fill: none;
+  stroke: #34D399;
+  stroke-width: 3.4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.85));
+}
+
+.sigil-node {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sigil-node-start {
+  fill: #10B981;
+  stroke: #FFFFFF;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.85));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sigil-node-inter {
+  fill: #FBBF24;
+  stroke: none;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.75));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sigil-node-goal {
+  fill: #F59E0B;
+  stroke: #FFFFFF;
+  stroke-width: 1.8px;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.9));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sigil-node-goal-halo {
+  fill: none;
+  stroke: #F59E0B;
+  stroke-width: 1.2px;
+  opacity: 0.5;
+  stroke-dasharray: 2 2;
+  animation: rotateSigil 10s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes sigilNodePop {
+  0% { transform: scale(0); opacity: 0; }
+  65% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes sigilHaloExpand {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.25); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+@keyframes rotateSigil {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Vellum Theme Overrides for SVG */
+[data-theme="vellum"] .sigil-ring { stroke: #2E7D32; }
+[data-theme="vellum"] .sigil-path-ghost { stroke: rgba(46, 125, 50, 0.12); }
+[data-theme="vellum"] .sigil-path-beam { stroke: #2E7D32; filter: drop-shadow(0 1px 4px rgba(46, 125, 50, 0.45)); }
+[data-theme="vellum"] .sigil-node-start { fill: #2E7D32; stroke: #FFF; }
+[data-theme="vellum"] .sigil-node-inter { fill: #C47A16; }
+[data-theme="vellum"] .sigil-node-goal { fill: #B26A10; stroke: #FFF; }
+[data-theme="vellum"] .sigil-node-goal-halo { stroke: #B26A10; }
+
+/* 2. Level Number Title */
+.win-header-meta {
+  margin-bottom: 22px;
+}
+
+.win-header-meta .win-title {
+  margin: 0 0 4px;
+  font-size: 28px;
   font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+
+.win-header-meta .win-subtitle {
+  margin: 6px auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--goal-color);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+  animation: subtitlePop 400ms 200ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.win-header-meta .win-subtitle::before {
+  content: "✓";
+  font-size: 11px;
+  font-weight: 900;
+}
+
+[data-theme="vellum"] .win-header-meta .win-subtitle {
+  color: rgba(120, 85, 10, 0.9);
+  background: rgba(200, 150, 40, 0.1);
+  border-color: rgba(180, 130, 40, 0.35);
+  box-shadow: 0 0 8px rgba(200, 150, 40, 0.12);
+}
+
+@keyframes subtitlePop {
+  0%   { opacity: 0; transform: scale(0.7) translateY(4px); }
+  80%  { opacity: 1; transform: scale(1.06) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Action Buttons Hierarchy */
+.win-actions-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-win-next {
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 16px rgba(255, 184, 0, 0.3);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.btn-win-next:active {
+  transform: scale(0.98);
+}
+
+.win-actions-secondary {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.win-actions-secondary .btn {
+  flex: 1;
+  height: 42px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+}
+
+.win-actions-secondary .btn .btn-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* Campaign Complete / Grand Mastery Modal */
+.final-card {
+  max-width: 380px;
+  padding: 28px 22px 24px;
+  text-align: center;
+  border-radius: 20px;
+}
+
+.final-trophy-badge {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 8px;
+  animation: trophyFloat 2.4s ease-in-out infinite;
+  display: inline-block;
+  filter: drop-shadow(0 0 16px rgba(255, 184, 0, 0.5));
+}
+
+@keyframes trophyFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.08); }
+}
+
+.final-card .eyebrow {
+  color: var(--accent-primary);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+}
+
+.final-card h2 {
+  margin: 2px 0 6px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.final-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.final-stats-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--accent-primary-dim);
+  border: 1px solid var(--accent-primary);
+  color: var(--text-main);
+  font-family: var(--font-num);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 12px rgba(255, 184, 0, 0.25);
+}
+
+.final-stats-pill .star-gold {
+  color: var(--accent-primary);
+  font-size: 16px;
+}
+
+.final-stats-pill .check-green {
+  color: var(--goal-color);
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .card .stat-row {
@@ -2275,6 +2866,71 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 
 .btn.primary:hover { background: #f7b878; }
 
+/* Out of Lives Modal Rework */
+.out-of-lives-card {
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.out-of-lives-icon {
+  font-size: 42px;
+  line-height: 1;
+  margin-bottom: 12px;
+  display: inline-block;
+  animation: heartFloat 2s ease-in-out infinite;
+}
+
+@keyframes heartFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.06); }
+}
+
+.out-of-lives-card h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+
+.out-of-lives-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-watch-ad {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 18px;
+}
+
+.ad-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.22);
+  color: inherit;
+  line-height: 1.2;
+}
+
+[data-theme="vellum"] .ad-badge {
+  background: rgba(0, 0, 0, 0.12);
+}
+
 /* Settings List */
 .settings-list {
   display: flex;
@@ -2314,6 +2970,8 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .toast.warning {

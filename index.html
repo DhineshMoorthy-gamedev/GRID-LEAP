@@ -310,27 +310,47 @@
 
 <!-- Level Complete Modal Sheet -->
 <div class="overlay" id="winOverlay">
-  <div class="card win-card">
-    <div class="eyebrow">LEVEL COMPLETE</div>
-    <h2 id="winTitle">Level 01 cleared</h2>
-
-    <div class="stat-row" style="margin-top: 14px;">
-      <div class="stat">
-        <div class="value" id="winMoves">0</div>
-        <div class="label">YOUR MOVES</div>
-      </div>
-      <div class="stat">
-        <div class="value" id="winOptimal">0</div>
-        <div class="label">OPTIMAL</div>
-      </div>
-      <div class="stat efficiency" id="winEfficiencyStat">
-        <div class="value" id="winEfficiency">0%</div>
-        <div class="label">EFFICIENCY</div>
+  <div class="card win-card win-sigil-card">
+    <!-- Centerpiece: The Constellation Sigil Medallion -->
+    <div class="win-sigil-wrapper">
+      <div class="win-sigil-medallion" id="winSigilMedallion">
+        <svg class="win-sigil-svg" id="winSigilSvg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+          <!-- Dynamic constellation lines & junction stars drawn by renderer -->
+        </svg>
+        <div class="win-sigil-halo"></div>
       </div>
     </div>
-    <div class="card-actions">
-      <button class="btn" id="winRestartBtn">Replay</button>
-      <button class="btn primary" id="winNextBtn">Next Level ▶</button>
+
+    <!-- Level Number Title + Puzzle Name -->
+    <div class="win-header-meta">
+      <h2 class="win-title" id="winTitle">Level 01</h2>
+      <p class="win-subtitle" id="winSubtitle">Puzzle Solved</p>
+    </div>
+
+
+    <!-- Dev Mode Diagnostic Chip (Preserved for compatibility) -->
+    <div class="stat efficiency" id="winEfficiencyStat" style="display:none;">
+      <span class="label">EFFICIENCY</span>
+      <span class="value" id="winEfficiency">0%</span>
+    </div>
+
+    <!-- Action Buttons Hierarchy -->
+    <div class="win-actions-column">
+      <button class="btn primary btn-win-next" id="winNextBtn">
+        <span>Continue</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+
+      <div class="win-actions-secondary">
+        <button class="btn btn-secondary" id="winRestartBtn">
+          <span class="btn-icon">↺</span> Replay
+        </button>
+        <button class="btn btn-secondary" id="winHomeBtn">
+          <span class="btn-icon">⌂</span> Levels
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -338,14 +358,13 @@
 <!-- Out of Lives Modal Overlay -->
 <div class="overlay" id="outOfLivesModal">
   <div class="card out-of-lives-card">
-    <div class="eyebrow" style="color:var(--danger)">NO HEARTS REMAINING</div>
-    <h2>Out of Lives 💔</h2>
-    <p style="color:var(--paper-dim); font-size:13px; line-height: 1.4; margin-bottom: 20px;">
-      You entered a dead end with no legal exits. Take a fresh look at the leap numbers and try again!
-    </p>
-    <div class="card-actions" style="flex-direction: column; gap: 8px;">
-      <button class="btn primary" id="outOfLivesRestartBtn">Restart Level (3 ❤️)</button>
-      <button class="btn" id="outOfLivesHomeBtn">Exit to Home</button>
+    <div class="out-of-lives-icon">💔</div>
+    <h2>Out of Lives</h2>
+    <div class="card-actions out-of-lives-actions">
+      <button class="btn primary btn-watch-ad" id="outOfLivesWatchAdBtn">
+        <span class="ad-badge">AD</span> Watch Ad (+1 ❤️)
+      </button>
+      <button class="btn" id="outOfLivesRestartBtn">Restart Level</button>
     </div>
   </div>
 </div>
@@ -455,16 +474,28 @@
   </div>
 </div>
 
-<!-- Prototype Complete Modal -->
+<!-- Campaign Complete Modal Sheet -->
 <div class="overlay" id="finalOverlay">
-  <div class="card">
-    <div class="eyebrow">PROTOTYPE COMPLETE</div>
-    <h2>All 10 levels cleared</h2>
-    <p style="color:var(--paper-dim); line-height: 1.5; margin-bottom: 20px;">
-      You conquered all chapters — tutorial, planning, deceptive dead ends, and deep leaps!
+  <div class="card final-card">
+    <div class="final-trophy-badge">🏆</div>
+    <div class="eyebrow">GRAND MASTERY</div>
+    <h2 id="finalTitle">Campaign Complete!</h2>
+    <p class="final-sub" id="finalSub">
+      All 100 puzzles conquered across all 10 chapters!
     </p>
-    <div class="card-actions">
-      <button class="btn primary" id="finalRestartBtn" style="flex:1">Play again</button>
+
+    <div class="final-stats-pill" id="finalProgressPill">
+      <span class="check-green">✓</span> <span id="finalTotalSolved">100</span> / <span id="finalTotalLevels">100</span> PUZZLES SOLVED
+    </div>
+
+    <div class="win-actions-column" style="margin-top: 20px;">
+      <button class="btn primary" id="finalHomeBtn">
+        <span>Return to Home Hub</span>
+        <span style="font-size: 16px;">⌂</span>
+      </button>
+      <button class="btn btn-secondary" id="finalRestartBtn">
+        <span class="btn-icon">↺</span> Replay Campaign
+      </button>
     </div>
   </div>
 </div>

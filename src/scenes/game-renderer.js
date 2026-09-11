@@ -78,17 +78,27 @@ export const DOM = {
   // Modals & Overlays
   toast: document.getElementById("toast"),
   winOverlay: document.getElementById("winOverlay"),
+  winSigilMedallion: document.getElementById("winSigilMedallion"),
+  winSigilSvg: document.getElementById("winSigilSvg"),
   winTitle: document.getElementById("winTitle"),
-  winMoves: document.getElementById("winMoves"),
-  winOptimal: document.getElementById("winOptimal"),
+  winSubtitle: document.getElementById("winSubtitle"),
   winEfficiency: document.getElementById("winEfficiency"),
   winEfficiencyStat: document.getElementById("winEfficiencyStat"),
   winRestartBtn: document.getElementById("winRestartBtn"),
   winNextBtn: document.getElementById("winNextBtn"),
+  winHomeBtn: document.getElementById("winHomeBtn"),
+
+  finalOverlay: document.getElementById("finalOverlay"),
+  finalTitle: document.getElementById("finalTitle"),
+  finalSub: document.getElementById("finalSub"),
+  finalTotalSolved: document.getElementById("finalTotalSolved"),
+  finalTotalLevels: document.getElementById("finalTotalLevels"),
+  finalRestartBtn: document.getElementById("finalRestartBtn"),
+  finalHomeBtn: document.getElementById("finalHomeBtn"),
 
   outOfLivesModal: document.getElementById("outOfLivesModal"),
+  outOfLivesWatchAdBtn: document.getElementById("outOfLivesWatchAdBtn"),
   outOfLivesRestartBtn: document.getElementById("outOfLivesRestartBtn"),
-  outOfLivesHomeBtn: document.getElementById("outOfLivesHomeBtn"),
 
   pauseModal: document.getElementById("pauseModal"),
   pauseLevel: document.getElementById("pauseLevel"),
@@ -116,11 +126,13 @@ export const DOM = {
   editorJsonModal: document.getElementById("editorJsonModal"),
 
   rulesModal: document.getElementById("rulesModal"),
-  closeRulesBtn: document.getElementById("closeRulesBtn"),
-
-  finalOverlay: document.getElementById("finalOverlay"),
-  finalRestartBtn: document.getElementById("finalRestartBtn")
+  closeRulesBtn: document.getElementById("closeRulesBtn")
 };
+
+if (DOM.toast) {
+  DOM.toast.addEventListener("click", () => hideToast());
+}
+
 
 let cellEls = [];
 let tokenEl = null;
@@ -128,7 +140,8 @@ let trailSvgEl = null;
 let lastRenderedCoords = [];
 let lastRenderedViable = true;
 let lastRenderedShowTrail = false;
-let deadEndToastTimeout = null;
+let lastRenderedShowSolutionFeedback = false;
+let toastTimeout = null;
 
 export function getCellElements() {
   return cellEls;
@@ -386,7 +399,7 @@ export function renderBoard(level, onCellClick, { animate = true } = {}) {
         cell.innerHTML = '<span class="cell-glyph goal-label">GOAL</span>';
       } else if (val === 0) {
         cell.classList.add("void-cell");
-        cell.innerHTML = '<span class="cell-glyph void">·</span>';
+        cell.innerHTML = '<span class="cell-glyph void">●</span>';
       } else {
         cell.innerHTML = `<span class="cell-glyph">${val}</span>`;
       }
@@ -625,38 +638,60 @@ export function updateGameHeader(levelIndex, level, moveCount, historyLength) {
   if (DOM.undoBtn) DOM.undoBtn.disabled = historyLength === 0;
 }
 
-export function showToast(msg) {
+export function showToast(msg, durationMs = 1500) {
+  if (!DOM.toast) return;
   if (msg) DOM.toast.textContent = msg;
   DOM.toast.classList.remove("warning");
   DOM.toast.classList.add("show");
-  if (deadEndToastTimeout) clearTimeout(deadEndToastTimeout);
-  deadEndToastTimeout = setTimeout(() => {
-    DOM.toast.classList.remove("show");
-    DOM.toast.textContent = "No legal move that way";
-  }, 900);
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    hideToast();
+  }, durationMs);
 }
 
-export function showDeadEndToast() {
-  if (deadEndToastTimeout) clearTimeout(deadEndToastTimeout);
-  DOM.toast.textContent = "Dead end — no legal moves. Use Undo or Restart.";
-  DOM.toast.classList.add("warning", "show");
-}
-
-export function clearDeadEndFeedback() {
-  if (deadEndToastTimeout) clearTimeout(deadEndToastTimeout);
-  if (DOM.toast.classList.contains("warning")) {
+export function hideToast() {
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+    toastTimeout = null;
+  }
+  if (DOM.toast) {
     DOM.toast.classList.remove("show", "warning");
     DOM.toast.textContent = "No legal move that way";
   }
-  if (DOM.undoBtn) DOM.undoBtn.classList.remove("attention-pulse");
-  if (DOM.restartBtn) DOM.restartBtn.classList.remove("attention-pulse");
 }
 
-export function renderTrail(historyCoords = [], isViable = true, showTrail = false) {
+export function showDeadEndToast() {
+  if (!DOM.toast) return;
+  DOM.toast.textContent = "Dead end — no legal moves. Use Undo or Restart.";
+  DOM.toast.classList.add("warning", "show");
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    hideToast();
+  }, 2500);
+}
+
+export function clearDeadEndFeedback() {
+  // If a dead-end warning toast specifically is active, dismiss it
+  if (DOM.toast && DOM.toast.classList.contains("warning")) {
+    hideToast();
+  }
+  if (DOM.undoBtn) DOM.undoBtn.classList.remove("attention-pulse");
+  if (DOM.restartBtn) DOM.restartBtn.classList.remove("attention-pulse");
+  if (cellEls && cellEls.length) {
+    for (let r = 0; r < cellEls.length; r++) {
+      for (let c = 0; c < (cellEls[r]?.length || 0); c++) {
+        cellEls[r]?.[c]?.classList.remove("dead-end-hit");
+      }
+    }
+  }
+}
+
+export function renderTrail(historyCoords = [], isViable = true, showTrail = false, showSolutionFeedback = false) {
   if (!trailSvgEl || !cellEls.length) return;
   lastRenderedCoords = historyCoords;
   lastRenderedViable = isViable;
   lastRenderedShowTrail = Boolean(showTrail);
+  lastRenderedShowSolutionFeedback = Boolean(showSolutionFeedback);
 
   const halosGroup = trailSvgEl.querySelector("#trailUnderHalos");
   const segmentsGroup = trailSvgEl.querySelector("#trailSegments");
@@ -783,7 +818,7 @@ export function renderTrail(historyCoords = [], isViable = true, showTrail = fal
       : Math.min(1.0, minOpacity + (1.0 - minOpacity) * ((recencyRank + 1) / visibleCount));
 
     const isLatest = (segIdx === totalSegments - 1);
-    const isTrapped = isLatest && !isViable;
+    const isTrapped = isLatest && !isViable && lastRenderedShowSolutionFeedback;
     const defaultColor = isVellum ? "var(--trail-stroke, var(--accent-primary))" : "var(--trail-stroke, var(--amber))";
     const strokeColor = isTrapped ? "var(--danger)" : defaultColor;
     const strokeDash = isTrapped ? 'stroke-dasharray="5 3"' : "";
@@ -823,7 +858,7 @@ export function renderTrail(historyCoords = [], isViable = true, showTrail = fal
 
 export function refreshTrail(showTrail = lastRenderedShowTrail) {
   if (lastRenderedCoords && lastRenderedCoords.length) {
-    renderTrail(lastRenderedCoords, lastRenderedViable, showTrail);
+    renderTrail(lastRenderedCoords, lastRenderedViable, showTrail, lastRenderedShowSolutionFeedback);
   }
 }
 
@@ -840,7 +875,7 @@ export function updateTrailButton(showTrail = false) {
   }
 }
 
-export function renderViability(viability, isGoal = false, isDeadEnd = false, playerPos = null) {
+export function renderViability(viability, isGoal = false, isDeadEnd = false, playerPos = null, showSolutionFeedback = false) {
   const dot = tokenEl?.querySelector(".dot");
   const isTrapped = (!viability?.solvable && !isGoal) || isDeadEnd;
 
@@ -849,7 +884,7 @@ export function renderViability(viability, isGoal = false, isDeadEnd = false, pl
     dot.classList.remove("viable", "trapped", "goal");
     if (isGoal) {
       dot.classList.add("goal");
-    } else if (isTrapped) {
+    } else if (isTrapped && showSolutionFeedback) {
       dot.classList.add("trapped");
     } else {
       dot.classList.add("viable");
@@ -861,7 +896,7 @@ export function renderViability(viability, isGoal = false, isDeadEnd = false, pl
     const [pr, pc] = playerPos;
     const currCell = cellEls[pr]?.[pc];
     if (currCell) {
-      if (isTrapped) {
+      if (isTrapped && showSolutionFeedback) {
         currCell.classList.add("trapped-branch");
       } else {
         currCell.classList.remove("trapped-branch");
@@ -877,10 +912,16 @@ export function renderViability(viability, isGoal = false, isDeadEnd = false, pl
       DOM.hudPathText.textContent = "★ GOAL";
       if (DOM.hudPathDot) DOM.hudPathDot.textContent = "★";
     } else if (isTrapped) {
-      DOM.hudPathStatus.classList.add("trapped");
-      DOM.hudPathText.textContent = "⚠️ TRAP";
-      if (DOM.hudPathDot) DOM.hudPathDot.textContent = "!";
-      if (DOM.undoBtn) DOM.undoBtn.classList.add("attention-pulse");
+      if (showSolutionFeedback) {
+        DOM.hudPathStatus.classList.add("trapped");
+        DOM.hudPathText.textContent = "⚠️ TRAP";
+        if (DOM.hudPathDot) DOM.hudPathDot.textContent = "!";
+        if (DOM.undoBtn) DOM.undoBtn.classList.add("attention-pulse");
+      } else {
+        DOM.hudPathStatus.classList.add("viable");
+        DOM.hudPathText.textContent = "-- LEFT";
+        if (DOM.hudPathDot) DOM.hudPathDot.textContent = "●";
+      }
     } else {
       DOM.hudPathStatus.classList.add("viable");
       if (viability && typeof viability.moves === "number" && viability.moves > 0) {
@@ -891,4 +932,235 @@ export function renderViability(viability, isGoal = false, isDeadEnd = false, pl
       if (DOM.hudPathDot) DOM.hudPathDot.textContent = "●";
     }
   }
+}
+
+export function drawConstellationSigil(svgEl, path, level) {
+  if (!svgEl) return;
+  svgEl.innerHTML = "";
+
+  const coords = (Array.isArray(path) && path.length > 0)
+    ? path
+    : (level?.start && level?.goal ? [level.start, level.goal] : [[0, 0], [0, 1]]);
+  const cols = (level && (level.w || (level.grid && level.grid[0]?.length))) || 4;
+  const rows = (level && (level.h || (level.grid && level.grid?.length))) || 4;
+
+  const spanW = 108;
+  const spanH = 108;
+  const stepX = cols > 1 ? spanW / (cols - 1) : 0;
+  const stepY = rows > 1 ? spanH / (rows - 1) : 0;
+  const startX = 100 - ((cols - 1) * stepX) / 2;
+  const startY = 100 - ((rows - 1) * stepY) / 2;
+
+  const pts = coords.map(([r, c]) => ({
+    x: Math.round(startX + c * stepX),
+    y: Math.round(startY + r * stepY)
+  }));
+
+  const ns = "http://www.w3.org/2000/svg";
+
+  // 1. Background Sacred Geometry & Celestial Rings
+  const bgGroup = document.createElementNS(ns, "g");
+  bgGroup.setAttribute("class", "sigil-bg-group");
+
+  const outerRing = document.createElementNS(ns, "circle");
+  outerRing.setAttribute("cx", "100");
+  outerRing.setAttribute("cy", "100");
+  outerRing.setAttribute("r", "88");
+  outerRing.setAttribute("class", "sigil-ring sigil-outer-ring");
+  bgGroup.appendChild(outerRing);
+
+  const dashRing = document.createElementNS(ns, "circle");
+  dashRing.setAttribute("cx", "100");
+  dashRing.setAttribute("cy", "100");
+  dashRing.setAttribute("r", "80");
+  dashRing.setAttribute("class", "sigil-ring sigil-dash-ring");
+  bgGroup.appendChild(dashRing);
+
+  const innerRing = document.createElementNS(ns, "circle");
+  innerRing.setAttribute("cx", "100");
+  innerRing.setAttribute("cy", "100");
+  innerRing.setAttribute("r", "50");
+  innerRing.setAttribute("class", "sigil-ring sigil-core-ring");
+  bgGroup.appendChild(innerRing);
+
+  // Cardinal crosshair ticks
+  const cardinalTicks = [
+    [100, 7, 100, 15],
+    [100, 185, 100, 193],
+    [7, 100, 15, 100],
+    [185, 100, 192, 100]
+  ];
+  cardinalTicks.forEach(([x1, y1, x2, y2]) => {
+    const tick = document.createElementNS(ns, "line");
+    tick.setAttribute("x1", String(x1));
+    tick.setAttribute("y1", String(y1));
+    tick.setAttribute("x2", String(x2));
+    tick.setAttribute("y2", String(y2));
+    tick.setAttribute("class", "sigil-cardinal-tick");
+    bgGroup.appendChild(tick);
+  });
+
+  svgEl.appendChild(bgGroup);
+
+  // 2. The Path Polyline String
+  let pathD = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    pathD += ` L ${pts[i].x} ${pts[i].y}`;
+  }
+
+  // Ghost ambient path
+  const ghostPath = document.createElementNS(ns, "path");
+  ghostPath.setAttribute("d", pathD);
+  ghostPath.setAttribute("class", "sigil-path-ghost");
+  svgEl.appendChild(ghostPath);
+
+  // Primary luminous laser beam (Graceful slowed down draw: 2000ms)
+  const beamPath = document.createElementNS(ns, "path");
+  beamPath.setAttribute("d", pathD);
+  beamPath.setAttribute("class", "sigil-path-beam");
+  svgEl.appendChild(beamPath);
+
+  const traceDuration = 2000;
+
+  try {
+    const pathLength = beamPath.getTotalLength() || 240;
+    beamPath.style.strokeDasharray = `${pathLength}`;
+    beamPath.style.strokeDashoffset = `${pathLength}`;
+    requestAnimationFrame(() => {
+      beamPath.style.transition = `stroke-dashoffset ${traceDuration}ms cubic-bezier(0.35, 0, 0.25, 1)`;
+      beamPath.style.strokeDashoffset = "0";
+    });
+  } catch {
+    beamPath.style.strokeDasharray = "500";
+    beamPath.style.strokeDashoffset = "0";
+  }
+
+  // 3. Constellation Junction Stars (Staggered progressive popping)
+  const nodesGroup = document.createElementNS(ns, "g");
+  nodesGroup.setAttribute("class", "sigil-nodes-group");
+
+  const stepDelay = pts.length > 1 ? (traceDuration * 0.88) / (pts.length - 1) : 0;
+
+  pts.forEach((pt, idx) => {
+    const isStart = idx === 0;
+    const isGoal = idx === pts.length - 1;
+    const nodeDelay = Math.round(idx * stepDelay);
+
+    if (isGoal) {
+      // Radiant Goal Beacon with halo
+      const goalHalo = document.createElementNS(ns, "circle");
+      goalHalo.setAttribute("cx", String(pt.x));
+      goalHalo.setAttribute("cy", String(pt.y));
+      goalHalo.setAttribute("r", "11");
+      goalHalo.setAttribute("class", "sigil-node-goal-halo");
+      goalHalo.style.animation = "sigilHaloExpand 700ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both";
+      goalHalo.style.animationDelay = `${Math.round(traceDuration * 0.92)}ms`;
+      nodesGroup.appendChild(goalHalo);
+
+      const goalCore = document.createElementNS(ns, "circle");
+      goalCore.setAttribute("cx", String(pt.x));
+      goalCore.setAttribute("cy", String(pt.y));
+      goalCore.setAttribute("r", "6");
+      goalCore.setAttribute("class", "sigil-node sigil-node-goal");
+      goalCore.style.animation = "sigilNodePop 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both";
+      goalCore.style.animationDelay = `${nodeDelay}ms`;
+      nodesGroup.appendChild(goalCore);
+    } else if (isStart) {
+      // Start Origin Star
+      const startCore = document.createElementNS(ns, "circle");
+      startCore.setAttribute("cx", String(pt.x));
+      startCore.setAttribute("cy", String(pt.y));
+      startCore.setAttribute("r", "5");
+      startCore.setAttribute("class", "sigil-node sigil-node-start");
+      startCore.style.animation = "sigilNodePop 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both";
+      startCore.style.animationDelay = "0ms";
+      nodesGroup.appendChild(startCore);
+    } else {
+      // Intermediate Constellation Star
+      const interCore = document.createElementNS(ns, "circle");
+      interCore.setAttribute("cx", String(pt.x));
+      interCore.setAttribute("cy", String(pt.y));
+      interCore.setAttribute("r", "3.2");
+      interCore.setAttribute("class", "sigil-node sigil-node-inter");
+      interCore.style.animation = "sigilNodePop 350ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both";
+      interCore.style.animationDelay = `${nodeDelay}ms`;
+      nodesGroup.appendChild(interCore);
+    }
+  });
+
+  svgEl.appendChild(nodesGroup);
+}
+
+export function renderWinModal({
+  levelIndex,
+  level,
+  moveCount,
+  optimal,
+  path,
+  isCustomLevel,
+  isLastLevel,
+  devDiagnosticsEnabled
+}) {
+  const padIndex = String(levelIndex + 1).padStart(levelIndex + 1 >= 100 ? 3 : 2, "0");
+
+  // 1. Level Number Title
+  if (DOM.winTitle) {
+    DOM.winTitle.textContent = isCustomLevel ? "Playtest Level" : `Level ${padIndex}`;
+  }
+
+  // 1b. Completion badge (replays pop animation each time)
+  if (DOM.winSubtitle) {
+    DOM.winSubtitle.style.animation = "none";
+    void DOM.winSubtitle.offsetWidth; // force reflow
+    DOM.winSubtitle.style.animation = "";
+    DOM.winSubtitle.textContent = isCustomLevel ? "Playtest Complete" : "Cleared";
+  }
+
+  // 2. Centerpiece: The Constellation Sigil Medallion
+  if (DOM.winSigilSvg) {
+    drawConstellationSigil(DOM.winSigilSvg, path, level);
+  }
+  if (DOM.winSigilMedallion) {
+    DOM.winSigilMedallion.classList.remove("pop");
+    void DOM.winSigilMedallion.offsetWidth; // force reflow
+    DOM.winSigilMedallion.classList.add("pop");
+  }
+
+  // 3. Efficiency (Dev Mode)
+  const eff = Math.round((optimal / moveCount) * 100);
+  if (DOM.winEfficiency) {
+    DOM.winEfficiency.textContent = `${eff}%`;
+    DOM.winEfficiency.classList.remove("good", "ok");
+    DOM.winEfficiency.classList.add(eff >= 90 ? "good" : "ok");
+  }
+  if (DOM.winEfficiencyStat) {
+    DOM.winEfficiencyStat.style.display = devDiagnosticsEnabled ? "flex" : "none";
+  }
+
+  // 4. Next / Editor / Final Button text
+  if (DOM.winNextBtn) {
+    if (isCustomLevel) {
+      DOM.winNextBtn.innerHTML = `<span>Back to Editor</span><span style="font-size:15px;">✎</span>`;
+      DOM.winNextBtn.style.display = "flex";
+    } else if (isLastLevel) {
+      DOM.winNextBtn.innerHTML = `<span>Campaign Complete</span><span style="font-size:15px;">🏆</span>`;
+      DOM.winNextBtn.style.display = "flex";
+    } else {
+      DOM.winNextBtn.innerHTML = `
+        <span>Continue</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>`;
+      DOM.winNextBtn.style.display = "flex";
+    }
+  }
+}
+
+export function renderFinalModal({ totalSolved, totalLevels }) {
+  if (DOM.finalTitle) DOM.finalTitle.textContent = "Campaign Complete!";
+  if (DOM.finalSub) {
+    DOM.finalSub.textContent = `All ${totalLevels} puzzles conquered across all 10 chapters!`;
+  }
+  if (DOM.finalTotalSolved) DOM.finalTotalSolved.textContent = totalSolved;
+  if (DOM.finalTotalLevels) DOM.finalTotalLevels.textContent = totalLevels;
 }

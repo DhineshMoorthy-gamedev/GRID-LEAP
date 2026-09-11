@@ -10,12 +10,12 @@ export const TARGET_MODES = {
   WEB: "web"
 };
 
-const rawMode = (import.meta.env.VITE_APP_TARGET || "editor").toLowerCase();
+const rawMode = (import.meta.env?.VITE_APP_TARGET || "editor").toLowerCase();
 const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TARGET_MODES.EDITOR;
 
 export const TargetConfig = {
   mode: activeMode,
-  title: import.meta.env.VITE_APP_TITLE || "Grid Leap",
+  title: import.meta.env?.VITE_APP_TITLE || "Grid Leap",
 
   isEditor: activeMode === TARGET_MODES.EDITOR,
   isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,

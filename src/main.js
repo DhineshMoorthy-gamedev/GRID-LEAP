@@ -21,13 +21,15 @@ import {
   updateGameHeader,
   getCellElements,
   showToast,
-  showDeadEndToast,
+  hideToast,
   clearDeadEndFeedback,
   renderLivesHUD,
   renderTrail,
   refreshTrail,
   updateTrailButton,
   renderViability,
+  renderWinModal,
+  renderFinalModal,
   applyTheme
 } from "./scenes/game-renderer.js";
 import { setupInputRouter } from "./scenes/input-router.js";
@@ -35,7 +37,18 @@ import { setupInputRouter } from "./scenes/input-router.js";
 // Validate all shipped levels on load
 validateAll(LEVELS);
 
+let autoUndoTimer = null;
+
+function clearAutoUndo() {
+  if (autoUndoTimer) {
+    clearTimeout(autoUndoTimer);
+    autoUndoTimer = null;
+  }
+}
+
 export function openHome() {
+  clearAutoUndo();
+  hideToast();
   if (SceneRouter.getCurrentScreen() === "screenGame") {
     GameState.saveCurrentSession();
   }
@@ -47,6 +60,8 @@ export function openHome() {
 }
 
 export function startLevel(i) {
+  clearAutoUndo();
+  hideToast();
   devStopAutoPlay();
   GameState.customLevel = null;
   GameState.levelIndex = i;
@@ -60,12 +75,16 @@ export function startLevel(i) {
   GameState.solutionPathVisible = false;
   GameState.resetLives();
 
+  if (DOM.hintBtn) {
+    DOM.hintBtn.classList.remove("active");
+  }
   if (DOM.devShowSolutionBtn) {
     DOM.devShowSolutionBtn.classList.remove("active");
     DOM.devShowSolutionBtn.textContent = "SHOW SOLUTION";
   }
 
   clearDeadEndFeedback();
+  clearSolutionPath();
   renderBoard(lv, (r, c) => attemptMoveTo(r, c));
   SceneRouter.navigateTo("screenGame");
   placeToken(GameState.player, true);
@@ -76,6 +95,7 @@ export function startLevel(i) {
 }
 
 export function resumeLevelSession() {
+  clearAutoUndo();
   const session = GameState.activeSession;
   if (!session || typeof session.levelIndex !== "number") {
     return startLevel(GameState.getNextUncompletedLevelIndex());
@@ -117,6 +137,7 @@ export function resumeLevelSession() {
 }
 
 export function playtestCustomLevel(customLv) {
+  clearAutoUndo();
   devStopAutoPlay();
   GameState.customLevel = customLv;
   GameState.player = [customLv.start[0], customLv.start[1]];
@@ -172,23 +193,21 @@ export function tick() {
     }
   });
 
-  // Dead-end check
+  // Dead-end check (silenced during active gameplay unless hint is active)
   const isDeadEnd = isDeadEndState(dests, isGoal);
-  if (isDeadEnd) {
+  if (isDeadEnd && GameState.solutionPathVisible) {
     if (cellEls[pr]?.[pc]) cellEls[pr][pc].classList.add("dead-end");
-    if (DOM.undoBtn) DOM.undoBtn.classList.add("attention-pulse");
-    if (DOM.restartBtn) DOM.restartBtn.classList.add("attention-pulse");
-    showDeadEndToast();
   } else {
+    if (cellEls[pr]?.[pc]) cellEls[pr][pc].classList.remove("dead-end");
     clearDeadEndFeedback();
   }
 
   // Viability and Breadcrumb Trail feedback
   const viability = solve(lv, GameState.player);
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
-  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail, GameState.solutionPathVisible);
   updateTrailButton(GameState.settings.showTrail);
-  renderViability(viability, isGoal, isDeadEnd, GameState.player);
+  renderViability(viability, isGoal, isDeadEnd, GameState.player, GameState.solutionPathVisible);
 
   // Token directional arrows
   const hasUp = dests.some(d => d.dir === "up");
@@ -205,6 +224,11 @@ export function tick() {
   if (arrowDown) arrowDown.classList.toggle("disabled", !hasDown);
   if (arrowLeft) arrowLeft.classList.toggle("disabled", !hasLeft);
   if (arrowRight) arrowRight.classList.toggle("disabled", !hasRight);
+
+  // Solution path / hint update if active
+  if (GameState.solutionPathVisible) {
+    highlightSolutionPath();
+  }
 
   // Dev HUD update passing pre-computed dests
   if (GameState.devModeEnabled) {
@@ -245,6 +269,11 @@ export function doMove(r, c) {
   GameState.moveCount++;
   GameState.animating = true;
 
+  // Clear previous compass hint highlight immediately when move starts
+  if (GameState.solutionPathVisible) {
+    clearSolutionPath();
+  }
+
   // 1. Hide arrows immediately & activate smooth traveling reticle
   setArrowsMoving(true);
 
@@ -258,7 +287,7 @@ export function doMove(r, c) {
   // 3. Draw breadcrumb trail along with the glide
   const viability = solve(lv, GameState.player);
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
-  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail, GameState.solutionPathVisible);
 
   // 4. Upon arrival at 190ms:
   setTimeout(() => {
@@ -280,12 +309,33 @@ export function doMove(r, c) {
       renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
       PlatformBridge.vibrateWarning();
 
-      if (GameState.lives <= 0 && !GameState.settings.relaxMode) {
-        setTimeout(() => {
-          SceneRouter.pushModal("OUT_OF_LIVES");
-        }, 300);
+      if (cellEls[r]?.[c]) {
+        cellEls[r][c].classList.add("dead-end-hit");
+        setTimeout(() => cellEls[r]?.[c]?.classList.remove("dead-end-hit"), 850);
+      }
+
+      clearAutoUndo();
+
+      const outOfLives = GameState.lives <= 0 && !GameState.settings.relaxMode;
+
+      if (outOfLives) {
+        // Auto-undo the dead end step first so player returns to previous tile, then present Out of Lives modal
+        autoUndoTimer = setTimeout(() => {
+          undo();
+          autoUndoTimer = setTimeout(() => {
+            SceneRouter.pushModal("OUT_OF_LIVES");
+            autoUndoTimer = null;
+          }, 280);
+        }, 800);
         return;
       }
+
+      // Automatically undo the dead-end step after a well-paced pause so player clearly perceives the consequence
+      autoUndoTimer = setTimeout(() => {
+        undo();
+        autoUndoTimer = null;
+      }, 800);
+      return;
     }
 
     checkWin();
@@ -301,12 +351,16 @@ export function checkWin() {
 }
 
 export function undo() {
+  clearAutoUndo();
   if (!GameState.history.length || GameState.animating || SceneRouter.isInputBlocked()) return;
   const prev = GameState.history.pop();
   GameState.player = prev.player;
   GameState.moveCount = prev.moveCount;
   // Note: Lost hearts are not restored on undo to preserve gameplay stakes
   clearDeadEndFeedback();
+  if (GameState.solutionPathVisible) {
+    clearSolutionPath();
+  }
   GameState.animating = true;
   setArrowsMoving(true);
   placeToken(GameState.player, false);
@@ -315,7 +369,7 @@ export function undo() {
 
   const viability = solve(lv, GameState.player);
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
-  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail);
+  renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail, GameState.solutionPathVisible);
 
   setTimeout(() => {
     GameState.animating = false;
@@ -331,6 +385,8 @@ export function undo() {
 }
 
 export function restart() {
+  clearAutoUndo();
+  hideToast();
   flushLevelCreationAnimation();
   devStopAutoPlay();
   if (GameState.animating) return;
@@ -340,6 +396,13 @@ export function restart() {
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.resetLives();
+  GameState.solutionPathVisible = false;
+  if (DOM.hintBtn) DOM.hintBtn.classList.remove("active");
+  if (DOM.devShowSolutionBtn) {
+    DOM.devShowSolutionBtn.classList.remove("active");
+    DOM.devShowSolutionBtn.textContent = "SHOW SOLUTION";
+  }
+  clearSolutionPath();
   clearDeadEndFeedback();
   setArrowsMoving(false);
   placeToken(GameState.player, true);
@@ -351,37 +414,31 @@ export function restart() {
 export function showWin() {
   devStopAutoPlay();
   const lv = GameState.currentLevel();
-  const titleName = lv.name ? ` (${lv.name})` : "";
+  const isCustom = Boolean(GameState.customLevel);
+  const isLast = (GameState.levelIndex >= LEVELS.length - 1);
+  const { isNewBest } = isCustom
+    ? { isNewBest: false }
+    : GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
 
-  if (GameState.customLevel) {
-    if (DOM.winTitle) DOM.winTitle.textContent = "Playtest Cleared!";
-    if (DOM.winNextBtn) {
-      DOM.winNextBtn.textContent = "Back to Editor";
-      DOM.winNextBtn.style.display = "block";
-    }
-  } else {
-    GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
-    if (DOM.winTitle) DOM.winTitle.textContent = "Level " + String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0") + titleName + " cleared";
-    if (DOM.winNextBtn) {
-      DOM.winNextBtn.textContent = "Next Level";
-      DOM.winNextBtn.style.display = (GameState.levelIndex === LEVELS.length - 1) ? "none" : "block";
-    }
-  }
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
 
-  if (DOM.winMoves) DOM.winMoves.textContent = GameState.moveCount;
-  if (DOM.winOptimal) DOM.winOptimal.textContent = lv.optimal;
+  renderWinModal({
+    levelIndex: GameState.levelIndex,
+    level: lv,
+    moveCount: GameState.moveCount,
+    optimal: lv.optimal,
+    path: visitedPath,
+    isNewBest,
+    bestMoves: isCustom ? GameState.moveCount : (GameState.bestMoves[GameState.levelIndex] || GameState.moveCount),
+    lives: GameState.lives,
+    maxLives: GameState.maxLives,
+    isRelaxMode: GameState.settings.relaxMode,
+    isCustomLevel: isCustom,
+    isLastLevel: isLast,
+    devDiagnosticsEnabled: (GameState.devModeEnabled && TargetConfig.features.devDiagnostics)
+  });
 
-  const eff = Math.round((lv.optimal / GameState.moveCount) * 100);
-  if (DOM.winEfficiency) {
-    DOM.winEfficiency.textContent = eff + "%";
-    DOM.winEfficiency.classList.remove("good", "ok");
-    DOM.winEfficiency.classList.add(eff >= 90 ? "good" : "ok");
-  }
-
-  if (DOM.winEfficiencyStat) {
-    DOM.winEfficiencyStat.style.display = (GameState.devModeEnabled && TargetConfig.features.devDiagnostics) ? "flex" : "none";
-  }
-
+  PlatformBridge.vibrateSuccess();
   SceneRouter.pushModal("WIN");
 }
 
@@ -397,7 +454,12 @@ export function nextLevel() {
     SceneRouter.navigateTo("screenEditor");
     return;
   }
-  if (GameState.levelIndex === LEVELS.length - 1) {
+  if (GameState.levelIndex >= LEVELS.length - 1) {
+    const totalSolved = GameState.completed.filter(Boolean).length;
+    renderFinalModal({
+      totalSolved,
+      totalLevels: LEVELS.length
+    });
     SceneRouter.pushModal("FINAL");
     return;
   }
@@ -423,26 +485,112 @@ export function toggleDevMode() {
 }
 
 export function toggleSolutionPath() {
-  GameState.solutionPathVisible = !GameState.solutionPathVisible;
-  if (DOM.hintBtn) DOM.hintBtn.classList.toggle("active", GameState.solutionPathVisible);
-  if (DOM.devShowSolutionBtn) {
-    DOM.devShowSolutionBtn.classList.toggle("active", GameState.solutionPathVisible);
-    DOM.devShowSolutionBtn.textContent = GameState.solutionPathVisible ? "HIDE SOLUTION" : "SHOW SOLUTION";
-  }
+  // If already active, toggle OFF
   if (GameState.solutionPathVisible) {
-    highlightSolutionPath();
-  } else {
+    GameState.solutionPathVisible = false;
+    if (DOM.hintBtn) DOM.hintBtn.classList.remove("active");
+    if (DOM.devShowSolutionBtn) {
+      DOM.devShowSolutionBtn.classList.remove("active");
+      DOM.devShowSolutionBtn.textContent = "SHOW SOLUTION";
+    }
     clearSolutionPath();
+    clearDeadEndFeedback();
+    const lv = GameState.currentLevel();
+    const isGoal = isGoalCell(lv, GameState.player);
+    const dests = calculateLegalDestinations(lv, GameState.player);
+    const isDeadEnd = isDeadEndState(dests, isGoal);
+    const viability = solve(lv, GameState.player);
+    renderViability(viability, isGoal, isDeadEnd, GameState.player, false);
+    const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+    renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail, false);
+    return;
   }
+
+  const lv = GameState.currentLevel();
+  const isGoal = isGoalCell(lv, GameState.player);
+  if (isGoal) {
+    showToast("Already at the goal!");
+    return;
+  }
+
+  const res = solve(lv, GameState.player);
+  const isTrapped = !res || !res.solvable || !res.path || res.path.length < 2;
+
+  if (isTrapped) {
+    // 1. Calculate how many steps back the player diverged from a viable solution path
+    let backtrackCount = 0;
+    for (let i = GameState.history.length - 1; i >= 0; i--) {
+      const pastSol = solve(lv, GameState.history[i].player);
+      if (pastSol && pastSol.solvable) {
+        backtrackCount = GameState.history.length - i;
+        break;
+      }
+    }
+
+    const msg = backtrackCount > 0
+      ? `Trapped! Undo ${backtrackCount === 1 ? "1 move" : `${backtrackCount} moves`} to get back on track`
+      : "No path to goal from here — use Restart";
+
+    showToast(msg, 2000);
+    PlatformBridge.vibrateLight();
+
+    // 2. Shake Hint button to signal no forward path from this tile
+    if (DOM.hintBtn) {
+      DOM.hintBtn.classList.remove("shake-subtle");
+      void DOM.hintBtn.offsetWidth;
+      DOM.hintBtn.classList.add("shake-subtle");
+      setTimeout(() => DOM.hintBtn?.classList.remove("shake-subtle"), 450);
+    }
+
+    // 3. Highlight the corrective action: pulse Undo (or Restart)
+    if (backtrackCount > 0 && DOM.undoBtn) {
+      DOM.undoBtn.classList.add("attention-pulse");
+      setTimeout(() => DOM.undoBtn?.classList.remove("attention-pulse"), 2500);
+    } else if (DOM.restartBtn) {
+      DOM.restartBtn.classList.add("attention-pulse");
+      setTimeout(() => DOM.restartBtn?.classList.remove("attention-pulse"), 2500);
+    }
+
+    // 4. Arm Hint state so as soon as player Undoes back to a viable cell, the compass hint automatically illuminates!
+    GameState.solutionPathVisible = true;
+    if (DOM.hintBtn) DOM.hintBtn.classList.add("active");
+    if (DOM.devShowSolutionBtn) {
+      DOM.devShowSolutionBtn.classList.add("active");
+      DOM.devShowSolutionBtn.textContent = "HIDE SOLUTION";
+    }
+    const dests = calculateLegalDestinations(lv, GameState.player);
+    const isDeadEnd = isDeadEndState(dests, isGoal);
+    renderViability(res, isGoal, isDeadEnd, GameState.player, true);
+    const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+    renderTrail(visitedPath, res ? res.solvable : false, GameState.settings.showTrail, true);
+    return;
+  }
+
+  // Viable state: activate hint and illuminate single-step compass target
+  GameState.solutionPathVisible = true;
+  if (DOM.hintBtn) DOM.hintBtn.classList.add("active");
+  if (DOM.devShowSolutionBtn) {
+    DOM.devShowSolutionBtn.classList.add("active");
+    DOM.devShowSolutionBtn.textContent = "HIDE SOLUTION";
+  }
+  highlightSolutionPath();
+  const dests = calculateLegalDestinations(lv, GameState.player);
+  const isDeadEnd = isDeadEndState(dests, isGoal);
+  renderViability(res, isGoal, isDeadEnd, GameState.player, true);
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
+  renderTrail(visitedPath, res.solvable, GameState.settings.showTrail, true);
 }
 
 function clearSolutionPath() {
   const lv = GameState.currentLevel();
   const cellEls = getCellElements();
+  if (!cellEls || !cellEls.length) return;
   for (let r = 0; r < lv.h; r++) {
     for (let c = 0; c < lv.w; c++) {
-      if (cellEls[r]?.[c]) {
-        cellEls[r][c].classList.remove("path-cell");
+      const cell = cellEls[r]?.[c];
+      if (cell) {
+        cell.classList.remove("hint-compass", "hint-target", "path-cell", "path-next");
+        delete cell.dataset.step;
       }
     }
   }
@@ -452,13 +600,17 @@ function highlightSolutionPath() {
   clearSolutionPath();
   const lv = GameState.currentLevel();
   const cellEls = getCellElements();
+  if (!cellEls || !cellEls.length) return;
   const res = solve(lv, GameState.player);
-  if (!res || !res.path) return;
-  res.path.forEach(([r, c]) => {
-    if (cellEls[r]?.[c]) {
-      cellEls[r][c].classList.add("path-cell");
-    }
-  });
+  if (!res || !res.solvable || !res.path || res.path.length < 2) return;
+
+  // Single-step Compass Hint:
+  // Only highlight the immediate next optimal leap with a pulsing ring, hiding future steps
+  const [nextR, nextC] = res.path[1];
+  const targetEl = cellEls[nextR]?.[nextC];
+  if (targetEl) {
+    targetEl.classList.add("hint-compass", "hint-target");
+  }
 }
 
 function updateDevHud(dests = GameState.legalDests) {
@@ -486,10 +638,6 @@ function updateDevHud(dests = GameState.legalDests) {
   const currentEff = GameState.moveCount > 0 ? Math.round((opt / GameState.moveCount) * 100) : 100;
   if (DOM.devEfficiencyVal) {
     DOM.devEfficiencyVal.textContent = `${GameState.moveCount} moves (${currentEff}%)`;
-  }
-
-  if (GameState.solutionPathVisible) {
-    highlightSolutionPath();
   }
 }
 
@@ -594,7 +742,7 @@ export function handleToggleTrail(explicitValue) {
   if (lv && GameState.player) {
     const viability = solve(lv, GameState.player);
     const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
-    renderTrail(visitedPath, viability.solvable, isNowOn);
+    renderTrail(visitedPath, viability.solvable, isNowOn, GameState.solutionPathVisible);
   }
   updateTrailButton(isNowOn);
   PlatformBridge.vibrateLight();
@@ -683,21 +831,40 @@ export function bootApp() {
     });
   }
   if (DOM.winNextBtn) DOM.winNextBtn.addEventListener("click", nextLevel);
+  if (DOM.winHomeBtn) {
+    DOM.winHomeBtn.addEventListener("click", () => {
+      SceneRouter.popModal();
+      openHome();
+    });
+  }
+
+  if (DOM.outOfLivesWatchAdBtn) {
+    DOM.outOfLivesWatchAdBtn.addEventListener("click", () => {
+      // 1. Grant 1 life
+      GameState.addLife(1);
+      renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+
+      // 2. Dismiss modal
+      SceneRouter.popModal();
+
+      // 3. Safety check: if player is still on a dead-end cell, auto-undo back to safety
+      const lv = GameState.currentLevel();
+      const isGoal = isGoalCell(lv, GameState.player);
+      const isDeadEnd = isDeadEndState(GameState.legalDests, isGoal);
+      if (isDeadEnd && GameState.history.length > 0) {
+        undo();
+      }
+
+      // 4. Tactile and visual feedback
+      PlatformBridge.vibrateSuccess();
+      showToast("+1 Life added! Keep going", 1800);
+    });
+  }
 
   if (DOM.outOfLivesRestartBtn) {
     DOM.outOfLivesRestartBtn.addEventListener("click", () => {
       SceneRouter.popModal();
       restart();
-    });
-  }
-  if (DOM.outOfLivesHomeBtn) {
-    DOM.outOfLivesHomeBtn.addEventListener("click", () => {
-      SceneRouter.popModal();
-      if (GameState.customLevel) {
-        SceneRouter.navigateTo("screenEditor");
-      } else {
-        openHome();
-      }
     });
   }
 
@@ -749,6 +916,12 @@ export function bootApp() {
     DOM.finalRestartBtn.addEventListener("click", () => {
       SceneRouter.popModal();
       startLevel(0);
+    });
+  }
+  if (DOM.finalHomeBtn) {
+    DOM.finalHomeBtn.addEventListener("click", () => {
+      SceneRouter.popModal();
+      openHome();
     });
   }
 
@@ -858,7 +1031,8 @@ export function bootApp() {
     },
     onNextLevel: nextLevel,
     onCloseRules: () => SceneRouter.popModal(),
-    boardElement: DOM.board
+    boardElement: DOM.board,
+    swipeContainer: DOM.screenGame
   });
 
   window.addEventListener("resize", handleResize);
@@ -880,7 +1054,13 @@ export function bootApp() {
     },
     onBackAction: () => {
       // 1. Dismiss open modal overlay
-      if (SceneRouter.currentModal()) {
+      const activeModal = SceneRouter.currentModal();
+      if (activeModal) {
+        if (activeModal.name === "OUT_OF_LIVES") {
+          SceneRouter.popModal();
+          restart();
+          return true;
+        }
         SceneRouter.popModal();
         return true;
       }

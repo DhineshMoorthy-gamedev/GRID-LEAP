@@ -127,17 +127,46 @@ export const GameState = {
     return this.lives;
   },
 
-  recordLevelResult(idx, moveCount) {
+  addLife(count = 1) {
+    this.lives = Math.min(this.maxLives, Math.max(1, this.lives + count));
+    return this.lives;
+  },
+
+  calculateStarsEarned(levelIndex, moveCount, livesRemaining = this.lives) {
+    const lv = this.customLevel || LEVELS[levelIndex];
+    if (!lv) return 1;
+    const optimal = lv.optimal || 1;
+    let earned = 1; // 1 star for clearing the level
+    if (moveCount <= optimal + 2) earned = 2; // Near-optimal efficiency
+    if (moveCount <= optimal && (this.settings.relaxMode || livesRemaining >= this.maxLives)) earned = 3; // Flawless mastery
+    return earned;
+  },
+
+  recordLevelResult(idx, moveCount, starsEarned) {
     if (idx >= 0 && idx < this.completed.length) {
       this.completed[idx] = true;
-      if (this.bestMoves[idx] === null || moveCount < this.bestMoves[idx]) {
+      const prevBest = this.bestMoves[idx];
+      const isNewBest = (prevBest === null || moveCount < prevBest);
+      if (isNewBest) {
         this.bestMoves[idx] = moveCount;
       }
+
+      const stars = (typeof starsEarned === "number")
+        ? starsEarned
+        : this.calculateStarsEarned(idx, moveCount, this.lives);
+      this.stars[idx] = Math.max(this.stars[idx] || 0, stars);
+
       if (this.activeSession?.levelIndex === idx) {
         this.activeSession = null;
       }
       this.save();
+      return { isNewBest, stars, prevBest };
     }
+    return { isNewBest: false, stars: 1, prevBest: null };
+  },
+
+  getTotalStars() {
+    return this.stars.reduce((sum, s) => sum + (s || 0), 0);
   },
 
   customLevel: null,
