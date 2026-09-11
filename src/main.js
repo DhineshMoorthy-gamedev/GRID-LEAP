@@ -11,9 +11,12 @@ import { SceneRouter } from "./scenes/scene-router.js";
 import { PlatformBridge } from "./platform/lifecycle.js";
 import { TargetConfig } from "./platform/target-config.js";
 import { EditorController } from "./editor/editor-controller.js";
+import { DailyManager } from "./state/daily-manager.js";
+import { formatDisplayDate } from "./core/daily-seed.js";
 import {
   DOM,
   renderHomeHub,
+  renderDailyChallengeCard,
   renderBoard,
   flushLevelCreationAnimation,
   placeToken,
@@ -56,7 +59,55 @@ export function openHome() {
   renderHomeHub(LEVELS, GameState.levelIndex, GameState.completed, (idx) => {
     startLevel(idx);
   }, GameState.activeSession);
+
+  // Render Daily Challenge Card status
+  const dailyLv = DailyManager.getTodayLevel();
+  renderDailyChallengeCard({
+    isCompleted: DailyManager.isTodayCompleted(),
+    streak: DailyManager.data.currentStreak,
+    dateKey: dailyLv.dateKey,
+    displayDate: formatDisplayDate(dailyLv.dateKey),
+    timeRemaining: DailyManager.getTimeUntilNextReset()
+  });
+
   SceneRouter.navigateTo("screenHome");
+}
+
+export function startDailyLevel() {
+  // Offline verification gate requested by user
+  if (!DailyManager.isOnline()) {
+    showToast("⚠️ You need to be online to play the Daily Challenge!");
+    PlatformBridge.vibrateWarning?.();
+    return;
+  }
+
+  clearAutoUndo();
+  hideToast();
+  devStopAutoPlay();
+
+  const dailyLv = DailyManager.getTodayLevel();
+  GameState.customLevel = dailyLv;
+  GameState.player = [dailyLv.start[0], dailyLv.start[1]];
+  GameState.moveCount = 0;
+  GameState.history = [];
+  GameState.solutionPathVisible = false;
+  GameState.resetLives();
+
+  if (DOM.devShowSolutionBtn) {
+    DOM.devShowSolutionBtn.classList.remove("active");
+    DOM.devShowSolutionBtn.textContent = "SHOW SOLUTION";
+  }
+
+  clearDeadEndFeedback();
+  renderBoard(dailyLv, (r, c) => attemptMoveTo(r, c));
+  SceneRouter.navigateTo("screenGame");
+  placeToken(GameState.player, true);
+  requestAnimationFrame(() => placeToken(GameState.player, true));
+  updateGameHeader(888, dailyLv, GameState.moveCount, GameState.history.length);
+  renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  if (DOM.gameTitle) DOM.gameTitle.textContent = "DAILY";
+  if (DOM.gameChapter) DOM.gameChapter.textContent = `${formatDisplayDate(dailyLv.dateKey)} • ${dailyLv.name}`;
+  tick();
 }
 
 export function startLevel(i) {
@@ -414,9 +465,16 @@ export function restart() {
 export function showWin() {
   devStopAutoPlay();
   const lv = GameState.currentLevel();
-  const isCustom = Boolean(GameState.customLevel);
+  const isDaily = Boolean(lv?.isDaily);
+  const isCustom = Boolean(GameState.customLevel) && !isDaily;
   const isLast = (GameState.levelIndex >= LEVELS.length - 1);
-  const { isNewBest } = isCustom
+
+  let dailyResult = null;
+  if (isDaily) {
+    dailyResult = DailyManager.recordCompletion(GameState.moveCount, lv.optimal);
+  }
+
+  const { isNewBest } = (isCustom || isDaily)
     ? { isNewBest: false }
     : GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
 
@@ -429,12 +487,14 @@ export function showWin() {
     optimal: lv.optimal,
     path: visitedPath,
     isNewBest,
-    bestMoves: isCustom ? GameState.moveCount : (GameState.bestMoves[GameState.levelIndex] || GameState.moveCount),
+    bestMoves: (isCustom || isDaily) ? GameState.moveCount : (GameState.bestMoves[GameState.levelIndex] || GameState.moveCount),
     lives: GameState.lives,
     maxLives: GameState.maxLives,
     isRelaxMode: GameState.settings.relaxMode,
     isCustomLevel: isCustom,
     isLastLevel: isLast,
+    isDailyLevel: isDaily,
+    dailyStreak: dailyResult ? dailyResult.streak : DailyManager.data.currentStreak,
     devDiagnosticsEnabled: (GameState.devModeEnabled && TargetConfig.features.devDiagnostics)
   });
 
@@ -443,13 +503,17 @@ export function showWin() {
 }
 
 export function showPause() {
-  if (DOM.pauseLevel) DOM.pauseLevel.textContent = GameState.customLevel ? "TEST" : String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0");
+  if (DOM.pauseLevel) DOM.pauseLevel.textContent = GameState.customLevel ? (GameState.customLevel.isDaily ? "DAILY" : "TEST") : String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0");
   if (DOM.pauseMoves) DOM.pauseMoves.textContent = GameState.moveCount;
   SceneRouter.pushModal("PAUSE");
 }
 
 export function nextLevel() {
   SceneRouter.popModal();
+  if (GameState.customLevel?.isDaily) {
+    openHome();
+    return;
+  }
   if (GameState.customLevel) {
     SceneRouter.navigateTo("screenEditor");
     return;
@@ -777,6 +841,19 @@ export function bootApp() {
   });
   if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => SceneRouter.pushModal("RULES"));
   if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SceneRouter.pushModal("SETTINGS"));
+
+  // Initialize Daily Manager
+  DailyManager.init();
+
+  // Daily Challenge Card Launch Action
+  if (DOM.dailyPlayBtn) DOM.dailyPlayBtn.addEventListener("click", () => startDailyLevel());
+  if (DOM.dailyChallengeCard) {
+    DOM.dailyChallengeCard.addEventListener("click", (e) => {
+      if (!DOM.dailyPlayBtn?.contains(e.target)) {
+        startDailyLevel();
+      }
+    });
+  }
 
   // Consumer Next Level Launch Action (Resumes if in progress, else starts fresh)
   const launchConsumerNext = () => {

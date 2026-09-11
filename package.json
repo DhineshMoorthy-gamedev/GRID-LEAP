@@ -16,6 +16,7 @@
     "build:playstore": "vite build --mode playstore --outDir dist && cap sync android",
     "build:apk": "npm run build:playstore && cd android && gradlew.bat assembleDebug",
     "preview": "vite preview",
+    "test:daily": "node tests/test-daily-solvability.js",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android"
   },

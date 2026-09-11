@@ -442,6 +442,144 @@ html, body, .app-root, .screen, .board, .cell, .cell-glyph, .stat-bubble, .card,
 }
 
 /* ======================================================== */
+/* DAILY CHALLENGE SECTION (Across All Platforms)          */
+/* ======================================================== */
+.daily-challenge-section {
+  width: 100%;
+}
+
+.daily-challenge-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.08) 0%, rgba(242, 166, 90, 0.03) 100%), var(--bg-surface);
+  border: 1px solid rgba(255, 184, 0, 0.28);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+[data-theme="vellum"] .daily-challenge-card {
+  background: linear-gradient(135deg, rgba(224, 138, 30, 0.08) 0%, #FFFFFF 100%);
+  border: 1.5px solid rgba(200, 150, 40, 0.35);
+  box-shadow: 0 4px 16px rgba(60, 50, 40, 0.08);
+}
+
+.daily-challenge-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 184, 0, 0.5);
+  box-shadow: 0 10px 24px rgba(255, 184, 0, 0.15);
+}
+
+.daily-challenge-card.completed {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%);
+}
+
+[data-theme="vellum"] .daily-challenge-card.completed {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, #FFFFFF 100%);
+}
+
+.daily-card-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.daily-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-pill {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--amber);
+  background: rgba(242, 166, 90, 0.14);
+  border: 1px solid rgba(242, 166, 90, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.daily-streak-badge {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FF7A00;
+  background: rgba(255, 122, 0, 0.12);
+  border: 1px solid rgba(255, 122, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.daily-card-title {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--paper);
+  letter-spacing: -0.01em;
+}
+
+.daily-card-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--paper-dim);
+}
+
+.daily-play-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: none;
+  color: var(--ink-950);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(242, 166, 90, 0.35);
+  transition: transform 120ms ease, background 120ms ease;
+  flex-shrink: 0;
+}
+
+.daily-play-btn:active {
+  transform: scale(0.92);
+}
+
+.daily-play-icon {
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+  font-weight: 900;
+}
+
+.daily-play-text {
+  font-family: var(--font-num);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
+.daily-challenge-card.completed .daily-play-btn {
+  background: var(--teal);
+  box-shadow: 0 4px 14px rgba(95, 201, 168, 0.35);
+}
+
+/* ======================================================== */
 /* CONSUMER LAUNCH SECTION (Play Store, Itch, Web)          */
 /* ======================================================== */
 .consumer-launch-section {

@@ -21,6 +21,16 @@ export const DOM = {
   heroTitle: document.getElementById("heroTitle"),
   heroSub: document.getElementById("heroSub"),
   heroPlayBtn: document.getElementById("heroPlayBtn"),
+  // Daily Challenge
+  dailyChallengeSection: document.getElementById("dailyChallengeSection"),
+  dailyChallengeCard: document.getElementById("dailyChallengeCard"),
+  dailyStreakBadge: document.getElementById("dailyStreakBadge"),
+  dailyCardTitle: document.getElementById("dailyCardTitle"),
+  dailyCardSub: document.getElementById("dailyCardSub"),
+  dailyPlayBtn: document.getElementById("dailyPlayBtn"),
+  dailyPlayIcon: document.getElementById("dailyPlayIcon"),
+  dailyPlayText: document.getElementById("dailyPlayText"),
+
   editorLevelSelectSection: document.getElementById("editorLevelSelectSection"),
   completionPill: document.getElementById("completionPill"),
   levelStrip: document.getElementById("levelStrip"),
@@ -316,6 +326,38 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
         playLabel.textContent = "PLAY";
       }
     }
+  }
+}
+
+/**
+ * Render Daily Challenge Card status on Home Hub
+ */
+export function renderDailyChallengeCard({ isCompleted, streak, dateKey, displayDate, timeRemaining }) {
+  if (!DOM.dailyChallengeCard) return;
+
+  if (DOM.dailyCardTitle) {
+    DOM.dailyCardTitle.textContent = displayDate || "Today's Puzzle";
+  }
+
+  if (DOM.dailyStreakBadge) {
+    DOM.dailyStreakBadge.textContent = `🔥 ${streak} STREAK`;
+    DOM.dailyStreakBadge.style.display = streak > 0 ? "inline-block" : "none";
+  }
+
+  if (DOM.dailyCardSub) {
+    DOM.dailyCardSub.textContent = isCompleted
+      ? `Completed! Resets in ${timeRemaining}`
+      : `Resets in ${timeRemaining}`;
+  }
+
+  DOM.dailyChallengeCard.classList.toggle("completed", Boolean(isCompleted));
+
+  if (DOM.dailyPlayIcon) {
+    DOM.dailyPlayIcon.textContent = isCompleted ? "✓" : "▶";
+  }
+
+  if (DOM.dailyPlayText) {
+    DOM.dailyPlayText.textContent = isCompleted ? "DONE" : "PLAY";
   }
 }
 
@@ -1099,13 +1141,21 @@ export function renderWinModal({
   path,
   isCustomLevel,
   isLastLevel,
+  isDailyLevel,
+  dailyStreak,
   devDiagnosticsEnabled
 }) {
   const padIndex = String(levelIndex + 1).padStart(levelIndex + 1 >= 100 ? 3 : 2, "0");
 
   // 1. Level Number Title
   if (DOM.winTitle) {
-    DOM.winTitle.textContent = isCustomLevel ? "Playtest Level" : `Level ${padIndex}`;
+    if (isDailyLevel) {
+      DOM.winTitle.textContent = "Daily Challenge";
+    } else if (isCustomLevel) {
+      DOM.winTitle.textContent = "Playtest Level";
+    } else {
+      DOM.winTitle.textContent = `Level ${padIndex}`;
+    }
   }
 
   // 1b. Completion badge (replays pop animation each time)
@@ -1113,7 +1163,13 @@ export function renderWinModal({
     DOM.winSubtitle.style.animation = "none";
     void DOM.winSubtitle.offsetWidth; // force reflow
     DOM.winSubtitle.style.animation = "";
-    DOM.winSubtitle.textContent = isCustomLevel ? "Playtest Complete" : "Cleared";
+    if (isDailyLevel) {
+      DOM.winSubtitle.textContent = dailyStreak > 0 ? `🔥 ${dailyStreak} Day Streak!` : "Daily Solved!";
+    } else if (isCustomLevel) {
+      DOM.winSubtitle.textContent = "Playtest Complete";
+    } else {
+      DOM.winSubtitle.textContent = "Cleared";
+    }
   }
 
   // 2. Centerpiece: The Constellation Sigil Medallion
@@ -1139,7 +1195,10 @@ export function renderWinModal({
 
   // 4. Next / Editor / Final Button text
   if (DOM.winNextBtn) {
-    if (isCustomLevel) {
+    if (isDailyLevel) {
+      DOM.winNextBtn.innerHTML = `<span>Back to Hub</span><span style="font-size:15px;">⌂</span>`;
+      DOM.winNextBtn.style.display = "flex";
+    } else if (isCustomLevel) {
       DOM.winNextBtn.innerHTML = `<span>Back to Editor</span><span style="font-size:15px;">✎</span>`;
       DOM.winNextBtn.style.display = "flex";
     } else if (isLastLevel) {
