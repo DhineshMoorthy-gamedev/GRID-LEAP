@@ -35,6 +35,7 @@ import {
   renderFinalModal,
   applyTheme
 } from "./scenes/game-renderer.js";
+import { TutorialController } from "./scenes/tutorial-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 
 // Validate all shipped levels on load
@@ -839,7 +840,12 @@ export function bootApp() {
   if (DOM.heroBanner) DOM.heroBanner.addEventListener("click", (e) => {
     if (e.target !== DOM.heroPlayBtn) launchHeroLevel();
   });
-  if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => SceneRouter.pushModal("RULES"));
+
+  // Initialize Dedicated Interactive Tutorial
+  TutorialController.init();
+  window.TutorialController = TutorialController;
+
+  if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => TutorialController.open());
   if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SceneRouter.pushModal("SETTINGS"));
 
   // Initialize Daily Manager
@@ -986,6 +992,14 @@ export function bootApp() {
     });
   }
 
+  const settingsHowToPlayBtn = document.getElementById("settingsHowToPlayBtn");
+  if (settingsHowToPlayBtn) {
+    settingsHowToPlayBtn.addEventListener("click", () => {
+      SceneRouter.popModal();
+      TutorialController.open();
+    });
+  }
+
   if (DOM.closeRulesBtn) DOM.closeRulesBtn.addEventListener("click", () => SceneRouter.popModal());
   if (DOM.closeSettingsBtn) DOM.closeSettingsBtn.addEventListener("click", () => SceneRouter.popModal());
   if (DOM.closeDevBtn) DOM.closeDevBtn.addEventListener("click", () => SceneRouter.popModal());
@@ -1010,11 +1024,14 @@ export function bootApp() {
     modePill.textContent = `MODE: ${TargetConfig.mode.toUpperCase()}`;
     modePill.style.display = TargetConfig.features.homeDevControls ? "inline-block" : "none";
   }
+  if (DOM.homeHelpBtn) {
+    DOM.homeHelpBtn.style.display = "inline-flex";
+  }
   if (DOM.homeSettingsBtn) {
-    DOM.homeSettingsBtn.style.display = TargetConfig.features.homeDevControls ? "inline-flex" : "none";
+    DOM.homeSettingsBtn.style.display = TargetConfig.isPlayStore ? "none" : "inline-flex";
   }
   if (DOM.homeThemeToggleBtn) {
-    DOM.homeThemeToggleBtn.style.display = TargetConfig.features.homeDevControls ? "inline-flex" : "none";
+    DOM.homeThemeToggleBtn.style.display = TargetConfig.isPlayStore ? "none" : "inline-flex";
   }
   if (DOM.devToggleBtn) {
     DOM.devToggleBtn.style.display = TargetConfig.features.devDiagnostics ? "block" : "none";

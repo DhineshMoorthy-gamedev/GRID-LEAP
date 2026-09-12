@@ -712,11 +712,14 @@ html, body, .app-root, .screen, .board, .cell, .cell-glyph, .stat-bubble, .card,
 
 /* Platform Gating for Home Hub */
 body:not([data-target-mode="editor"]) #targetModePill,
-body:not([data-target-mode="editor"]) #homeSettingsBtn,
-body:not([data-target-mode="editor"]) #homeThemeToggleBtn,
 body:not([data-target-mode="editor"]) #heroBanner,
 body:not([data-target-mode="editor"]) #editorLevelSelectSection,
 body:not([data-target-mode="editor"]) #editorHubCard {
+  display: none !important;
+}
+
+body[data-target-mode="playstore"] #homeThemeToggleBtn,
+body[data-target-mode="playstore"] #homeSettingsBtn {
   display: none !important;
 }
 
@@ -2832,6 +2835,164 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* Dual-Stat Movement Efficiency & Moves Strip */
+.win-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px auto 0;
+  width: 100%;
+  max-width: 320px;
+}
+
+.win-stat-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  min-height: 34px;
+  box-sizing: border-box;
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+
+.win-stat-pill.pop {
+  animation: statPillPop 400ms 220ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes statPillPop {
+  0%   { opacity: 0; transform: scale(0.85) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+[data-theme="vellum"] .win-stat-pill {
+  background: #FFFFFF;
+  border-color: rgba(60, 50, 40, 0.12);
+  box-shadow: 0 2px 6px rgba(60, 50, 40, 0.06);
+}
+
+.win-stat-pill .win-stat-icon {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.win-stat-pill .win-stat-value {
+  font-family: var(--font-num);
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--paper);
+}
+
+[data-theme="vellum"] .win-stat-pill .win-stat-value {
+  color: var(--text-main);
+}
+
+.win-stat-pill .win-stat-tier,
+.win-stat-pill .win-stat-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--paper-dim);
+}
+
+[data-theme="vellum"] .win-stat-pill .win-stat-tier,
+[data-theme="vellum"] .win-stat-pill .win-stat-label {
+  color: #6B5B4D;
+}
+
+/* Tier Variants */
+.win-stat-pill.efficiency.tier-flawless {
+  background: rgba(255, 184, 0, 0.14);
+  border-color: rgba(255, 184, 0, 0.45);
+  box-shadow: 0 0 16px rgba(255, 184, 0, 0.22);
+}
+
+.win-stat-pill.efficiency.tier-flawless .win-stat-icon,
+.win-stat-pill.efficiency.tier-flawless .win-stat-value {
+  color: #FFB800;
+}
+
+.win-stat-pill.efficiency.tier-flawless .win-stat-tier {
+  color: #FFD043;
+}
+
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-flawless {
+  background: rgba(224, 138, 30, 0.12);
+  border-color: rgba(180, 120, 20, 0.4);
+  box-shadow: 0 0 12px rgba(180, 120, 20, 0.15);
+}
+
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-flawless .win-stat-icon,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-flawless .win-stat-value,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-flawless .win-stat-tier {
+  color: #B26A10;
+}
+
+.win-stat-pill.efficiency.tier-excellent {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.win-stat-pill.efficiency.tier-excellent .win-stat-icon,
+.win-stat-pill.efficiency.tier-excellent .win-stat-value,
+.win-stat-pill.efficiency.tier-excellent .win-stat-tier {
+  color: #34D399;
+}
+
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-excellent .win-stat-icon,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-excellent .win-stat-value,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-excellent .win-stat-tier {
+  color: #2E7D32;
+}
+
+.win-stat-pill.efficiency.tier-great {
+  background: rgba(56, 189, 248, 0.10);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.win-stat-pill.efficiency.tier-great .win-stat-icon,
+.win-stat-pill.efficiency.tier-great .win-stat-value,
+.win-stat-pill.efficiency.tier-great .win-stat-tier {
+  color: #38BDF8;
+}
+
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-great .win-stat-icon,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-great .win-stat-value,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-great .win-stat-tier {
+  color: #2B5D7D;
+}
+
+.win-stat-pill.efficiency.tier-good {
+  background: rgba(245, 158, 11, 0.10);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.win-stat-pill.efficiency.tier-good .win-stat-icon,
+.win-stat-pill.efficiency.tier-good .win-stat-value,
+.win-stat-pill.efficiency.tier-good .win-stat-tier {
+  color: #F59E0B;
+}
+
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-good .win-stat-icon,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-good .win-stat-value,
+[data-theme="vellum"] .win-stat-pill.efficiency.tier-good .win-stat-tier {
+  color: #C47A16;
+}
+
 /* Action Buttons Hierarchy */
 .win-actions-column {
   display: flex;
@@ -3759,4 +3920,695 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   font-weight: 700;
   color: var(--paper-dim);
   white-space: nowrap;
+}
+
+/* ======================================================== */
+/* DEDICATED INTERACTIVE TUTORIAL MODAL                     */
+/* ======================================================== */
+
+#rulesModal {
+  touch-action: none;
+  user-select: none;
+}
+
+.tutorial-card {
+  max-width: 350px;
+  width: min(350px, calc(100vw - 28px));
+  height: 344px;
+  min-height: 344px;
+  max-height: 344px;
+  padding: 16px 16px 14px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+[data-theme="vellum"] .tutorial-card {
+  background: #FCFAF6;
+  border: 1.5px solid rgba(60, 50, 40, 0.15);
+  box-shadow: 0 16px 40px rgba(60, 50, 40, 0.14);
+}
+
+.tutorial-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+  flex: 0 0 auto;
+}
+
+.tutorial-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 28px;
+  margin-bottom: 8px;
+  flex: 0 0 28px;
+}
+
+.tutorial-badge {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line-soft);
+  padding: 4px 9px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+[data-theme="vellum"] .tutorial-badge {
+  background: rgba(60, 50, 40, 0.06);
+  border-color: rgba(60, 50, 40, 0.14);
+  color: #5A4A3C;
+}
+
+/* Enhanced Pip Section (User Favorite) */
+.tutorial-dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="vellum"] .tutorial-dots {
+  background: rgba(60, 50, 40, 0.05);
+  border-color: rgba(60, 50, 40, 0.12);
+  box-shadow: 0 1px 4px rgba(60, 50, 40, 0.08);
+}
+
+.tut-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+}
+
+/* Invisible tap target for mobile touch */
+.tut-dot::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+[data-theme="vellum"] .tut-dot {
+  background: #D9D2C7;
+}
+
+.tut-dot.done {
+  background: var(--goal-color);
+  opacity: 0.95;
+}
+
+[data-theme="vellum"] .tut-dot.done {
+  background: #2D6A4F;
+}
+
+.tut-dot.active {
+  background: #38BDF8;
+  transform: scale(1.4);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+[data-theme="obsidian"] .tut-dot.active {
+  background: #FFB800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.85);
+}
+
+[data-theme="vellum"] .tut-dot.active {
+  background: #2B5D7D;
+  box-shadow: 0 0 10px rgba(43, 93, 125, 0.55);
+}
+
+.tutorial-close-x {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--paper-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  flex: 0 0 28px;
+  transition: all 160ms cubic-bezier(0.2, 0, 0, 1);
+  padding: 0;
+  line-height: 1;
+}
+
+.tutorial-close-x:hover,
+.tutorial-close-x:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--paper);
+  transform: scale(1.08);
+}
+
+.tutorial-close-x:active {
+  transform: scale(0.94);
+}
+
+[data-theme="vellum"] .tutorial-close-x {
+  background: rgba(60, 50, 40, 0.06);
+  border-color: rgba(60, 50, 40, 0.16);
+  color: #6B5B4D;
+}
+
+[data-theme="vellum"] .tutorial-close-x:hover,
+[data-theme="vellum"] .tutorial-close-x:focus-visible {
+  background: rgba(60, 50, 40, 0.12);
+  color: #2D241E;
+}
+
+.tutorial-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  line-height: 1.25;
+  height: 22px;
+  min-height: 22px;
+  max-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex: 0 0 22px;
+}
+
+.tutorial-prompt-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  padding: 4px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 44px;
+}
+
+[data-theme="vellum"] .tutorial-prompt-box {
+  background: rgba(60, 50, 40, 0.04);
+  border-color: rgba(60, 50, 40, 0.1);
+}
+
+.tutorial-prompt {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--paper);
+  transition: color 200ms ease;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 36px;
+}
+
+.tutorial-prompt.solved {
+  color: var(--teal);
+}
+
+[data-theme="vellum"] .tutorial-prompt.solved {
+  color: #2E7D32;
+}
+
+/* Centered Micro-Board Arena */
+.tutorial-board-container {
+  width: 100%;
+  max-width: 280px;
+  height: 198px;
+  min-height: 198px;
+  max-height: 198px;
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 14px;
+  box-sizing: border-box;
+  flex: 0 0 198px;
+}
+
+.tutorial-board {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 14px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+  position: relative;
+  user-select: none;
+  touch-action: none;
+  box-sizing: border-box;
+}
+
+[data-theme="vellum"] .tutorial-board {
+  background: #F4EFE6;
+  border-color: rgba(60, 50, 40, 0.15);
+  box-shadow: inset 0 2px 6px rgba(60, 50, 40, 0.08);
+}
+
+.tut-cell {
+  width: var(--tut-cell-size, 48px);
+  height: var(--tut-cell-size, 48px);
+  box-sizing: border-box;
+  background: var(--cell-bg);
+  border: 1px solid var(--cell-border);
+  border-radius: 8px;
+  box-shadow: var(--cell-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-num);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  position: relative;
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+[data-theme="vellum"] .tut-cell {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(60, 50, 40, 0.08), 0 1px 1px rgba(60, 50, 40, 0.04);
+  color: var(--text-main);
+}
+
+.tut-cell .cell-glyph {
+  font-family: var(--font-num);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.tut-cell.start-cell::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed var(--accent-primary-dim);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Legal destination tile (matching main board) */
+.tut-cell.legal-dest {
+  color: var(--legal-dest-color);
+  background: rgba(56, 189, 248, 0.18) !important;
+  border-color: var(--legal-dest-border) !important;
+  box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset, 0 0 14px var(--legal-dest-glow);
+}
+
+.tut-cell.legal-dest .cell-glyph {
+  color: var(--legal-dest-color) !important;
+  font-weight: 800;
+}
+
+[data-theme="vellum"] .tut-cell.legal-dest {
+  background: rgba(43, 93, 125, 0.15) !important;
+  border: 2px solid var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(43, 93, 125, 0.18), 0 4px 12px rgba(43, 93, 125, 0.12) !important;
+}
+
+[data-theme="vellum"] .tut-cell.legal-dest .cell-glyph {
+  color: var(--accent-primary) !important;
+}
+
+/* Goal Stamp Tile (matching main board) */
+.tut-cell.goal-cell {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: var(--goal-color) !important;
+  border: 1.5px solid var(--goal-color) !important;
+  box-shadow: 0 0 0 1.5px var(--goal-color) inset, 0 0 12px var(--goal-glow);
+}
+
+.tut-cell.goal-cell .cell-glyph.goal-label {
+  color: var(--goal-color) !important;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+[data-theme="vellum"] .tut-cell.goal-cell {
+  background: rgba(45, 106, 79, 0.12) !important;
+  border: 2px solid var(--goal-color) !important;
+  box-shadow: inset 0 0 0 1.5px rgba(45, 106, 79, 0.18), 0 3px 8px rgba(45, 106, 79, 0.12) !important;
+}
+
+.tut-cell.goal-cell.legal-dest {
+  background: rgba(16, 185, 129, 0.26) !important;
+  box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 18px var(--goal-glow) !important;
+}
+
+.tut-cell.pulse-success {
+  animation: tutPulseSuccess 650ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+@keyframes tutPulseSuccess {
+  0% { transform: scale(1); box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 12px var(--goal-glow); }
+  50% { transform: scale(1.12); box-shadow: 0 0 0 3px var(--goal-color) inset, 0 0 24px var(--goal-glow); }
+  100% { transform: scale(1); box-shadow: 0 0 0 2px var(--goal-color) inset, 0 0 12px var(--goal-glow); }
+}
+
+/* Active Tile (matching main board) */
+.tut-cell.current-cell {
+  background: var(--accent-primary) !important;
+  color: var(--accent-contrast) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 2px var(--accent-primary) inset, 0 4px 16px var(--accent-primary-glow) !important;
+  z-index: 8;
+}
+
+.tut-cell.current-cell .cell-glyph {
+  color: var(--accent-contrast) !important;
+  font-weight: 900;
+}
+
+[data-theme="vellum"] .tut-cell.current-cell {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 2px #FFFFFF inset, 0 4px 14px rgba(43, 93, 125, 0.35) !important;
+}
+
+[data-theme="vellum"] .tut-cell.current-cell .cell-glyph {
+  color: #FFFFFF !important;
+}
+
+/* Micro-Board Token and Chevrons (matching main game token) */
+.tut-token {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 15;
+  box-sizing: border-box;
+}
+
+.tut-token .token-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tut-token .token-dir-arrow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--accent-primary);
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 16;
+  filter: drop-shadow(0 0 4px var(--accent-primary-glow));
+}
+
+.tut-token .token-dir-arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tut-token .token-dir-arrow.disabled {
+  display: none !important;
+}
+
+.tut-token .token-dir-arrow.up { top: -6.5px; left: 50%; transform: translateX(-50%); }
+.tut-token .token-dir-arrow.down { bottom: -6.5px; left: 50%; transform: translateX(-50%); }
+.tut-token .token-dir-arrow.left { left: -6.5px; top: 50%; transform: translateY(-50%); }
+.tut-token .token-dir-arrow.right { right: -6.5px; top: 50%; transform: translateY(-50%); }
+
+[data-theme="obsidian"] .tut-token .token-dir-arrow {
+  color: #FFB800;
+  filter: drop-shadow(0 0 5px rgba(255, 184, 0, 0.75));
+}
+
+[data-theme="vellum"] .tut-token .token-dir-arrow {
+  color: #2B5D7D;
+  filter: drop-shadow(0 1px 1px #FFFFFF) drop-shadow(0 2px 4px rgba(43, 93, 125, 0.35));
+}
+
+/* Wrong Move Feedback Animation & Toast */
+.shake-error {
+  animation: shakeErrorAnim 380ms ease-in-out !important;
+}
+
+.shake-error-inner {
+  animation: shakeInnerAnim 380ms ease-in-out !important;
+}
+
+@keyframes shakeErrorAnim {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes shakeInnerAnim {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* Wrong Cell / Dead End Visuals */
+.tut-cell.wrong-cell {
+  background: rgba(239, 68, 68, 0.24) !important;
+  border: 2px solid #EF4444 !important;
+  color: #F87171 !important;
+  box-shadow: 0 0 0 2px #EF4444 inset, 0 0 16px rgba(239, 68, 68, 0.5) !important;
+  z-index: 10;
+}
+
+.tut-cell.wrong-cell .cell-glyph {
+  color: #F87171 !important;
+  font-weight: 800;
+}
+
+[data-theme="vellum"] .tut-cell.wrong-cell {
+  background: #FEE2E2 !important;
+  border: 2px solid #DC2626 !important;
+  box-shadow: 0 0 0 2px #DC2626 inset, 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+}
+
+[data-theme="vellum"] .tut-cell.wrong-cell .cell-glyph {
+  color: #DC2626 !important;
+}
+
+.tut-cell.wrong-cell::after {
+  content: "❌";
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Quick flash when tapping an invalid destination */
+.tut-cell.illegal-tap {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border: 2px solid #EF4444 !important;
+}
+
+[data-theme="vellum"] .tut-cell.illegal-tap {
+  background: #FEE2E2 !important;
+  border: 2px solid #DC2626 !important;
+}
+
+/* Token error styling */
+.tut-token.token-error .token-frame {
+  border: 2px solid #EF4444 !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6) !important;
+  opacity: 1 !important;
+}
+
+.tut-token.token-error .token-dir-arrow {
+  display: none !important;
+}
+
+/* Error state for tutorial prompt box */
+.tutorial-prompt-box.error-state {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+}
+
+[data-theme="vellum"] .tutorial-prompt-box.error-state {
+  background: #FEF2F2 !important;
+  border: 1px solid #FCA5A5 !important;
+}
+
+.tutorial-prompt.error-hint {
+  color: #EF4444 !important;
+  font-weight: 700;
+}
+
+[data-theme="vellum"] .tutorial-prompt.error-hint {
+  color: #DC2626 !important;
+}
+
+/* Reset Button Attention Callout */
+.tutorial-reset-btn.attention {
+  background: #EF4444 !important;
+  color: #FFFFFF !important;
+  border-color: #DC2626 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4), 0 0 18px rgba(239, 68, 68, 0.6) !important;
+  animation: resetAttentionPulse 900ms ease-in-out infinite alternate !important;
+}
+
+@keyframes resetAttentionPulse {
+  0% { transform: scale(1); box-shadow: 0 0 4px rgba(239, 68, 68, 0.3); }
+  100% { transform: scale(1.08); box-shadow: 0 0 20px rgba(239, 68, 68, 0.75); }
+}
+
+/* Curved Leap Trajectory Guide (SVG) */
+.tutorial-arc-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+  overflow: visible;
+  color: #38BDF8;
+  transition: opacity 200ms ease;
+}
+
+[data-theme="obsidian"] .tutorial-arc-svg {
+  color: #38BDF8;
+}
+
+[data-theme="vellum"] .tutorial-arc-svg {
+  color: #2B5D7D;
+}
+
+.tutorial-arc-arrow {
+  fill: currentColor;
+  stroke: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  transition: opacity 160ms ease;
+}
+
+[data-theme="obsidian"] .tutorial-arc-arrow.active {
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+}
+
+[data-theme="vellum"] .tutorial-arc-arrow.active {
+  filter: drop-shadow(0 2px 4px rgba(43, 93, 125, 0.35));
+}
+
+.tutorial-arc-arrow.step2 {
+  opacity: 0.35;
+}
+
+.tutorial-arc-path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: opacity 160ms ease;
+}
+
+.tutorial-arc-path.active {
+  stroke-width: 3px;
+  stroke-dasharray: 6 5;
+  animation: tutArcFlow 1.1s linear infinite;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+[data-theme="vellum"] .tutorial-arc-path.active {
+  filter: drop-shadow(0 2px 4px rgba(43, 93, 125, 0.3));
+}
+
+@keyframes tutArcFlow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+.tutorial-arc-path.step2 {
+  stroke-width: 2px;
+  stroke-dasharray: 4 4;
+  opacity: 0.35;
+}
+
+/* Tutorial Footer Buttons */
+.tutorial-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.tutorial-reset-btn {
+  flex: 0 0 76px;
+  padding: 10px 8px;
+  font-size: 13px;
+}
+
+.tutorial-action-btn {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-close-tut {
+  flex: 0 0 70px;
+  padding: 10px 8px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  color: var(--paper-dim);
 }

@@ -26,6 +26,7 @@
           <span class="theme-icon">🌙</span>
           <span class="theme-label">OBSIDIAN</span>
         </button>
+        <button class="nav-icon-btn" id="homeHelpBtn" title="How to Play / Tutorial" aria-label="How to Play">?</button>
         <button class="nav-icon-btn" id="homeSettingsBtn" title="Settings" aria-label="Settings">⚙</button>
         <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
       </div>
@@ -343,6 +344,20 @@
     <div class="win-header-meta">
       <h2 class="win-title" id="winTitle">Level 01</h2>
       <p class="win-subtitle" id="winSubtitle">Puzzle Solved</p>
+
+      <!-- Dual-Stat Movement Efficiency & Moves Strip -->
+      <div class="win-stats-strip" id="winStatsStrip">
+        <div class="win-stat-pill efficiency" id="winEffPill">
+          <span class="win-stat-icon" id="winEffIcon">★</span>
+          <span class="win-stat-value" id="winEffVal">100%</span>
+          <span class="win-stat-tier" id="winEffTier">FLAWLESS</span>
+        </div>
+        <div class="win-stat-pill moves" id="winMovesPill">
+          <span class="win-stat-icon">👣</span>
+          <span class="win-stat-value" id="winMovesVal">4 / 4</span>
+          <span class="win-stat-label">MOVES</span>
+        </div>
+      </div>
     </div>
 
 
@@ -443,6 +458,10 @@
         <span>Developer Mode</span>
         <input type="checkbox" id="settingDevMode" />
       </div>
+      <div class="setting-row" style="margin-top: 8px;">
+        <span>Interactive Tutorial</span>
+        <button class="btn btn-secondary" id="settingsHowToPlayBtn" style="padding: 6px 14px; font-size: 12px; flex: 0 0 auto;">Play Tutorial</button>
+      </div>
     </div>
     <div class="card-actions" style="margin-top: 20px;">
       <button class="btn primary" id="closeSettingsBtn" style="flex:1">Done</button>
@@ -450,18 +469,34 @@
   </div>
 </div>
 
-<!-- Rules / Tutorial Modal -->
+<!-- Dedicated Interactive Tutorial Modal -->
 <div class="overlay" id="rulesModal">
-  <div class="card" style="max-width: 380px;">
-    <div class="eyebrow">HOW TO PLAY</div>
-    <h2>The Number is the Distance</h2>
-    <div class="rules-scroll-body">
-      <p>Whatever number is under your token is <strong>exactly</strong> how far you leap in any cardinal direction (↑, ↓, ←, →).</p>
-      <p>Reachable cells glow <strong>blue</strong>. Plan your jumps to navigate through numbers that lead towards the <strong>teal goal cell</strong>!</p>
-      <p>Undo and restart are always free.</p>
+  <div class="card tutorial-card" id="tutorialCard">
+    <div class="tutorial-header">
+      <div class="tutorial-top-row">
+        <span class="tutorial-badge" id="tutorialEyebrow">LESSON 1</span>
+        <div class="tutorial-dots" id="tutorialDots"></div>
+        <button class="tutorial-close-x" id="tutorialCloseX" title="Close Tutorial" aria-label="Close">✕</button>
+      </div>
+      <h2 class="tutorial-title" id="tutorialTitle">Number = Leap Distance</h2>
+      <div class="tutorial-prompt-box">
+        <p class="tutorial-prompt" id="tutorialPrompt">Swipe RIGHT to leap 1 tile into the Goal.</p>
+      </div>
     </div>
-    <div class="card-actions" style="margin-top: 16px;">
-      <button class="btn primary" id="closeRulesBtn" style="flex:1">Got it</button>
+
+    <!-- Centered Micro-Board Arena -->
+    <div class="tutorial-board-container" id="tutorialBoardContainer">
+      <div class="tutorial-board" id="tutorialBoard"></div>
+      <!-- Curved Leap Trajectory Guide (replaces hand icon) -->
+      <svg class="tutorial-arc-svg" id="tutorialArcSvg" aria-hidden="true">
+        <!-- Preview arc for subsequent step to Goal -->
+        <path id="tutArcPathStep2" class="tutorial-arc-path step2" d="" />
+        <polygon id="tutArcArrowStep2" class="tutorial-arc-arrow step2" points="" />
+
+        <!-- Active leap arc -->
+        <path id="tutArcPathActive" class="tutorial-arc-path active" d="" />
+        <polygon id="tutArcArrowActive" class="tutorial-arc-arrow active" points="" />
+      </svg>
     </div>
   </div>
 </div>

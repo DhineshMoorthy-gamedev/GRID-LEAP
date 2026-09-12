@@ -92,6 +92,13 @@ export const DOM = {
   winSigilSvg: document.getElementById("winSigilSvg"),
   winTitle: document.getElementById("winTitle"),
   winSubtitle: document.getElementById("winSubtitle"),
+  winStatsStrip: document.getElementById("winStatsStrip"),
+  winEffPill: document.getElementById("winEffPill"),
+  winEffIcon: document.getElementById("winEffIcon"),
+  winEffVal: document.getElementById("winEffVal"),
+  winEffTier: document.getElementById("winEffTier"),
+  winMovesPill: document.getElementById("winMovesPill"),
+  winMovesVal: document.getElementById("winMovesVal"),
   winEfficiency: document.getElementById("winEfficiency"),
   winEfficiencyStat: document.getElementById("winEfficiencyStat"),
   winRestartBtn: document.getElementById("winRestartBtn"),
@@ -136,7 +143,7 @@ export const DOM = {
   editorJsonModal: document.getElementById("editorJsonModal"),
 
   rulesModal: document.getElementById("rulesModal"),
-  closeRulesBtn: document.getElementById("closeRulesBtn")
+  closeRulesBtn: document.getElementById("closeRulesBtn") || document.getElementById("tutorialCloseX")
 };
 
 if (DOM.toast) {
@@ -1133,6 +1140,31 @@ export function drawConstellationSigil(svgEl, path, level) {
   svgEl.appendChild(nodesGroup);
 }
 
+let effAnimTimer = null;
+function animateEfficiencyCounter(el, targetVal, durationMs = 450) {
+  if (!el) return;
+  if (effAnimTimer) cancelAnimationFrame(effAnimTimer);
+  const startTime = performance.now();
+  const startVal = 0;
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / durationMs);
+    const eased = progress * (2 - progress); // easeOutQuad
+    const current = Math.round(startVal + (targetVal - startVal) * eased);
+    el.textContent = `${current}%`;
+
+    if (progress < 1) {
+      effAnimTimer = requestAnimationFrame(step);
+    } else {
+      el.textContent = `${targetVal}%`;
+      effAnimTimer = null;
+    }
+  }
+
+  effAnimTimer = requestAnimationFrame(step);
+}
+
 export function renderWinModal({
   levelIndex,
   level,
@@ -1182,8 +1214,11 @@ export function renderWinModal({
     DOM.winSigilMedallion.classList.add("pop");
   }
 
-  // 3. Efficiency (Dev Mode)
-  const eff = Math.round((optimal / moveCount) * 100);
+  // 3. Movement Efficiency & Moves Ratio
+  const optimalMoves = Math.max(1, optimal || 1);
+  const actualMoves = Math.max(1, moveCount || 1);
+  const eff = Math.min(100, Math.max(10, Math.round((optimalMoves / actualMoves) * 100)));
+
   if (DOM.winEfficiency) {
     DOM.winEfficiency.textContent = `${eff}%`;
     DOM.winEfficiency.classList.remove("good", "ok");
@@ -1191,6 +1226,44 @@ export function renderWinModal({
   }
   if (DOM.winEfficiencyStat) {
     DOM.winEfficiencyStat.style.display = devDiagnosticsEnabled ? "flex" : "none";
+  }
+
+  // Consumer Dual-Stat Strip (Efficiency + Move Count)
+  if (DOM.winStatsStrip) {
+    let tierLabel = "SOLVED";
+    let tierIcon = "🏁";
+    let tierClass = "tier-solved";
+
+    if (eff >= 100) {
+      tierLabel = "FLAWLESS";
+      tierIcon = "★";
+      tierClass = "tier-flawless";
+    } else if (eff >= 85) {
+      tierLabel = "EXCELLENT";
+      tierIcon = "⚡";
+      tierClass = "tier-excellent";
+    } else if (eff >= 70) {
+      tierLabel = "GREAT";
+      tierIcon = "⚡";
+      tierClass = "tier-great";
+    } else if (eff >= 50) {
+      tierLabel = "GOOD";
+      tierIcon = "👍";
+      tierClass = "tier-good";
+    }
+
+    if (DOM.winEffPill) {
+      DOM.winEffPill.className = `win-stat-pill efficiency ${tierClass}`;
+      DOM.winEffPill.classList.remove("pop");
+      void DOM.winEffPill.offsetWidth;
+      DOM.winEffPill.classList.add("pop");
+    }
+    if (DOM.winEffIcon) DOM.winEffIcon.textContent = tierIcon;
+    if (DOM.winEffTier) DOM.winEffTier.textContent = tierLabel;
+    if (DOM.winMovesVal) DOM.winMovesVal.textContent = `${actualMoves}\u00A0/\u00A0${optimalMoves}`;
+
+    // Animate percentage count-up
+    animateEfficiencyCounter(DOM.winEffVal, eff);
   }
 
   // 4. Next / Editor / Final Button text
