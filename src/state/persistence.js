@@ -52,6 +52,7 @@ export class StorageService {
       stars: new Array(this.totalLevels).fill(0),
       bestMoves: new Array(this.totalLevels).fill(null),
       settings: {
+        theme: "vellum",
         hasSeenRules: false,
         devModeEnabled: false,
         soundEnabled: true,
@@ -111,6 +112,7 @@ export class StorageService {
       bestMoves,
       activeSession,
       settings: {
+        theme: data.settings?.theme === "obsidian" ? "obsidian" : "vellum",
         hasSeenRules: Boolean(data.settings?.hasSeenRules),
         devModeEnabled: Boolean(data.settings?.devModeEnabled),
         soundEnabled: data.settings?.soundEnabled !== false,

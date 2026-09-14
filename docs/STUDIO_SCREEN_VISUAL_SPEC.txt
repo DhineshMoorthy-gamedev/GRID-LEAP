@@ -1,0 +1,293 @@
+================================================================================
+STUDIO INTRO SCREEN — VISUAL SPECIFICATION & IMPLEMENTATION GUIDE
+================================================================================
+
+This document details all visual aspects, typography, layout geometry, color 
+properties, transitions, and standalone code for the Studio Intro Screen.
+
+--------------------------------------------------------------------------------
+1. HTML STRUCTURE
+--------------------------------------------------------------------------------
+
+```html
+<!-- Fullscreen Overlay -->
+<div id="startupOverlay" class="startup-overlay">
+  <!-- Studio Screen -->
+  <div id="studioScreen" class="startup-slide active">
+    <div class="startup-logo-box">
+      <div class="logo-text-olai">OLAI</div>
+      <div class="logo-text-studios">DIGITAL STUDIOS</div>
+      <div class="logo-presents mono">presents</div>
+    </div>
+  </div>
+</div>
+```
+
+--------------------------------------------------------------------------------
+2. COLOR PALETTE & THEME VARIABLES
+--------------------------------------------------------------------------------
+
+The screen dynamically adapts to both Light (Zen Bone) and Dark (Deep Void) themes:
+
+• Light Theme (Default):
+  - `--cinematic-bg`: #f5f0e8 (warm bone/cream background)
+  - `--white`:        #1a1a1a (high-contrast dark text)
+  - `--fog`:          #6b6b6b (muted stone grey)
+
+• Dark Theme (`body.dark`):
+  - `--cinematic-bg`: #090a0f (deep cosmic void background)
+  - `--white`:        #f5f5dc (warm antique white text)
+  - `--fog`:          #b0b0b0 (soft starlight grey)
+
+--------------------------------------------------------------------------------
+3. ELEMENT-BY-ELEMENT VISUAL PROPERTIES
+--------------------------------------------------------------------------------
+
+A. Fullscreen Overlay (`#startupOverlay.startup-overlay`):
+   - Position: `fixed`, `top: 0`, `left: 0`, `width: 100%`, `height: 100%`
+   - Z-Index: `999`
+   - Background Color: `var(--cinematic-bg)`
+   - Layout: `display: flex; align-items: center; justify-content: center;`
+   - Transition: `opacity 1.0s ease, visibility 1.0s ease`
+   - Initial State: `opacity: 1; visibility: visible;`
+
+B. Slide Container (`#studioScreen.startup-slide`):
+   - Position: `absolute`, `width: 100%`, `height: 100%`
+   - Layout: `display: flex; align-items: center; justify-content: center;`
+   - Transition: `opacity 0.8s ease, visibility 0.8s ease`
+   - When Active (`.active`): `opacity: 1; visibility: visible;`
+   - When Inactive: `opacity: 0; visibility: hidden;`
+
+C. Logo Center Box (`.startup-logo-box`):
+   - Layout: `display: flex; flex-direction: column; align-items: center; justify-content: center;`
+   - Primary Font: `'Bodoni Moda', serif`
+   - Text Color: `var(--white)`
+   - Text Alignment: `center`
+
+D. Studio Name Primary: "OLAI" (`.logo-text-olai`):
+   - Font Family: `'Bodoni Moda', serif`
+   - Font Size: `64px`
+   - Font Weight: `400` (Regular weight matching classic high-contrast serif stems)
+   - Letter Spacing: `0.12em`
+   - Optical Center Fix: `margin-right: -0.12em` (cancels right trailing letter-spacing so text is geometrically centered)
+   - Line Height: `0.95`
+   - Text Transform: `uppercase`
+   - Text Shadow (Light Theme): `0 4px 25px rgba(0, 0, 0, 0.08)`
+   - Text Shadow (Dark Theme):  `0 4px 25px rgba(255, 255, 255, 0.08)`
+
+E. Studio Name Subtitle: "DIGITAL STUDIOS" (`.logo-text-studios`):
+   - Font Family: `'Bodoni Moda', serif`
+   - Font Size: `32px`
+   - Font Weight: `400`
+   - Letter Spacing: `0.1em`
+   - Optical Center Fix: `margin-right: -0.1em`
+   - Line Height: `1.0`
+   - Margin Top: `8px`
+   - Color: `var(--white)`
+   - Text Transform: `uppercase`
+
+F. Subtitle Notice: "presents" (`.logo-presents`):
+   - Font Family: `'JetBrains Mono', monospace`
+   - Font Size: `11px`
+   - Letter Spacing: `0.3em`
+   - Margin Top: `20px`
+   - Text Transform: `lowercase`
+   - Color: `var(--fog)`
+   - Opacity: `0.6`
+
+--------------------------------------------------------------------------------
+4. TIMINGS & TRANSITION BEHAVIOR
+--------------------------------------------------------------------------------
+
+• Display Duration: 
+  - Stays on screen for `2500ms` (2.5 seconds) automatically.
+  - Tapping or clicking anywhere on the screen immediately triggers the fade-out.
+
+• Fade-Out Transition:
+  - Removing the `.active` class triggers a smooth `0.8s ease` fade-out.
+  - Total overlay fade-out to main game/app is `1.0s ease`.
+
+--------------------------------------------------------------------------------
+5. COMPLETE STANDALONE CODE (HTML + CSS + JS)
+--------------------------------------------------------------------------------
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Intro Screen</title>
+<!-- Google Fonts: Bodoni Moda & JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --cinematic-bg: #f5f0e8;
+    --white: #1a1a1a;
+    --fog: #6b6b6b;
+  }
+
+  body.dark {
+    --cinematic-bg: #090a0f;
+    --white: #f5f5dc;
+    --fog: #b0b0b0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body {
+    background: var(--cinematic-bg);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* Fullscreen Overlay Container */
+  .startup-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--cinematic-bg);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1.0s ease, visibility 1.0s ease;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Slide Animation Container */
+  .startup-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+
+  .startup-slide.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Logo Content Layout */
+  .startup-logo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bodoni Moda', serif;
+    color: var(--white);
+    text-align: center;
+  }
+
+  /* Primary Studio Name */
+  .logo-text-olai {
+    font-size: 64px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    margin-right: -0.12em; /* Compensate trailing letter-spacing for true center */
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  body.dark .logo-text-olai {
+    text-shadow: 0 4px 25px rgba(255, 255, 255, 0.08);
+  }
+
+  /* Subtitle Studio Text */
+  .logo-text-studios {
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    margin-right: -0.1em; /* Compensate trailing letter-spacing */
+    line-height: 1.0;
+    margin-top: 8px;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  /* "presents" Tag */
+  .logo-presents {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--fog);
+    margin-top: 20px;
+    text-transform: lowercase;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body class="dark">
+
+  <div id="startupOverlay" class="startup-overlay">
+    <div id="studioScreen" class="startup-slide active">
+      <div class="startup-logo-box">
+        <div class="logo-text-olai">OLAI</div>
+        <div class="logo-text-studios">DIGITAL STUDIOS</div>
+        <div class="logo-presents">presents</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function runStudioIntro(onComplete) {
+      const overlay = document.getElementById('startupOverlay');
+      const studioScreen = document.getElementById('studioScreen');
+      if (!overlay || !studioScreen) return;
+
+      let isDone = false;
+
+      function finishIntro() {
+        if (isDone) return;
+        isDone = true;
+
+        // Fade out slide
+        studioScreen.classList.remove('active');
+
+        // Fade out overlay container
+        setTimeout(() => {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+          setTimeout(() => {
+            overlay.remove(); // Clean up from DOM
+            if (typeof onComplete === 'function') onComplete();
+          }, 1000);
+        }, 600);
+      }
+
+      // Tap / Click to skip
+      overlay.addEventListener('pointerdown', finishIntro);
+
+      // Auto-advance after 2.5 seconds
+      setTimeout(finishIntro, 2500);
+    }
+
+    // Launch on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      runStudioIntro(() => {
+        console.log('Studio Intro completed — launching app.');
+      });
+    });
+  </script>
+</body>
+</html>
+```
+================================================================================

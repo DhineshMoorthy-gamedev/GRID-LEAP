@@ -33,9 +33,11 @@ import {
   renderViability,
   renderWinModal,
   renderFinalModal,
+  calculateBoardSize,
   applyTheme
 } from "./scenes/game-renderer.js";
 import { TutorialController } from "./scenes/tutorial-controller.js";
+import { SettingsController } from "./scenes/settings-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 
 // Validate all shipped levels on load
@@ -777,10 +779,9 @@ export function handleResize() {
   if (SceneRouter.getCurrentScreen() === "screenGame") {
     const lv = GameState.currentLevel();
     if (lv && DOM.board) {
-      const maxDim = Math.max(lv.w, lv.h);
-      const boardMax = maxDim >= 7 ? 405 : (maxDim >= 5 ? 385 : 360);
-      const size = Math.min(boardMax, window.innerWidth - (window.innerWidth < 420 ? 24 : 44));
+      const size = calculateBoardSize(lv);
       DOM.board.style.width = size + "px";
+      DOM.board.style.height = size + "px";
       placeToken(GameState.player, true);
       refreshTrail();
     }
@@ -814,11 +815,65 @@ export function handleToggleTrail(explicitValue) {
   showToast(isNowOn ? "Breadcrumbs Trail ON" : "Breadcrumbs Trail OFF");
 }
 
+/**
+ * Studio Intro Splash Screen Controller (OLAI DIGITAL STUDIOS)
+ */
+export function runStudioIntro() {
+  const overlay = document.getElementById("startupOverlay");
+  if (!overlay) return;
+
+  const slide = document.getElementById("studioScreen");
+  if (slide) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        slide.classList.add("active");
+      });
+    });
+  }
+
+  let dismissed = false;
+  let autoDismissTimer = null;
+
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
+    if (autoDismissTimer) {
+      clearTimeout(autoDismissTimer);
+      autoDismissTimer = null;
+    }
+    if (slide) slide.classList.add("exit");
+    overlay.classList.add("fade-out");
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.remove();
+      }
+    }, 700);
+  };
+
+  overlay.addEventListener("click", dismiss);
+  overlay.addEventListener("touchstart", dismiss, { passive: true });
+
+  const onKey = (e) => {
+    if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
+      dismiss();
+      window.removeEventListener("keydown", onKey);
+    }
+  };
+  window.addEventListener("keydown", onKey);
+
+  // 2500ms display duration with instant tap/click/key-to-skip
+  const displayDuration = 2500;
+  autoDismissTimer = setTimeout(dismiss, displayDuration);
+}
+
 // App Boot Sequence
 export function bootApp() {
   GameState.init();
   applyTheme(GameState.getTheme());
   updateTrailButton(GameState.settings.showTrail);
+
+  // Play Studio Intro Screen
+  runStudioIntro();
 
   // Theme & Trail toggle bindings
   if (DOM.trailToggleBtn) DOM.trailToggleBtn.addEventListener("click", () => handleToggleTrail());
@@ -845,8 +900,12 @@ export function bootApp() {
   TutorialController.init();
   window.TutorialController = TutorialController;
 
+  // Initialize Dedicated Full-Screen Settings
+  SettingsController.init();
+  window.SettingsController = SettingsController;
+
   if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => TutorialController.open());
-  if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SceneRouter.pushModal("SETTINGS"));
+  if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SettingsController.open());
 
   // Initialize Daily Manager
   DailyManager.init();
@@ -1028,7 +1087,7 @@ export function bootApp() {
     DOM.homeHelpBtn.style.display = "inline-flex";
   }
   if (DOM.homeSettingsBtn) {
-    DOM.homeSettingsBtn.style.display = TargetConfig.isPlayStore ? "none" : "inline-flex";
+    DOM.homeSettingsBtn.style.display = "inline-flex";
   }
   if (DOM.homeThemeToggleBtn) {
     DOM.homeThemeToggleBtn.style.display = TargetConfig.isPlayStore ? "none" : "inline-flex";
@@ -1043,7 +1102,7 @@ export function bootApp() {
     DOM.gameThemeToggleBtn.style.display = TargetConfig.features.gameDevControls ? "inline-flex" : "none";
   }
   if (DOM.gamePauseBtn) {
-    DOM.gamePauseBtn.style.display = TargetConfig.features.gameDevControls ? "inline-flex" : "none";
+    DOM.gamePauseBtn.style.display = "none";
   }
   if (DOM.devPlaytestBar) {
     DOM.devPlaytestBar.style.display = TargetConfig.features.gameDevControls ? "flex" : "none";
@@ -1057,6 +1116,15 @@ export function bootApp() {
       onPlaytest: (customLv) => playtestCustomLevel(customLv)
     });
   }
+  const editorSettingsRows = [
+    document.getElementById("settingRowRelaxMode"),
+    document.getElementById("settingRowTrail"),
+    document.getElementById("settingRowDevMode"),
+    document.getElementById("settingRowTutorial")
+  ];
+  editorSettingsRows.forEach(row => {
+    if (row) row.style.display = TargetConfig.features.editorSettings ? "flex" : "none";
+  });
   if (DOM.gameFullscreenBtn) {
     DOM.gameFullscreenBtn.style.display = TargetConfig.features.fullscreenControl ? "flex" : "none";
     DOM.gameFullscreenBtn.addEventListener("click", toggleFullscreen);
@@ -1147,9 +1215,18 @@ export function bootApp() {
       }
     },
     onBackAction: () => {
+      // 0. Dismiss Studio Intro Overlay if active
+      const overlay = document.getElementById("startupOverlay");
+      if (overlay && !overlay.classList.contains("fade-out")) {
+        overlay.click();
+        return true;
+      }
       // 1. Dismiss open modal overlay
       const activeModal = SceneRouter.currentModal();
       if (activeModal) {
+        if (activeModal.name === "SETTINGS") {
+          return SettingsController.back();
+        }
         if (activeModal.name === "OUT_OF_LIVES") {
           SceneRouter.popModal();
           restart();

@@ -1,0 +1,173 @@
+================================================================================
+GRID LEAP — STUDIO INTRO SCREEN (VISUAL SPECIFICATION & IMPLEMENTATION GUIDE)
+[BODONI MODA STUDIO BRAND IDENTITY EDITION]
+================================================================================
+
+This document details all visual aspects, typography, layout geometry, color 
+properties, transitions, and standalone code for the Studio Intro Screen
+tailored for Grid Leap, maintaining your studio brand font ('Bodoni Moda')
+while integrating seamlessly into Grid Leap's dual-theme coordinate grid.
+
+--------------------------------------------------------------------------------
+1. BRAND TYPOGRAPHY & DESIGN HARMONY
+--------------------------------------------------------------------------------
+
+• Studio Brand Typography:
+  - Primary: `'Bodoni Moda', serif` — Consistent with your studio's brand trademark
+    across all games, featuring high-contrast vertical stems and hairline serifs.
+  - Sizing: `64px` for "OLAI", `32px` for "DIGITAL STUDIOS", with precise optical
+    trailing margin compensation (`-0.12em` / `-0.1em`) for true geometric centering.
+  - Subtitle Notice: `'JetBrains Mono', monospace` (`11px`, `0.3em` letter-spacing,
+    lowercase `presents`).
+
+• Grid Leap Aesthetic Harmonization:
+  - Dual Themes: Automatically binds to Grid Leap's Obsidian (Deep Cosmic Void #121316)
+    and Vellum (Warm 300gsm Debossed Cream Paper #F7F5F0) color spaces.
+  - Background: Renders Grid Leap's signature 28px Cartesian coordinate grid, so the
+    dissolve into the Home Hub is 100% continuous and seamless.
+  - Optional Reticle Accents: Four delicate L-shaped corner brackets (┌ ┐ / └ ┘) softly
+    frame the studio logotype with tactile architectural elegance.
+
+--------------------------------------------------------------------------------
+2. HTML STRUCTURE
+--------------------------------------------------------------------------------
+
+```html
+<!-- Fullscreen Startup Overlay -->
+<div id="startupOverlay" class="startup-overlay">
+  <!-- Architectural Reticle Frame -->
+  <div class="startup-reticle-frame">
+    <span class="reticle-corner top-left"></span>
+    <span class="reticle-corner top-right"></span>
+    <span class="reticle-corner bottom-left"></span>
+    <span class="reticle-corner bottom-right"></span>
+
+    <!-- Studio Slide Container -->
+    <div id="studioScreen" class="startup-slide active">
+      <div class="startup-logo-box">
+        <div class="logo-text-olai">OLAI</div>
+        <div class="logo-text-studios">DIGITAL STUDIOS</div>
+        <div class="logo-presents">presents</div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+--------------------------------------------------------------------------------
+3. COLOR PALETTE & DUAL-THEME VARIABLES
+--------------------------------------------------------------------------------
+
+The studio screen adapts dynamically based on the player's active theme:
+
+• Obsidian Theme (Dark Void) — Default or `[data-theme="obsidian"]`:
+  - `--studio-bg`:          #121316 (deep obsidian void)
+  - `--studio-text`:        #F4F4F5 (warm alabaster white)
+  - `--studio-fog`:         #8E95A5 (slate dim grey)
+  - `--studio-accent`:      #FFB800 (solar ochre amber)
+  - `--studio-reticle`:     rgba(255, 184, 0, 0.22) (delicate golden brackets)
+  - `--studio-grid-line`:   rgba(255, 255, 255, 0.035) (28px Cartesian grid)
+  - `--studio-shadow`:      0 4px 30px rgba(0, 0, 0, 0.35)
+
+• Vellum Theme (Tactile 300gsm Paper) — `[data-theme="vellum"]`:
+  - `--studio-bg`:          #F7F5F0 (warm tactile vellum cream)
+  - `--studio-text`:        #1A1A1A (deep charcoal ink)
+  - `--studio-fog`:         #6B6B6B (stone muted grey)
+  - `--studio-accent`:      #D97706 (warm burnt amber)
+  - `--studio-reticle`:     rgba(217, 119, 6, 0.26) (tactile papercraft brackets)
+  - `--studio-grid-line`:   rgba(60, 50, 40, 0.04) (debossed paper grid)
+  - `--studio-shadow`:      0 4px 25px rgba(60, 50, 40, 0.08)
+
+--------------------------------------------------------------------------------
+4. ELEMENT-BY-ELEMENT VISUAL SPECIFICATIONS
+--------------------------------------------------------------------------------
+
+A. Fullscreen Overlay (`#startupOverlay.startup-overlay`):
+   - Position: `fixed`, `inset: 0`
+   - Z-Index: `9999`
+   - Background: `var(--studio-bg)` with 28px Cartesian grid pattern
+   - Display: `flex`, `align-items: center`, `justify-content: center`
+   - Transition: `opacity 0.7s cubic-bezier(0.2, 0, 0, 1), visibility 0.7s ease`
+   - Initial State: `opacity: 1; visibility: visible;`
+   - Touch Action: `none`
+
+B. Architectural Reticle Frame (`.startup-reticle-frame`):
+   - Position: `relative`
+   - Width: `clamp(280px, 80vw, 440px)`
+   - Height: `clamp(230px, 40vh, 320px)`
+   - Display: `flex`, `align-items: center`, `justify-content: center`
+   - Padding: `24px`
+
+C. Reticle Corner Marks (`.reticle-corner`):
+   - Size: `16px` width, `16px` height
+   - Border: `1.5px solid var(--studio-reticle)`
+   - `.top-left`:     `top: 0; left: 0; border-right: none; border-bottom: none;`
+   - `.top-right`:    `top: 0; right: 0; border-left: none; border-bottom: none;`
+   - `.bottom-left`:  `bottom: 0; left: 0; border-right: none; border-top: none;`
+   - `.bottom-right`: `bottom: 0; right: 0; border-left: none; border-top: none;`
+
+D. Slide Container (`#studioScreen.startup-slide`):
+   - Display: `flex; flex-direction: column; align-items: center; justify-content: center;`
+   - Transition: `opacity 0.5s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)`
+   - Initial: `opacity: 1; transform: scale(1);`
+   - Exit: `opacity: 0; transform: scale(0.96);`
+
+E. Primary Studio Name: "OLAI" (`.logo-text-olai`):
+   - Font Family: `'Bodoni Moda', serif`
+   - Font Size: `clamp(46px, 11vw, 64px)` (64px on standard screens)
+   - Font Weight: `400`
+   - Letter Spacing: `0.12em`
+   - Optical Center Fix: `margin-right: -0.12em` (cancels right trailing space for true center)
+   - Line Height: `0.95`
+   - Text Transform: `uppercase`
+   - Text Color: `var(--studio-text)`
+   - Text Shadow: `var(--studio-shadow)`
+
+F. Studio Subtitle: "DIGITAL STUDIOS" (`.logo-text-studios`):
+   - Font Family: `'Bodoni Moda', serif`
+   - Font Size: `clamp(20px, 4.8vw, 32px)` (32px on standard screens)
+   - Font Weight: `400`
+   - Letter Spacing: `0.1em`
+   - Optical Center Fix: `margin-right: -0.1em`
+   - Line Height: `1.0`
+   - Margin Top: `10px`
+   - Text Color: `var(--studio-text)`
+   - Text Transform: `uppercase`
+   - Text Shadow: `var(--studio-shadow)`
+
+G. Subtitle Notice: "presents" (`.logo-presents`):
+   - Font Family: `'JetBrains Mono', monospace`
+   - Font Size: `11px`
+   - Font Weight: `400`
+   - Letter Spacing: `0.3em`
+   - Optical Center Fix: `margin-right: -0.3em`
+   - Margin Top: `20px`
+   - Color: `var(--studio-fog)`
+   - Text Transform: `lowercase`
+   - Opacity: `0.65`
+
+--------------------------------------------------------------------------------
+5. TIMINGS & INTERACTION BEHAVIOR
+--------------------------------------------------------------------------------
+
+• Display Duration:
+  - Default: Stays on screen for `2500ms` (2.5 seconds).
+  - Tap / Click: Tap anywhere on screen immediately dismisses intro (instant skip).
+  
+• Fade-Out Transition:
+  - Slide scales subtly (`scale(0.96)`) and fades (`500ms`).
+  - Overlay container fades to `opacity: 0` (`700ms cubic-bezier(0.2, 0, 0, 1)`).
+  - DOM Cleanup: `overlay.remove()` completely cleans up memory after completion.
+  - Lifecycle: Fires `onComplete()` callback, transitioning cleanly into Home Hub.
+
+• Multi-Platform Behavior:
+  - Production Targets (`playstore`, `itch`, `web`, `desktop`): Displays on initial application launch.
+  - Editor Target (`editor`): Instant or fast-skipped so developer workflow remains rapid.
+
+--------------------------------------------------------------------------------
+6. COMPLETE STANDALONE CODE (HTML + CSS + JS)
+--------------------------------------------------------------------------------
+
+See `docs/grid_leap_studio_screen_demo.html` for the complete, self-contained,
+runnable demo with live Obsidian / Vellum theme toggling and intro replay.
+================================================================================

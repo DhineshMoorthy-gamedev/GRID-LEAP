@@ -6,8 +6,44 @@
 <meta name="theme-color" content="#0B131A" />
 <link rel="manifest" href="/manifest.json" />
 <title>Grid Leap</title>
+<!-- Typography: Bodoni Moda (Studio Mark), JetBrains Mono (Coordinates & Subtitle), Space Grotesk (Game UI) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700;1,6..96,400&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+  /* Instant flicker-free theme detection before first paint */
+  try {
+    const raw = localStorage.getItem("number_grid_maze_save_v1");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.settings && parsed.settings.theme) {
+        document.documentElement.setAttribute("data-theme", parsed.settings.theme);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", parsed.settings.theme === "vellum" ? "#F7F5F0" : "#121316");
+      }
+    }
+  } catch (e) {}
+</script>
 </head>
 <body>
+
+<!-- Fullscreen Startup Overlay (Studio Intro Screen) -->
+<div id="startupOverlay" class="startup-overlay" aria-label="Studio Intro" role="dialog" aria-modal="true">
+  <div class="startup-reticle-frame">
+    <span class="reticle-corner top-left"></span>
+    <span class="reticle-corner top-right"></span>
+    <span class="reticle-corner bottom-left"></span>
+    <span class="reticle-corner bottom-right"></span>
+
+    <div id="studioScreen" class="startup-slide">
+      <div class="startup-logo-box">
+        <div class="logo-text-olai">OLAI</div>
+        <div class="logo-text-studios">DIGITAL STUDIOS</div>
+        <div class="logo-presents mono">presents</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="app-root">
 
@@ -152,8 +188,8 @@
         <button class="dev-tag-btn" id="devToggleBtn" title="Dev Diagnostics" style="display:none;">DEV</button>
         <button class="nav-icon-btn" id="gamePauseBtn" title="Pause Game" aria-label="Pause">❚❚</button>
 
-        <!-- Top Right: Moves Left / Distance to Goal Counter -->
-        <div class="stat-bubble path-bubble" id="hudPathStatus" title="Path Viability & Distance">
+        <!-- Top Right: Distance to Goal Counter -->
+        <div class="stat-bubble path-bubble" id="hudPathStatus" title="Distance to Goal">
           <span class="path-status-dot" id="hudPathDot">●</span>
           <span class="path-status-text" id="hudPathText">ON TRACK</span>
         </div>
@@ -425,78 +461,258 @@
   </div>
 </div>
 
-<!-- Settings Modal -->
-<div class="overlay" id="settingsModal">
-  <div class="card">
-    <div class="eyebrow">PREFERENCES</div>
-    <h2>Settings</h2>
-    <div class="settings-list">
-      <div class="setting-row">
-        <span>Visual Theme</span>
-        <div class="theme-pill-group">
-          <button class="theme-pill-btn active" id="pillThemeObsidian" data-theme="obsidian">🌙 Obsidian</button>
-          <button class="theme-pill-btn" id="pillThemeVellum" data-theme="vellum">☀️ Vellum</button>
+<!-- Dedicated Settings (Full-Screen Scene) -->
+<div class="overlay" id="settingsModal" data-view="main">
+  <!-- 1. MAIN SETTINGS VIEW -->
+  <div class="settings-subview" id="settingsMainView">
+    <div class="settings-shell">
+      <div class="settings-topbar">
+        <button class="settings-close-btn" id="settingsCloseBtn" title="Close Settings" aria-label="Close Settings">✕</button>
+        <div class="settings-topbar-title-wrap">
+          <span class="settings-topbar-eyebrow">PREFERENCES</span>
+          <h2 class="settings-topbar-title">SETTINGS</h2>
+        </div>
+        <div class="settings-topbar-spacer" aria-hidden="true"></div>
+      </div>
+
+      <div class="settings-scroll-area">
+        <!-- Preferences Group -->
+        <div class="settings-card-group">
+          <div class="settings-group-header">PREFERENCES</div>
+          <div class="settings-row">
+            <span class="settings-label-title">Visual Theme</span>
+            <div class="theme-pill-group">
+              <button class="theme-pill-btn active" id="pillThemeObsidian" data-theme="obsidian">🌙 Obsidian</button>
+              <button class="theme-pill-btn" id="pillThemeVellum" data-theme="vellum">☀️ Vellum</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label-title">Sound Effects</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingSound" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label-title">Haptic Feedback</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingHaptics" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <!-- Premium / In-App Purchases (Play Store Target Only) -->
+          <div class="settings-row iap-row" id="settingsSectionIAP">
+            <span class="settings-label-title">Remove Ads</span>
+            <button class="btn btn-iap" id="btnRemoveAds">
+              <span class="iap-sparkle">★</span> Remove
+            </button>
+          </div>
+        </div>
+
+        <!-- Information Group -->
+        <div class="settings-card-group">
+          <div class="settings-group-header">INFORMATION</div>
+          <button class="settings-nav-row" id="btnOpenPrivacy">
+            <span class="settings-label-title">Privacy Policy</span>
+            <span class="settings-nav-arrow">›</span>
+          </button>
+          <button class="settings-nav-row" id="btnOpenAbout">
+            <span class="settings-label-title">About Grid Leap</span>
+            <span class="settings-nav-arrow">›</span>
+          </button>
+        </div>
+
+        <!-- Developer Tools (Editor Mode Only - hidden on consumer/Play Store builds) -->
+        <div class="settings-card-group dev-only-group" id="settingsSectionDev" style="display: none;">
+          <div class="settings-group-header">DEVELOPER DIAGNOSTICS</div>
+          <div class="settings-row" id="settingRowRelaxMode">
+            <span class="settings-label-title">Relax Mode</span>
+            <input type="checkbox" id="settingRelaxMode" />
+          </div>
+          <div class="settings-row" id="settingRowTrail">
+            <span class="settings-label-title">Show Breadcrumbs Trail</span>
+            <input type="checkbox" id="settingTrail" />
+          </div>
+          <div class="settings-row" id="settingRowDevMode">
+            <span class="settings-label-title">Developer Mode</span>
+            <input type="checkbox" id="settingDevMode" />
+          </div>
+          <div class="settings-row" id="settingRowTutorial">
+            <span class="settings-label-title">Interactive Tutorial</span>
+            <button class="btn btn-secondary" id="settingsHowToPlayBtn" style="padding: 4px 12px; font-size: 11px;">Play Tutorial</button>
+          </div>
+        </div>
+
+        <div class="settings-footer-note">
+          GRID LEAP • v1.0.0 • OLAI DIGITAL STUDIOS
         </div>
       </div>
-      <div class="setting-row">
-        <span>Sound Effects</span>
-        <input type="checkbox" id="settingSound" checked />
+    </div>
+  </div>
+
+  <!-- 2. PRIVACY POLICY SUBVIEW -->
+  <div class="settings-subview" id="settingsPrivacyView">
+    <div class="settings-shell">
+      <div class="settings-topbar">
+        <button class="settings-back-btn" id="privacyBackBtn" title="Back to Settings" aria-label="Back">
+          <span class="back-arrow">←</span> Back
+        </button>
+        <div class="settings-topbar-title-wrap">
+          <span class="settings-topbar-eyebrow">LEGAL</span>
+          <h2 class="settings-topbar-title">PRIVACY POLICY</h2>
+        </div>
+        <div class="settings-topbar-spacer" aria-hidden="true"></div>
       </div>
-      <div class="setting-row">
-        <span>Haptic Feedback</span>
-        <input type="checkbox" id="settingHaptics" checked />
-      </div>
-      <div class="setting-row">
-        <span>Relax Mode (Infinite Lives)</span>
-        <input type="checkbox" id="settingRelaxMode" />
-      </div>
-      <div class="setting-row">
-        <span>Show Breadcrumbs Trail</span>
-        <input type="checkbox" id="settingTrail" />
-      </div>
-      <div class="setting-row">
-        <span>Developer Mode</span>
-        <input type="checkbox" id="settingDevMode" />
-      </div>
-      <div class="setting-row" style="margin-top: 8px;">
-        <span>Interactive Tutorial</span>
-        <button class="btn btn-secondary" id="settingsHowToPlayBtn" style="padding: 6px 14px; font-size: 12px; flex: 0 0 auto;">Play Tutorial</button>
+
+      <div class="settings-scroll-area doc-scroll">
+        <div class="doc-card">
+          <p class="doc-meta">Effective Date: September 2026 • Olai Digital Studios</p>
+
+          <section class="doc-section">
+            <h3>1. Overview &amp; Offline Commitment</h3>
+            <p><strong>Grid Leap</strong> is developed and published by <strong>Olai Digital Studios</strong>. We are committed to protecting player privacy. Grid Leap is fundamentally architected as an offline-first logic puzzle game. You can play all levels offline without creating an account or logging into any external service.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>2. Information We Do Not Collect</h3>
+            <p>Grid Leap does <strong>not</strong> collect, harvest, store, or sell any personally identifiable information (PII). We do not collect names, physical addresses, email addresses, phone numbers, contacts, precise location/GPS data, or biometric information.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>3. Local Device Storage</h3>
+            <p>Your puzzle progress (unlocked levels, star ratings, move counts) and player preferences (visual theme, sound effects, and haptic feedback) are stored exclusively on your device using standard local web storage (<code>localStorage</code>). This data is never transmitted to external servers. You can reset or erase your data at any time by clearing application data or cache in your device settings.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>4. Third-Party Services &amp; Advertising</h3>
+            <p>In mobile distributions via the <strong>Google Play Store</strong>, contextual or non-personalized banner advertisements may be served through Google AdMob to support ongoing development. Google AdMob may process pseudonymous device identifiers in accordance with Google's Privacy Policy at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.</p>
+            <p>Players may permanently remove all banner advertisements via the <strong>Remove Ads</strong> in-app purchase available within Settings.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>5. Children’s Privacy</h3>
+            <p>Grid Leap is a family-friendly mathematical puzzle intended for general audiences and logic enthusiasts of all ages. We do not knowingly collect any personal information from children under 13 (or under 16 in the European Union), in compliance with COPPA and GDPR regulations.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>6. Developer Inquiries &amp; Support</h3>
+            <p>For questions, support, or privacy requests, please reach out directly to:</p>
+            <p class="doc-contact"><strong>Email:</strong> <a href="mailto:support@olaidigitalstudios.com">support@olaidigitalstudios.com</a><br><strong>Studio:</strong> Olai Digital Studios</p>
+          </section>
+        </div>
       </div>
     </div>
-    <div class="card-actions" style="margin-top: 20px;">
-      <button class="btn primary" id="closeSettingsBtn" style="flex:1">Done</button>
+  </div>
+
+  <!-- 3. ABOUT SUBVIEW -->
+  <div class="settings-subview" id="settingsAboutView">
+    <div class="settings-shell">
+      <div class="settings-topbar">
+        <button class="settings-back-btn" id="aboutBackBtn" title="Back to Settings" aria-label="Back">
+          <span class="back-arrow">←</span> Back
+        </button>
+        <div class="settings-topbar-title-wrap">
+          <span class="settings-topbar-eyebrow">ABOUT</span>
+          <h2 class="settings-topbar-title">GRID LEAP</h2>
+        </div>
+        <div class="settings-topbar-spacer" aria-hidden="true"></div>
+      </div>
+
+      <div class="settings-scroll-area doc-scroll">
+        <div class="doc-card about-card">
+          <div class="about-hero">
+            <div class="about-studio-brand">OLAI DIGITAL STUDIOS</div>
+            <h1 class="about-game-brand">GRID LEAP</h1>
+            <div class="about-badge">VERSION 1.0.0</div>
+          </div>
+
+          <section class="doc-section">
+            <h3>Developer &amp; Creator</h3>
+            <p><strong>Lead Developer:</strong> Dhinesh</p>
+            <p><strong>Studio:</strong> Olai Digital Studios</p>
+            <p>Crafted with a commitment to pure procedural mathematics, tactile responsiveness, and elegant minimalism.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>Design Philosophy</h3>
+            <p>Grid Leap was created to provide a mindful, distraction-free spatial puzzle experience. By converting every number into a dynamic leap distance, simple grids transform into intricate topological mazes. There are no pay-to-win timers or forced lives penalties in zen play—only pure geometric calculation.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>Procedural Engine &amp; Audio</h3>
+            <p>Built with modern web standards, HTML5 Canvas/SVG, and a custom procedural Web Audio synthesizer. All chime chords, bounce sounds, and leap harmonics are generated mathematically in real-time without external audio files.</p>
+          </section>
+
+          <section class="doc-section">
+            <h3>Typography &amp; Acknowledgments</h3>
+            <p>Brandmark typography set in <em>Bodoni Moda</em>. Number grid and technical indicators set in <em>JetBrains Mono</em> (SIL Open Font License).</p>
+          </section>
+
+          <div class="about-footer-box">
+            <p>© 2026 Olai Digital Studios</p>
+            <p>All rights reserved.</p>
+            <p><a href="mailto:support@olaidigitalstudios.com" class="about-mail-link">support@olaidigitalstudios.com</a></p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Dedicated Interactive Tutorial Modal -->
-<div class="overlay" id="rulesModal">
-  <div class="card tutorial-card" id="tutorialCard">
-    <div class="tutorial-header">
-      <div class="tutorial-top-row">
-        <span class="tutorial-badge" id="tutorialEyebrow">LESSON 1</span>
-        <div class="tutorial-dots" id="tutorialDots"></div>
-        <button class="tutorial-close-x" id="tutorialCloseX" title="Close Tutorial" aria-label="Close">✕</button>
+<!-- Dedicated Interactive Tutorial (Full-Screen Scene) -->
+<div class="overlay" id="rulesModal" data-view="welcome">
+  <!-- 1. SIMPLE WELCOME MODAL VIEW -->
+  <div class="tutorial-subview" id="tutorialWelcomeView">
+    <div class="tutorial-simple-card">
+      <button class="tutorial-close-x corner" id="welcomeCloseX" title="Close" aria-label="Close">✕</button>
+      <h2 class="tutorial-modal-title">HOW TO PLAY</h2>
+      <button class="btn btn-primary tutorial-modal-btn" id="welcomeStartBtn">
+        START ▶
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. INTERACTIVE LESSONS VIEW (GAMEPLAY ARENA) -->
+  <div class="tutorial-subview" id="tutorialGameView">
+    <div class="tutorial-card" id="tutorialCard">
+      <div class="tutorial-header">
+        <div class="tutorial-top-row">
+          <span class="tutorial-badge" id="tutorialEyebrow">LESSON 1</span>
+          <div class="tutorial-dots" id="tutorialDots"></div>
+          <button class="tutorial-close-x" id="tutorialCloseX" title="Close Tutorial" aria-label="Close">✕</button>
+        </div>
+        <h2 class="tutorial-title" id="tutorialTitle">Number = Leap Distance</h2>
+        <div class="tutorial-prompt-box">
+          <p class="tutorial-prompt" id="tutorialPrompt">Swipe RIGHT to leap 1 tile into the Goal.</p>
+        </div>
       </div>
-      <h2 class="tutorial-title" id="tutorialTitle">Number = Leap Distance</h2>
-      <div class="tutorial-prompt-box">
-        <p class="tutorial-prompt" id="tutorialPrompt">Swipe RIGHT to leap 1 tile into the Goal.</p>
+
+      <!-- Centered Micro-Board Arena -->
+      <div class="tutorial-board-container" id="tutorialBoardContainer">
+        <div class="tutorial-board" id="tutorialBoard"></div>
+        <!-- Curved Leap Trajectory Guide (replaces hand icon) -->
+        <svg class="tutorial-arc-svg" id="tutorialArcSvg" aria-hidden="true">
+          <!-- Preview arc for subsequent step to Goal -->
+          <path id="tutArcPathStep2" class="tutorial-arc-path step2" d="" />
+          <polygon id="tutArcArrowStep2" class="tutorial-arc-arrow step2" points="" />
+
+          <!-- Active leap arc -->
+          <path id="tutArcPathActive" class="tutorial-arc-path active" d="" />
+          <polygon id="tutArcArrowActive" class="tutorial-arc-arrow active" points="" />
+        </svg>
       </div>
     </div>
+  </div>
 
-    <!-- Centered Micro-Board Arena -->
-    <div class="tutorial-board-container" id="tutorialBoardContainer">
-      <div class="tutorial-board" id="tutorialBoard"></div>
-      <!-- Curved Leap Trajectory Guide (replaces hand icon) -->
-      <svg class="tutorial-arc-svg" id="tutorialArcSvg" aria-hidden="true">
-        <!-- Preview arc for subsequent step to Goal -->
-        <path id="tutArcPathStep2" class="tutorial-arc-path step2" d="" />
-        <polygon id="tutArcArrowStep2" class="tutorial-arc-arrow step2" points="" />
-
-        <!-- Active leap arc -->
-        <path id="tutArcPathActive" class="tutorial-arc-path active" d="" />
-        <polygon id="tutArcArrowActive" class="tutorial-arc-arrow active" points="" />
-      </svg>
+  <!-- 3. SIMPLE TUTORIAL COMPLETE MODAL VIEW -->
+  <div class="tutorial-subview" id="tutorialCompleteView">
+    <div class="tutorial-simple-card">
+      <button class="tutorial-close-x corner" id="completeCloseX" title="Close" aria-label="Close">✕</button>
+      <div class="complete-check-icon">✓</div>
+      <h2 class="tutorial-modal-title">TUTORIAL COMPLETE</h2>
+      <button class="btn btn-primary tutorial-modal-btn" id="completeCampaignBtn">
+        PLAY ▶
+      </button>
     </div>
   </div>
 </div>

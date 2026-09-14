@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Grid Leap — Studio Intro Screen Demo (Bodoni Moda Edition)</title>
+<!-- Google Fonts: Bodoni Moda & JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700;1,6..96,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root,
+  [data-theme="obsidian"] {
+    --studio-bg: #121316;
+    --studio-text: #F4F4F5;
+    --studio-fog: #8E95A5;
+    --studio-accent: #FFB800;
+    --studio-reticle: rgba(255, 184, 0, 0.22);
+    --studio-grid-line: rgba(255, 255, 255, 0.035);
+    --studio-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  [data-theme="vellum"] {
+    --studio-bg: #F7F5F0;
+    --studio-text: #1A1A1A;
+    --studio-fog: #6B6B6B;
+    --studio-accent: #D97706;
+    --studio-reticle: rgba(217, 119, 6, 0.26);
+    --studio-grid-line: rgba(60, 50, 40, 0.04);
+    --studio-shadow: 0 4px 25px rgba(60, 50, 40, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--studio-bg);
+  }
+
+  /* Fullscreen Overlay Container */
+  .startup-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    background-color: var(--studio-bg);
+    background-image:
+      linear-gradient(var(--studio-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--studio-grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: center center;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.7s cubic-bezier(0.2, 0, 0, 1), visibility 0.7s ease;
+    opacity: 1;
+    visibility: visible;
+    cursor: pointer;
+  }
+
+  .startup-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Architectural Reticle Frame with Precision Corner Brackets */
+  .startup-reticle-frame {
+    position: relative;
+    width: clamp(280px, 80vw, 440px);
+    height: clamp(230px, 40vh, 320px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .reticle-corner {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--studio-reticle);
+    pointer-events: none;
+    transition: border-color 220ms ease;
+  }
+
+  .reticle-corner.top-left {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .reticle-corner.top-right {
+    top: 0;
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+  }
+
+  .reticle-corner.bottom-left {
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    border-top: none;
+  }
+
+  .reticle-corner.bottom-right {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+  }
+
+  /* Slide Container */
+  .startup-slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .startup-slide.exit {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  /* Logo Content Layout */
+  .startup-logo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Bodoni Moda', serif;
+    color: var(--studio-text);
+    animation: studioLogoEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes studioLogoEntrance {
+    0% {
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Primary Studio Name: OLAI */
+  .logo-text-olai {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(46px, 11vw, 64px);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    margin-right: -0.12em; /* Optical center fix */
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--studio-text);
+    text-shadow: var(--studio-shadow);
+  }
+
+  /* Subtitle Studio Text: DIGITAL STUDIOS */
+  .logo-text-studios {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(20px, 4.8vw, 32px);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    margin-right: -0.1em; /* Optical center fix */
+    line-height: 1.0;
+    margin-top: 10px;
+    color: var(--studio-text);
+    text-transform: uppercase;
+    text-shadow: var(--studio-shadow);
+  }
+
+  /* "presents" Tag */
+  .logo-presents {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em; /* Optical center fix */
+    margin-top: 20px;
+    color: var(--studio-fog);
+    text-transform: lowercase;
+    opacity: 0.65;
+  }
+
+  /* Interactive Demo Controls */
+  .demo-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10000;
+  }
+
+  .demo-btn {
+    background: rgba(18, 19, 22, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFF;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 140ms ease;
+  }
+
+  .demo-btn:hover {
+    border-color: #FFB800;
+    color: #FFB800;
+  }
+</style>
+</head>
+<body data-theme="obsidian">
+
+  <!-- Startup Overlay Component -->
+  <div id="startupOverlay" class="startup-overlay">
+    <div class="startup-reticle-frame">
+      <span class="reticle-corner top-left"></span>
+      <span class="reticle-corner top-right"></span>
+      <span class="reticle-corner bottom-left"></span>
+      <span class="reticle-corner bottom-right"></span>
+
+      <div id="studioScreen" class="startup-slide">
+        <div class="startup-logo-box">
+          <div class="logo-text-olai">OLAI</div>
+          <div class="logo-text-studios">DIGITAL STUDIOS</div>
+          <div class="logo-presents">presents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Demo Controls -->
+  <div class="demo-bar">
+    <button class="demo-btn" id="demoThemeBtn" onclick="toggleDemoTheme(event)">Switch Theme (Obsidian / Vellum)</button>
+    <button class="demo-btn" id="demoReplayBtn" onclick="replayIntro(event)">Replay Intro</button>
+  </div>
+
+  <script>
+    function toggleDemoTheme(e) {
+      e.stopPropagation();
+      const current = document.body.dataset.theme;
+      document.body.dataset.theme = current === 'vellum' ? 'obsidian' : 'vellum';
+    }
+
+    let timeoutId = null;
+
+    function runStudioIntro(onComplete) {
+      const overlay = document.getElementById('startupOverlay');
+      const studioScreen = document.getElementById('studioScreen');
+      if (!overlay || !studioScreen) return;
+
+      overlay.classList.remove('fade-out');
+      studioScreen.classList.remove('exit');
+
+      let isDone = false;
+
+      function finishIntro() {
+        if (isDone) return;
+        isDone = true;
+        if (timeoutId) clearTimeout(timeoutId);
+
+        studioScreen.classList.add('exit');
+
+        setTimeout(() => {
+          overlay.classList.add('fade-out');
+          setTimeout(() => {
+            if (typeof onComplete === 'function') onComplete();
+          }, 600);
+        }, 300);
+      }
+
+      overlay.onpointerdown = finishIntro;
+      timeoutId = setTimeout(finishIntro, 2500);
+    }
+
+    function replayIntro(e) {
+      e.stopPropagation();
+      const overlay = document.getElementById('startupOverlay');
+      const studioScreen = document.getElementById('studioScreen');
+      overlay.classList.remove('fade-out');
+      studioScreen.classList.remove('exit');
+      runStudioIntro();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      runStudioIntro(() => {
+        console.log('Grid Leap Studio Intro completed — Home Hub ready.');
+      });
+    });
+  </script>
+</body>
+</html>

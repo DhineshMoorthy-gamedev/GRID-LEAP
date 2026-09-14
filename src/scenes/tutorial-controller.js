@@ -188,7 +188,23 @@ export const TutorialController = {
     closeX: null,
     resetBtn: null,
     actionBtn: null,
-    closeBtn: null
+    closeBtn: null,
+    welcomeView: null,
+    gameView: null,
+    completeView: null,
+    welcomeStartBtn: null,
+    welcomeCloseX: null,
+    completeCampaignBtn: null,
+    completeHomeBtn: null,
+    completeReplayBtn: null,
+    completeCloseX: null
+  },
+
+  setView(viewName) {
+    const modal = this.dom.modal || document.getElementById("rulesModal");
+    if (modal) {
+      modal.dataset.view = viewName;
+    }
   },
 
   init() {
@@ -210,6 +226,55 @@ export const TutorialController = {
     this.dom.actionBtn = document.getElementById("tutorialActionBtn");
     this.dom.closeBtn = document.getElementById("closeTutorialBtn");
 
+    // Subviews & Simple Modal Buttons
+    this.dom.welcomeView = document.getElementById("tutorialWelcomeView");
+    this.dom.gameView = document.getElementById("tutorialGameView");
+    this.dom.completeView = document.getElementById("tutorialCompleteView");
+    this.dom.welcomeStartBtn = document.getElementById("welcomeStartBtn");
+    this.dom.welcomeCloseX = document.getElementById("welcomeCloseX");
+    this.dom.completeCampaignBtn = document.getElementById("completeCampaignBtn");
+    this.dom.completeHomeBtn = document.getElementById("completeHomeBtn");
+    this.dom.completeReplayBtn = document.getElementById("completeReplayBtn");
+    this.dom.completeCloseX = document.getElementById("completeCloseX");
+
+    if (this.dom.welcomeStartBtn) {
+      this.dom.welcomeStartBtn.addEventListener("click", () => {
+        this.startTutorialFromWelcome();
+      });
+    }
+
+    if (this.dom.welcomeCloseX) {
+      this.dom.welcomeCloseX.addEventListener("click", () => this.close());
+    }
+
+    if (this.dom.completeCampaignBtn) {
+      this.dom.completeCampaignBtn.addEventListener("click", () => {
+        this.close();
+        if (window.SceneRouter) {
+          window.SceneRouter.showScreen("GAME");
+        }
+      });
+    }
+
+    if (this.dom.completeHomeBtn) {
+      this.dom.completeHomeBtn.addEventListener("click", () => {
+        this.close();
+        if (window.SceneRouter) {
+          window.SceneRouter.showScreen("HOME");
+        }
+      });
+    }
+
+    if (this.dom.completeReplayBtn) {
+      this.dom.completeReplayBtn.addEventListener("click", () => {
+        this.loadStage(0);
+      });
+    }
+
+    if (this.dom.completeCloseX) {
+      this.dom.completeCloseX.addEventListener("click", () => this.close());
+    }
+
     if (this.dom.closeX) {
       this.dom.closeX.addEventListener("click", () => this.close());
     }
@@ -227,6 +292,17 @@ export const TutorialController = {
     }
 
     window.addEventListener("resize", () => {
+      if (this.isOpen()) {
+        const stage = TUTORIAL_STAGES[this.currentStageIdx];
+        if (stage && this.dom.board) {
+          const isTablet = window.innerWidth >= 560 && window.innerHeight >= 760;
+          const cellSize = isTablet ? 64 : 54;
+          this.dom.board.style.setProperty("--tut-cell-size", `${cellSize}px`);
+          this.dom.board.style.gridTemplateColumns = `repeat(${stage.w}, ${cellSize}px)`;
+          this.dom.board.style.gridTemplateRows = `repeat(${stage.h}, ${cellSize}px)`;
+          this.placeToken(this.playerPos, false);
+        }
+      }
       if (this.dom.arcSvg && this.dom.arcSvg.style.display !== "none") {
         this.showArcGuide();
       }
@@ -235,10 +311,19 @@ export const TutorialController = {
     this.setupSwipeHandling();
   },
 
-  open(stageIndex = 0) {
-    this.currentStageIdx = Math.max(0, Math.min(stageIndex, TUTORIAL_STAGES.length - 1));
+  open(stageIndex = null) {
     SceneRouter.pushModal("RULES");
-    this.loadStage(this.currentStageIdx);
+    if (stageIndex === null || typeof stageIndex === "undefined") {
+      this.setView("welcome");
+    } else {
+      this.currentStageIdx = Math.max(0, Math.min(stageIndex, TUTORIAL_STAGES.length - 1));
+      this.loadStage(this.currentStageIdx);
+    }
+  },
+
+  startTutorialFromWelcome() {
+    this.currentStageIdx = 0;
+    this.loadStage(0);
   },
 
   close() {
@@ -249,6 +334,7 @@ export const TutorialController = {
   },
 
   loadStage(idx) {
+    this.setView("game");
     this.hideArcGuide();
     this.currentStageIdx = idx;
     const stage = TUTORIAL_STAGES[idx];
@@ -317,7 +403,8 @@ export const TutorialController = {
   renderMicroBoard(stage) {
     if (!this.dom.board) return;
     this.dom.board.innerHTML = "";
-    const cellSize = 48;
+    const isTablet = window.innerWidth >= 560 && window.innerHeight >= 760;
+    const cellSize = isTablet ? 64 : 54;
     this.dom.board.style.setProperty("--tut-cell-size", `${cellSize}px`);
     this.dom.board.style.gridTemplateColumns = `repeat(${stage.w}, ${cellSize}px)`;
     this.dom.board.style.gridTemplateRows = `repeat(${stage.h}, ${cellSize}px)`;
@@ -662,17 +749,22 @@ export const TutorialController = {
     const goalCell = this.dom.board?.querySelector(".tut-cell.goal-cell");
     if (goalCell) goalCell.classList.add("pulse-success");
 
-    // Automated advance to next stage (~750ms) or dismiss after final stage (~950ms)
+    // Automated advance to next stage (~750ms) or transition to Complete screen after final stage (~850ms)
     const isLastStage = (this.currentStageIdx >= TUTORIAL_STAGES.length - 1);
-    const delay = isLastStage ? 950 : 750;
+    const delay = isLastStage ? 850 : 750;
 
     this._autoAdvanceTimer = setTimeout(() => {
       if (!isLastStage) {
         this.loadStage(this.currentStageIdx + 1);
       } else {
-        this.close();
+        this.showCompleteScreen();
       }
     }, delay);
+  },
+
+  showCompleteScreen() {
+    this.setView("complete");
+    PlatformBridge.vibrateSuccess?.();
   },
 
   isOpen() {

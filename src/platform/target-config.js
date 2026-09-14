@@ -35,14 +35,18 @@ export const TargetConfig = {
     keyboardHints: activeMode === TARGET_MODES.ITCH || (activeMode === TARGET_MODES.WEB && !("ontouchstart" in (typeof window !== "undefined" ? window : {}))),
     // Web Share API
     socialShare: activeMode === TARGET_MODES.WEB,
-    // Home Hub Dev topbar controls (Mode pill, Settings, Theme toggle)
+    // Home Hub Dev topbar controls (Mode pill)
     homeDevControls: activeMode === TARGET_MODES.EDITOR,
+    // Advanced Settings (Relax mode, trail toggle, dev mode, tutorial button)
+    editorSettings: activeMode === TARGET_MODES.EDITOR,
     // Home Hub Level Selector & difficulty strip
     homeLevelSelector: activeMode === TARGET_MODES.EDITOR,
     // Gameplay screen Dev controls (Dev Stepper, Theme toggle, Breadcrumbs toggle, Diagnostics)
     gameDevControls: activeMode === TARGET_MODES.EDITOR,
     // Bottom banner ad slot room
-    showAdBanner: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.WEB
+    showAdBanner: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.WEB,
+    // In-App Purchases (Remove Ads) - Play Store only
+    removeAdsIAP: activeMode === TARGET_MODES.PLAYSTORE
   }
 };
 

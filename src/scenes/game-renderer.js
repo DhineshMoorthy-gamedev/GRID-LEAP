@@ -42,6 +42,8 @@ export const DOM = {
   consumerPlayBtn: document.getElementById("consumerPlayBtn"),
 
   // Game Play Screen
+  gameTopBar: document.querySelector(".game-topbar"),
+  gridStage: document.querySelector(".grid-stage"),
   gameBackBtn: document.getElementById("gameBackBtn"),
   trailToggleBtn: document.getElementById("trailToggleBtn"),
   gameThemeToggleBtn: document.getElementById("gameThemeToggleBtn"),
@@ -132,7 +134,15 @@ export const DOM = {
   settingRelaxMode: document.getElementById("settingRelaxMode"),
   settingTrail: document.getElementById("settingTrail"),
   settingDevMode: document.getElementById("settingDevMode"),
-  closeSettingsBtn: document.getElementById("closeSettingsBtn"),
+  closeSettingsBtn: document.getElementById("settingsCloseBtn") || document.getElementById("closeSettingsBtn"),
+  settingsCloseBtn: document.getElementById("settingsCloseBtn"),
+  btnOpenPrivacy: document.getElementById("btnOpenPrivacy"),
+  btnOpenAbout: document.getElementById("btnOpenAbout"),
+  privacyBackBtn: document.getElementById("privacyBackBtn"),
+  aboutBackBtn: document.getElementById("aboutBackBtn"),
+  btnRemoveAds: document.getElementById("btnRemoveAds"),
+  settingsSectionIAP: document.getElementById("settingsSectionIAP"),
+  settingsSectionDev: document.getElementById("settingsSectionDev"),
 
   // Editor & Platform Targets
   screenEditor: document.getElementById("screenEditor"),
@@ -171,6 +181,7 @@ export function getTokenElement() {
 export function applyTheme(themeName) {
   const theme = themeName === "vellum" ? "vellum" : "obsidian";
   document.documentElement.setAttribute("data-theme", theme);
+  if (document.body) document.body.setAttribute("data-theme", theme);
 
   // Status bar meta color
   const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -405,15 +416,45 @@ export function flushLevelCreationAnimation() {
   }
 }
 
+export function calculateBoardSize(level) {
+  if (!level) return 360;
+  const maxDim = Math.max(level.w, level.h);
+
+  // Measure actual app-root width (fluid on tablets/mobile, constrained on desktop)
+  const appRoot = DOM.board ? DOM.board.closest(".app-root") : document.querySelector(".app-root");
+  const containerW = appRoot ? appRoot.clientWidth : (window.innerWidth <= 840 ? window.innerWidth : 480);
+
+  // Tablet scaling: allow larger board size when width >= 560px and height >= 780px
+  const isTablet = containerW >= 560 && window.innerHeight >= 780;
+  const boardMax = isTablet
+    ? (maxDim >= 7 ? 500 : (maxDim >= 5 ? 460 : 420))
+    : (maxDim >= 7 ? 405 : (maxDim >= 5 ? 385 : 360));
+
+  // Responsive Width
+  const availWidth = Math.max(200, containerW - (containerW < 420 ? 24 : 48));
+
+  // Responsive Vertical Headroom (viewport minus topbar, lives row, toolbar, ad slot, safe insets)
+  const topBarH = DOM.gameTopBar?.offsetHeight || 52;
+  const livesH = (DOM.hudLives && DOM.hudLives.offsetParent !== null) ? 46 : 10;
+  const toolBarH = DOM.gameToolBar?.offsetHeight || 50;
+  const isAdTarget = document.body.dataset.targetMode === "playstore" || document.body.dataset.targetMode === "web";
+  const adH = (DOM.adBannerSlot && (DOM.adBannerSlot.offsetHeight > 0 || isAdTarget)) ? (DOM.adBannerSlot.offsetHeight || 56) : 0;
+  const verticalChrome = topBarH + livesH + toolBarH + adH + 28; // stage padding & margins
+  const availHeight = Math.max(200, window.innerHeight - verticalChrome);
+
+  return Math.round(Math.min(boardMax, availWidth, availHeight));
+}
+
 export function renderBoard(level, onCellClick, { animate = true } = {}) {
   flushLevelCreationAnimation();
 
   const maxDim = Math.max(level.w, level.h);
   DOM.board.dataset.gridSize = maxDim;
-  const boardMax = maxDim >= 7 ? 405 : (maxDim >= 5 ? 385 : 360);
-  const size = Math.min(boardMax, window.innerWidth - (window.innerWidth < 420 ? 24 : 44));
+  const size = calculateBoardSize(level);
   DOM.board.style.width = size + "px";
+  DOM.board.style.height = size + "px";
   DOM.board.style.gridTemplateColumns = `repeat(${level.w}, 1fr)`;
+  DOM.board.style.gridTemplateRows = `repeat(${level.h}, 1fr)`;
   DOM.board.innerHTML = "";
   cellEls = [];
 
@@ -968,13 +1009,13 @@ export function renderViability(viability, isGoal = false, isDeadEnd = false, pl
         if (DOM.undoBtn) DOM.undoBtn.classList.add("attention-pulse");
       } else {
         DOM.hudPathStatus.classList.add("viable");
-        DOM.hudPathText.textContent = "-- LEFT";
+        DOM.hudPathText.textContent = "-- TO GOAL";
         if (DOM.hudPathDot) DOM.hudPathDot.textContent = "●";
       }
     } else {
       DOM.hudPathStatus.classList.add("viable");
       if (viability && typeof viability.moves === "number" && viability.moves > 0) {
-        DOM.hudPathText.textContent = `${viability.moves} LEFT`;
+        DOM.hudPathText.textContent = `${viability.moves} TO GOAL`;
       } else {
         DOM.hudPathText.textContent = "ON TRACK";
       }
