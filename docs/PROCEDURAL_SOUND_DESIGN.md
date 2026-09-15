@@ -1,8 +1,8 @@
-# Grid Leap — Procedural Sound Design Plan
+# Grid Leap — Procedural Sound Design Plan & Specification
 
-> **Status:** Planning / Design Phase — READ ONLY. No audio code has been implemented yet.
+> **Status:** Fully Implemented & Audited (100% Procedural Web Audio Synthesis)
 > **Date:** September 2026
-> **Designer Role:** Sound Designer (AI-assisted codebase analysis)
+> **Architecture:** Zero External Assets, Mobile & Cross-Platform Verified (Android, iOS Safari, Web, Desktop)
 
 ---
 
@@ -110,6 +110,8 @@ LOW       — Editor, dev tools, secondary polish.
 | SFX-25 | LOW | `editor-controller.js` (solver → SOLVABLE) | Editor BFS solver confirms solvable | `editorSolvable` | Design confirmation |
 | SFX-26 | LOW | `editor-controller.js` (solver → UNSOLVABLE) | Editor BFS solver rejects | `editorUnsolvable` | Design rejection |
 | SFX-27 | LOW | `editor-controller.js` (export JSON) | Level JSON copied to clipboard | `editorExport` | Clipboard confirmation |
+| SFX-28 | HIGH | `game-renderer.js` (`renderBoard`) | Grid cells expand radially outward from center | `radialTileGrow` | Concentric marimba drops |
+| SFX-29 | MEDIUM | `main.js` (`#gameBackBtn`, modals, editor) | Return to previous screen / Home Hub | `navBack` | Silky smooth descending fifth |
 
 ---
 
@@ -177,72 +179,65 @@ Timing:  Fires at same moment as `vibrateWarning()` — i.e., at 190 ms mark ins
 
 ---
 
-### SFX-04 — `win` (Level complete)
+### SFX-04 — `win` (Level complete - Pure Crystalline Chord)
 
-**Character:** Three-note ascending chord. Crystalline, resolved, slightly shimmering.
-**Duration:** 700 ms
-
-```
-Note 1: sine  330 Hz  — fires at t=0,   gain 0→0.3 in 20ms, release 600ms
-Note 2: sine  415 Hz  — fires at t=80ms, gain 0→0.25 in 20ms, release 500ms
-Note 3: sine  495 Hz  — fires at t=160ms, gain 0→0.3 in 20ms, release 500ms
-
-Shimmer:  Soft tremolo on Note 3 via gain LFO: 8 Hz sine modulation, depth ±0.04
-Filter:   Highpass at 250 Hz on all notes
-
-Total duration: ~700 ms (all notes overlap and fade)
-Vol: 0.35
-```
-
----
-
-### SFX-05 — `outOfLives` (All lives gone)
-
-**Character:** Heavy descending sweep + noise burst. Gravity and finality, but not ear-splitting.
-**Duration:** 500 ms
+**Character:** Pure, mathematically harmonized E-Major chord (E4 → G#4 → B4 → E5). Zero detuned beating, zero static, zero noise — pristine crystalline bloom.
+**Duration:** 850 ms
 
 ```
-Sweep osc: sawtooth
-  Freq:    220 Hz → 55 Hz over 350 ms (exponential down)
-  Filter:  lowpass at 600 Hz → 200 Hz over 350 ms
-  Gain:    attack 10 ms → 0.25 sustain → release 300 ms
-
-Noise burst: white noise buffer
-  Duration: 150 ms
-  Filter:   bandpass center 180 Hz, Q 1.5
-  Gain:     attack 5 ms → 0.15 → release 100 ms
-  Delay:    fires at t=200ms (after sweep starts)
-
-Vol: 0.3 combined
+Sub-master Bus: Hold at 0.70 until t=0.35s, exponential decay to silence (0.00001) over 850ms
+Notes:
+  Note 1: sine  329.63 Hz (E4)  — fires at t=0ms,   gain 0→0.16 in 16ms, release to 850ms
+  Note 2: sine  415.30 Hz (G#4) — fires at t=80ms,  gain 0→0.15 in 16ms, release to 850ms (Major 3rd)
+  Note 3: sine  493.88 Hz (B4)  — fires at t=160ms, gain 0→0.17 in 16ms, release to 850ms (5th)
+  Note 4: sine  659.25 Hz (E5)  — fires at t=240ms, gain 0→0.09 in 16ms, release to 850ms (Octave bell)
+Filter: Highpass at 200 Hz on all notes
+Vol:    0.17 peak (smooth, transparent, zero static)
 ```
 
 ---
 
-### SFX-06 — `undo` (Undo last move)
+### SFX-05 — `outOfLives` (All lives gone - Melancholy Minor Mirror of Win)
 
-**Character:** Short downward pitch sweep. Inverse of leap. Quick, purposeful.
-**Duration:** 100 ms
+**Character:** Poignant minor resolution phrase mirroring Win's timing, envelope, and root (E4 → G4 → C5 → B4). Pure sine tones, zero noise, zero low-frequency rumble, zero detuned static.
+**Duration:** 900 ms
 
 ```
-Oscillator: sine
-Freq:       300 Hz → 200 Hz over 70 ms (exponential down)
-Gain env:   attack 5 ms → sustain (0.2) 30 ms → release 60 ms
-Vol:        0.2
-Filter:     highpass 180 Hz
+Sub-master Bus: Hold at 0.70 until t=0.38s, exponential decay to silence (0.00001) over 900ms
+Notes:
+  Note 1: sine  329.63 Hz (E4)  — fires at t=0ms,   gain 0→0.16 in 16ms, release to 900ms
+  Note 2: sine  392.00 Hz (G4)  — fires at t=80ms,  gain 0→0.15 in 16ms, release to 900ms (minor 3rd)
+  Note 3: sine  523.25 Hz (C5)  — fires at t=160ms, gain 0→0.16 in 16ms, release to 900ms (minor 6th sigh)
+  Note 4: sine  493.88 Hz (B4)  — fires at t=260ms, gain 0→0.17 in 16ms, release to 900ms (resolves to 5th, forming E minor)
+Filter: Highpass at 200 Hz on all notes (clean, no low rumble)
+Vol:    0.17 peak
+```
+
+---
+
+### SFX-06 — `undo` (Undo last move / Rewind step)
+
+**Character:** Crisp, crystalline 2-tone rewind drop (D5 587.33 Hz → G4 392.00 Hz). High audibility across mobile & laptop speakers, zero low-end mud, snappy tactile feel.
+**Duration:** 130 ms
+
+```
+Tone 1: sine 587.33 Hz (D5) — fires at t=0ms, dur 75ms, attack 4ms, decay exp, vol 0.18
+Tone 2: sine 392.00 Hz (G4) — fires at t=35ms, dur 95ms, attack 4ms, decay exp, vol 0.19
+Filter: Highpass at 180 Hz
+Throttle: 80 ms
 ```
 
 ---
 
 ### SFX-07 — `restart` (Level restart)
 
-**Character:** Fast descending sweep followed by brief silence then a soft low "thud" — like rewinding tape.
-**Duration:** 180 ms
+**Character:** Fast, crisp 3-tone fresh board cascade (G4 → C5 → E5) with grounding root undertone. Pure tones, zero noise.
+**Duration:** 140 ms
 
 ```
-Sweep:  sawtooth 260 Hz → 100 Hz over 100 ms, gain 0→0.22→release 80ms
-Thud:   triangle 80 Hz, fires at t=130ms, gain 0→0.18→release 50ms
-Filter: lowpass at 500 Hz on sweep
-Vol:    0.22
+Pings:      sine G4 (392 Hz), C5 (523 Hz), E5 (659 Hz) across 56 ms (vol 0.15 - 0.18)
+Grounding:  sine C4 (261.63 Hz at t=28ms) for tactile reset feel without noise
+Vol:        0.18 peak
 ```
 
 ---
@@ -266,14 +261,14 @@ Timing: Fire at the end of startLevel(), after placeToken() call (~line 142)
 
 ### SFX-09 — `nextLevel` (Advance to next level)
 
-**Character:** Transition whoosh: short upswing into the level start chime (SFX-08). Two-part.
-**Duration:** 300 ms total
+**Character:** Warm, uplifting, forward-propelling C-Major harmonic ascent (C4 → G4 → C5). Pure sine tones in comfortable mid-range, harmonically preceding radial tile grow.
+**Duration:** 380 ms total
 
 ```
-Whoosh: white noise, filtered bandpass 400–800 Hz
-  Duration: 100 ms, gain 0→0.12→release 80 ms
-
-Then SFX-08 fires at t=120ms
+Ascent Triad:  sine C4 (261.63 Hz at t=0ms), sine G4 (392.00 Hz at t=45ms), sine C5 (523.25 Hz at t=90ms)
+Filter:        highpass at 180 Hz on all notes
+Bus Envelope:  sub-master bus decay down to silence (0.00001) over 380 ms
+Vol:           0.16 peak (silky-smooth forward propulsion, zero screeching, zero laser pitch slides)
 ```
 
 ---
@@ -308,15 +303,15 @@ Vol:    0.2
 
 ### SFX-12 — `tutorialWrong` (Tutorial wrong move)
 
-**Character:** Gentle low-mid buzz. Short. Not punitive — just "not quite."
-**Duration:** 80 ms
+**Character:** Gentle, warm damped triangle tap. Zero square wave buzz. Non-punitive, soft tactile cue.
+**Duration:** 70 ms
 
 ```
-Oscillator: square
-Freq:       130 Hz (static)
-Filter:     lowpass 350 Hz
-Gain:       attack 3 ms → 0.15 → release 60 ms
-Vol:        0.15
+Oscillator: triangle
+Freq:       140 Hz → 90 Hz over 50 ms
+Filter:     lowpass 220 Hz
+Gain:       attack 1 ms → 0.18 peak → release 65 ms
+Vol:        0.18
 ```
 
 ---
@@ -369,44 +364,14 @@ Vol: 0.2
 
 ---
 
-### SFX-16/17/18/19 — `modalOpen` / `modalClose` (UI modals)
+### SFX-16/17/20 — `modalOpen` / `modalClose` / `themeSwitch` (Silky Smooth Settle Chime)
 
-**Character:** Very brief high-frequency click. Nearly subliminal — just marks the transition.
-**Duration:** 30 ms open / 30 ms close
-
-```
-OPEN:
-  Oscillator: triangle
-  Freq:       800 Hz → 1000 Hz over 15 ms (short upward tick)
-  Gain:       attack 2 ms → 0.12 → release 20 ms
-
-CLOSE:
-  Oscillator: triangle
-  Freq:       900 Hz → 700 Hz over 15 ms (short downward tick)
-  Gain:       attack 2 ms → 0.10 → release 20 ms
-
-Filter: highpass 400 Hz (keep these crisp)
-Vol:    0.12
-```
-
----
-
-### SFX-20 — `themeSwitch` (Theme toggle Obsidian ↔ Vellum)
-
-**Character:** Short whoosh sweep — like a pane of light sliding in. 200 ms.
-**Duration:** 200 ms
+**Character:** Pure, silky-smooth descending sine fifth (G4 → C4). Soft gentle attack, zero noise buffers, zero clicks or pitch snaps. Shared across modal open, modal close, and theme toggle.
+**Duration:** 220 ms
 
 ```
-Noise: white noise buffer, 200 ms
-Filter A: bandpass, sweeping center from 800 Hz → 400 Hz over 200 ms
-Filter B: highpass at 200 Hz
-
-Gain: attack 5 ms → 0.14 peak (at 80 ms) → release 120 ms (fade out by 200 ms)
-
-Optional: pair with a brief sine shimmer
-  Sine 440 Hz, fires at t=80ms, gain 0→0.1→release 100ms
-
-Vol: 0.15
+Chord: Descending pure sine fifth (G4 392.00 Hz at t=0, C4 261.63 Hz at t=32ms)
+Bus:   Exponential decay down to 0.0001 over 220 ms
 ```
 
 ---
@@ -498,6 +463,22 @@ Vol:        0.18
 Tick 1: triangle 900 Hz, t=0,    gain 0→0.12→release 20ms
 Tick 2: triangle 1100 Hz, t=30ms, gain 0→0.10→release 20ms
 Vol:    0.12
+```
+
+---
+
+### SFX-28 — `tileGrow` (Radial Tile Bloom / Level Load)
+
+**Character:** Delicate, pure crystalline marimba/glass droplets ascending harmonically (C4 → E4 → G4 → C5 → E5) in lockstep with concentric tile rings expanding outward from center.
+**Duration:** ~350 - 520 ms (dynamic based on ring count)
+
+```
+Harmonic Scale: C4 (261.63 Hz), E4 (329.63 Hz), G4 (392.00 Hz), C5 (523.25 Hz), E5 (659.25 Hz)
+Ring Step:      90 ms between rings
+Synthesis:      Pure sine wave (vol 0.14) + subtle triangle 2nd harmonic (vol 0.03)
+Envelope:       Soft 4 ms attack → 75 ms exponential release per ring
+Sub-Master:     Overarching smooth bus decay down to silence (0.0001)
+Timing:         Triggered inside renderBoard() whenever shouldAnimate is true
 ```
 
 ---

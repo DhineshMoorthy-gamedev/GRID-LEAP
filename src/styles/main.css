@@ -760,12 +760,118 @@ body:not([data-target-mode="editor"]) #consumerLaunchSection {
 body:not([data-target-mode="editor"]) #targetModePill,
 body:not([data-target-mode="editor"]) #heroBanner,
 body:not([data-target-mode="editor"]) #editorLevelSelectSection,
+body:not([data-target-mode="editor"]) #editorAudioLabSection,
 body:not([data-target-mode="editor"]) #editorHubCard,
 body:not([data-target-mode="editor"]) #settingRowRelaxMode,
 body:not([data-target-mode="editor"]) #settingRowTrail,
 body:not([data-target-mode="editor"]) #settingRowDevMode,
 body:not([data-target-mode="editor"]) #settingRowTutorial {
   display: none !important;
+}
+
+/* ======================================================== */
+/* AUDIO DIAGNOSTICS LAB (Editor Mode Only)                 */
+/* ======================================================== */
+.editor-audio-lab-section {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="vellum"] .editor-audio-lab-section {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 16px rgba(60, 50, 40, 0.08);
+}
+
+.audio-lab-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.audio-lab-group {
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="vellum"] .audio-lab-group {
+  background: #F9F6F0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.audio-group-title {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.audio-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.audio-test-btn {
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 120ms ease;
+  user-select: none;
+}
+
+[data-theme="vellum"] .audio-test-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #1E2732;
+}
+
+.audio-test-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="vellum"] .audio-test-btn:hover {
+  box-shadow: 0 3px 8px rgba(60, 50, 40, 0.10);
+}
+
+.audio-test-btn:active,
+.audio-test-btn.playing {
+  transform: scale(0.94);
+  background: var(--accent-primary) !important;
+  color: var(--accent-contrast) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 12px var(--accent-primary-glow);
+}
+
+.sfx-icon {
+  font-size: 12px;
+  line-height: 1;
 }
 
 body[data-target-mode="playstore"] #homeThemeToggleBtn {

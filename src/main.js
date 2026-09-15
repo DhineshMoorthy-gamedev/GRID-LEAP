@@ -13,6 +13,7 @@ import { TargetConfig } from "./platform/target-config.js";
 import { EditorController } from "./editor/editor-controller.js";
 import { DailyManager } from "./state/daily-manager.js";
 import { formatDisplayDate } from "./core/daily-seed.js";
+import { AudioEngine } from "./audio/audio-engine.js";
 import {
   DOM,
   renderHomeHub,
@@ -102,7 +103,9 @@ export function startDailyLevel() {
   }
 
   clearDeadEndFeedback();
-  renderBoard(dailyLv, (r, c) => attemptMoveTo(r, c));
+  renderBoard(dailyLv, (r, c) => attemptMoveTo(r, c), {
+    onReadySound: () => AudioEngine.playDailyStart()
+  });
   SceneRouter.navigateTo("screenGame");
   placeToken(GameState.player, true);
   requestAnimationFrame(() => placeToken(GameState.player, true));
@@ -139,7 +142,9 @@ export function startLevel(i) {
 
   clearDeadEndFeedback();
   clearSolutionPath();
-  renderBoard(lv, (r, c) => attemptMoveTo(r, c));
+  renderBoard(lv, (r, c) => attemptMoveTo(r, c), {
+    onReadySound: () => AudioEngine.playLevelStart()
+  });
   SceneRouter.navigateTo("screenGame");
   placeToken(GameState.player, true);
   requestAnimationFrame(() => placeToken(GameState.player, true));
@@ -166,7 +171,9 @@ export function resumeLevelSession() {
 
   const lv = GameState.currentLevel();
   clearDeadEndFeedback();
-  renderBoard(lv, (r, c) => attemptMoveTo(r, c));
+  renderBoard(lv, (r, c) => attemptMoveTo(r, c), {
+    onReadySound: () => AudioEngine.playLevelStart()
+  });
 
   // Mark all visited cells on board
   const cellEls = getCellElements();
@@ -206,7 +213,9 @@ export function playtestCustomLevel(customLv) {
   }
 
   clearDeadEndFeedback();
-  renderBoard(customLv, (r, c) => attemptMoveTo(r, c));
+  renderBoard(customLv, (r, c) => attemptMoveTo(r, c), {
+    onReadySound: () => AudioEngine.playLevelStart()
+  });
   SceneRouter.navigateTo("screenGame");
   placeToken(GameState.player, true);
   requestAnimationFrame(() => placeToken(GameState.player, true));
@@ -308,7 +317,10 @@ export function attemptMoveTo(r, c) {
   flushLevelCreationAnimation();
   if (GameState.animating || SceneRouter.isInputBlocked()) return;
   const match = GameState.legalDests.find(d => d.r === r && d.c === c);
-  if (!match) return;
+  if (!match) {
+    AudioEngine.playBlocked();
+    return;
+  }
   doMove(r, c);
 }
 
@@ -337,6 +349,7 @@ export function doMove(r, c) {
   const lv = GameState.currentLevel();
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   PlatformBridge.vibrateLight();
+  AudioEngine.playLeap();
 
   // 3. Draw breadcrumb trail along with the glide
   const viability = solve(lv, GameState.player);
@@ -362,6 +375,7 @@ export function doMove(r, c) {
       GameState.loseLife();
       renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
       PlatformBridge.vibrateWarning();
+      AudioEngine.playDeadEnd();
 
       if (cellEls[r]?.[c]) {
         cellEls[r][c].classList.add("dead-end-hit");
@@ -375,8 +389,9 @@ export function doMove(r, c) {
       if (outOfLives) {
         // Auto-undo the dead end step first so player returns to previous tile, then present Out of Lives modal
         autoUndoTimer = setTimeout(() => {
-          undo();
+          undo(true);
           autoUndoTimer = setTimeout(() => {
+            AudioEngine.playOutOfLives();
             SceneRouter.pushModal("OUT_OF_LIVES");
             autoUndoTimer = null;
           }, 280);
@@ -386,7 +401,7 @@ export function doMove(r, c) {
 
       // Automatically undo the dead-end step after a well-paced pause so player clearly perceives the consequence
       autoUndoTimer = setTimeout(() => {
-        undo();
+        undo(true);
         autoUndoTimer = null;
       }, 800);
       return;
@@ -399,14 +414,18 @@ export function doMove(r, c) {
 export function checkWin() {
   const lv = GameState.currentLevel();
   if (isGoalCell(lv, GameState.player)) {
+    AudioEngine.playWin();
     PlatformBridge.vibrateSuccess();
     showWin();
   }
 }
 
-export function undo() {
+export function undo(isAuto = false) {
   clearAutoUndo();
   if (!GameState.history.length || GameState.animating || SceneRouter.isInputBlocked()) return;
+  if (isAuto !== true) {
+    AudioEngine.playUndo();
+  }
   const prev = GameState.history.pop();
   GameState.player = prev.player;
   GameState.moveCount = prev.moveCount;
@@ -444,6 +463,7 @@ export function restart() {
   flushLevelCreationAnimation();
   devStopAutoPlay();
   if (GameState.animating) return;
+  AudioEngine.playRestart();
   GameState.clearSession();
   const lv = GameState.currentLevel();
   GameState.player = [lv.start[0], lv.start[1]];
@@ -530,6 +550,7 @@ export function nextLevel() {
     SceneRouter.pushModal("FINAL");
     return;
   }
+  AudioEngine.playNextLevel();
   startLevel(GameState.levelIndex + 1);
 }
 
@@ -600,6 +621,7 @@ export function toggleSolutionPath() {
 
     showToast(msg, 2000);
     PlatformBridge.vibrateLight();
+    AudioEngine.playTrapped();
 
     // 2. Shake Hint button to signal no forward path from this tile
     if (DOM.hintBtn) {
@@ -634,6 +656,7 @@ export function toggleSolutionPath() {
   }
 
   // Viable state: activate hint and illuminate single-step compass target
+  AudioEngine.playHintOn();
   GameState.solutionPathVisible = true;
   if (DOM.hintBtn) DOM.hintBtn.classList.add("active");
   if (DOM.devShowSolutionBtn) {
@@ -799,6 +822,7 @@ export function handleToggleTheme(targetTheme) {
   applyTheme(nextTheme);
   refreshTrail(GameState.settings.showTrail);
   PlatformBridge.vibrateLight();
+  AudioEngine.playThemeSwitch();
   showToast(`Theme: ${nextTheme === "vellum" ? "☀️ Vellum & Deboss" : "🌙 Obsidian & Ochre"}`);
 }
 
@@ -812,6 +836,7 @@ export function handleToggleTrail(explicitValue) {
   }
   updateTrailButton(isNowOn);
   PlatformBridge.vibrateLight();
+  AudioEngine.playTrailToggle();
   showToast(isNowOn ? "Breadcrumbs Trail ON" : "Breadcrumbs Trail OFF");
 }
 
@@ -866,9 +891,84 @@ export function runStudioIntro() {
   autoDismissTimer = setTimeout(dismiss, displayDuration);
 }
 
+function setupAudioLab() {
+  const lab = document.getElementById("editorAudioLabSection");
+  if (!lab) return;
+
+  const sfxMap = {
+    leap: () => AudioEngine.playLeap(),
+    blocked: () => AudioEngine.playBlocked(),
+    deadEnd: () => AudioEngine.playDeadEnd(),
+    win: () => AudioEngine.playWin(),
+    outOfLives: () => AudioEngine.playOutOfLives(),
+    undo: () => AudioEngine.playUndo(),
+    restart: () => AudioEngine.playRestart(),
+    levelStart: () => AudioEngine.playLevelStart(),
+    tileGrow: () => AudioEngine.playRadialTileGrow(4, 90),
+    nextLevel: () => AudioEngine.playNextLevel(),
+    dailyStart: () => AudioEngine.playDailyStart(),
+    hintOn: () => AudioEngine.playHintOn(),
+    trapped: () => AudioEngine.playTrapped(),
+    tutorialSuccess: () => AudioEngine.playTutorialSuccess(),
+    tutorialWrong: () => AudioEngine.playTutorialWrong(),
+    tutorialComplete: () => AudioEngine.playTutorialComplete(),
+    modalOpen: () => AudioEngine.playModalOpen(),
+    modalClose: () => AudioEngine.playModalClose(),
+    themeSwitch: () => AudioEngine.playThemeSwitch(),
+    navBack: () => AudioEngine.playNavBack(),
+    trailToggle: () => AudioEngine.playTrailToggle(),
+    lifeGranted: () => AudioEngine.playLifeGranted(),
+    editorTick: () => AudioEngine.playEditorTick(),
+    editorSolvable: () => AudioEngine.playEditorSolvable(),
+    editorUnsolvable: () => AudioEngine.playEditorUnsolvable(),
+    editorExport: () => AudioEngine.playEditorExport()
+  };
+
+  lab.querySelectorAll(".audio-test-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const sfx = btn.dataset.sfx;
+      if (!sfx || !sfxMap[sfx]) return;
+
+      AudioEngine.resume();
+
+      // If sound was disabled in settings, enable it so tester can hear it immediately
+      if (!AudioEngine.isEnabled()) {
+        GameState.settings.soundEnabled = true;
+        GameState.save();
+        if (DOM.settingSound) DOM.settingSound.checked = true;
+        showToast("🔊 Sound re-enabled for testing", 1200);
+      }
+
+      btn.classList.add("playing");
+      setTimeout(() => btn.classList.remove("playing"), 200);
+
+      sfxMap[sfx]();
+    });
+  });
+}
+
 // App Boot Sequence
 export function bootApp() {
   GameState.init();
+  AudioEngine.init();
+  setupAudioLab();
+
+  SceneRouter.subscribe((event, data) => {
+    const modalName = data?.modalName;
+    const isSpecialMusicalModal = modalName === "WIN" || modalName === "OUT_OF_LIVES" || modalName === "FINAL";
+
+    if (event === "modal_opened") {
+      if (!isSpecialMusicalModal) {
+        AudioEngine.playModalOpen();
+      }
+    } else if (event === "modal_closed") {
+      if (!isSpecialMusicalModal) {
+        AudioEngine.playModalClose();
+      }
+    }
+  });
+
   applyTheme(GameState.getTheme());
   updateTrailButton(GameState.settings.showTrail);
 
@@ -939,11 +1039,16 @@ export function bootApp() {
   }
 
   // In-Game navigation
-  if (DOM.gameBackBtn) DOM.gameBackBtn.addEventListener("click", () => openHome());
+  if (DOM.gameBackBtn) {
+    DOM.gameBackBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
+      openHome();
+    });
+  }
   if (DOM.gamePauseBtn) DOM.gamePauseBtn.addEventListener("click", showPause);
 
   // In-Game Bottom tools
-  if (DOM.undoBtn) DOM.undoBtn.addEventListener("click", undo);
+  if (DOM.undoBtn) DOM.undoBtn.addEventListener("click", () => undo(false));
   if (DOM.hintBtn) DOM.hintBtn.addEventListener("click", toggleSolutionPath);
   if (DOM.restartBtn) DOM.restartBtn.addEventListener("click", restart);
 
@@ -957,6 +1062,7 @@ export function bootApp() {
   }
   if (DOM.pauseHomeBtn) {
     DOM.pauseHomeBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
       SceneRouter.popModal();
       if (GameState.customLevel) {
         SceneRouter.navigateTo("screenEditor");
@@ -975,6 +1081,7 @@ export function bootApp() {
   if (DOM.winNextBtn) DOM.winNextBtn.addEventListener("click", nextLevel);
   if (DOM.winHomeBtn) {
     DOM.winHomeBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
       SceneRouter.popModal();
       openHome();
     });
@@ -994,11 +1101,12 @@ export function bootApp() {
       const isGoal = isGoalCell(lv, GameState.player);
       const isDeadEnd = isDeadEndState(GameState.legalDests, isGoal);
       if (isDeadEnd && GameState.history.length > 0) {
-        undo();
+        undo(true);
       }
 
       // 4. Tactile and visual feedback
       PlatformBridge.vibrateSuccess();
+      AudioEngine.playLifeGranted();
       showToast("+1 Life added! Keep going", 1800);
     });
   }
@@ -1016,6 +1124,9 @@ export function bootApp() {
     DOM.settingSound.addEventListener("change", (e) => {
       GameState.settings.soundEnabled = e.target.checked;
       GameState.save();
+      if (e.target.checked) {
+        AudioEngine.playLevelStart();
+      }
     });
   }
   if (DOM.settingHaptics) {
@@ -1151,10 +1262,11 @@ export function bootApp() {
       if (match) {
         doMove(match.r, match.c);
       } else {
+        AudioEngine.playBlocked();
         showToast();
       }
     },
-    onUndo: undo,
+    onUndo: () => undo(false),
     onRestart: restart,
     onStepForward: () => {
       if (SceneRouter.getCurrentScreen() === "screenEditor") {
@@ -1206,8 +1318,12 @@ export function bootApp() {
 
   // Lifecycle coordination
   PlatformBridge.init({
-    onPause: () => GameState.save(),
+    onPause: () => {
+      GameState.save();
+      AudioEngine.suspend();
+    },
     onResume: () => {
+      AudioEngine.resume();
       handleResize();
       if (GameState.animating) {
         GameState.animating = false;

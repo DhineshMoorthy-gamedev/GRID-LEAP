@@ -5,6 +5,7 @@
 import { solve } from "../core/solver.js";
 import { LEVELS } from "../data/levels.js";
 import { SceneRouter } from "../scenes/scene-router.js";
+import { AudioEngine } from "../audio/audio-engine.js";
 
 export const EditorController = {
   level: {
@@ -39,7 +40,12 @@ export const EditorController = {
   bindDom() {
     // Back to Hub
     const backBtn = document.getElementById("editorBackBtn");
-    if (backBtn) backBtn.addEventListener("click", () => SceneRouter.navigateTo("screenHome"));
+    if (backBtn) {
+      backBtn.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        SceneRouter.navigateTo("screenHome");
+      });
+    }
 
     // Name & Phase
     const nameInput = document.getElementById("editorLevelName");
@@ -220,6 +226,7 @@ export const EditorController = {
   },
 
   onCellClick(r, c) {
+    AudioEngine.playEditorTick();
     if (this.selectedBrush === "start") {
       this.level.start = [r, c];
     } else if (this.selectedBrush === "goal") {
@@ -245,6 +252,11 @@ export const EditorController = {
     const pathTrailEl = document.getElementById("editorPathTrail");
 
     if (result.solvable) {
+      if (this._lastSolvable !== undefined && this._lastSolvable === false) {
+        AudioEngine.playEditorSolvable();
+      }
+      this._lastSolvable = true;
+
       this.level.optimal = result.moves;
       this.solutionPath = result.path;
       if (this.stepIndex >= this.solutionPath.length) {
@@ -275,6 +287,11 @@ export const EditorController = {
       this.updateStepperControls();
       this.updateGridStepperHighlight();
     } else {
+      if (this._lastSolvable !== undefined && this._lastSolvable === true) {
+        AudioEngine.playEditorUnsolvable();
+      }
+      this._lastSolvable = false;
+
       this.level.optimal = 0;
       this.stopAutoPlay();
       this.solutionPath = [];
@@ -479,9 +496,11 @@ export const EditorController = {
         copyBtn.textContent = "Copied to Clipboard!";
         setTimeout(() => { copyBtn.textContent = "Copy Code"; }, 1500);
       }
+      AudioEngine.playEditorExport();
     } catch (_) {
       textEl.select();
       document.execCommand("copy");
+      AudioEngine.playEditorExport();
     }
   },
 

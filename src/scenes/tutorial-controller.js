@@ -6,6 +6,7 @@
 import { calculateLegalDestinations } from "../core/rules.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { SceneRouter } from "./scene-router.js";
+import { AudioEngine } from "../audio/audio-engine.js";
 
 const TUTORIAL_STAGES = [
   // --- LESSON 1: Leap Distance 1 ---
@@ -267,6 +268,7 @@ export const TutorialController = {
 
     if (this.dom.completeReplayBtn) {
       this.dom.completeReplayBtn.addEventListener("click", () => {
+        AudioEngine.playLevelStart();
         this.loadStage(0);
       });
     }
@@ -322,6 +324,7 @@ export const TutorialController = {
   },
 
   startTutorialFromWelcome() {
+    AudioEngine.playLevelStart();
     this.currentStageIdx = 0;
     this.loadStage(0);
   },
@@ -387,6 +390,7 @@ export const TutorialController = {
   },
 
   resetCurrentStage() {
+    AudioEngine.playRestart();
     this.loadStage(this.currentStageIdx);
     PlatformBridge.vibrateLight?.();
   },
@@ -536,6 +540,7 @@ export const TutorialController = {
     clearTimeout(this._autoResetTimer);
 
     PlatformBridge.vibrateWarning?.();
+    AudioEngine.playDeadEnd();
 
     // Mark landed cell with red error styling and shake
     const cell = this.dom.board?.querySelector(`.tut-cell[data-r="${r}"][data-c="${c}"]`);
@@ -588,6 +593,7 @@ export const TutorialController = {
 
   handleWrongMoveFeedback(attemptedDir = null, tappedR = null, tappedC = null) {
     PlatformBridge.vibrateWarning?.() || PlatformBridge.vibrateLight?.();
+    AudioEngine.playTutorialWrong();
 
     // If already in wrong state, shake current cell and draw attention to Reset button
     if (this.isWrongState) {
@@ -677,6 +683,7 @@ export const TutorialController = {
     this.playerPos = [targetR, targetC];
     this.placeToken(this.playerPos, true);
     PlatformBridge.vibrateLight?.();
+    AudioEngine.playLeap();
 
     setTimeout(() => {
       this.isAnimating = false;
@@ -725,6 +732,7 @@ export const TutorialController = {
 
     const stage = TUTORIAL_STAGES[this.currentStageIdx];
     PlatformBridge.vibrateSuccess?.();
+    AudioEngine.playTutorialSuccess();
 
     if (this.dom.promptBox) {
       this.dom.promptBox.classList.remove("error-state");
@@ -765,6 +773,7 @@ export const TutorialController = {
   showCompleteScreen() {
     this.setView("complete");
     PlatformBridge.vibrateSuccess?.();
+    AudioEngine.playTutorialComplete();
   },
 
   isOpen() {

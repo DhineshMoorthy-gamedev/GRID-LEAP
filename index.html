@@ -140,6 +140,84 @@
         </div>
       </div>
 
+      <!-- Sound FX Diagnostics Lab (Visible only in Editor Mode) -->
+      <div class="editor-audio-lab-section" id="editorAudioLabSection">
+        <div class="section-title-wrap">
+          <h3 class="section-title">AUDIO DIAGNOSTICS LAB (DEV)</h3>
+          <span class="completion-pill" id="audioLabPill">24 SFX</span>
+        </div>
+
+        <div class="audio-lab-grid">
+          <!-- 1. Core Gameplay -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">Core Gameplay</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="leap"><span class="sfx-icon">⚡</span> Leap</button>
+              <button class="audio-test-btn" data-sfx="blocked"><span class="sfx-icon">🛑</span> Blocked</button>
+              <button class="audio-test-btn" data-sfx="deadEnd"><span class="sfx-icon">💀</span> Dead End</button>
+              <button class="audio-test-btn" data-sfx="win"><span class="sfx-icon">⭐</span> Win</button>
+              <button class="audio-test-btn" data-sfx="outOfLives"><span class="sfx-icon">💔</span> Out of Lives</button>
+              <button class="audio-test-btn" data-sfx="undo"><span class="sfx-icon">↺</span> Undo</button>
+              <button class="audio-test-btn" data-sfx="restart"><span class="sfx-icon">⟲</span> Restart</button>
+            </div>
+          </div>
+
+          <!-- 2. Progression & Daily -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">Progression & Daily</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="levelStart"><span class="sfx-icon">🔔</span> Level Start</button>
+              <button class="audio-test-btn" data-sfx="tileGrow"><span class="sfx-icon">✨</span> Radial Tile Grow</button>
+              <button class="audio-test-btn" data-sfx="nextLevel"><span class="sfx-icon">🚀</span> Next Level</button>
+              <button class="audio-test-btn" data-sfx="dailyStart"><span class="sfx-icon">📅</span> Daily Start</button>
+            </div>
+          </div>
+
+          <!-- 3. Hints & Navigation -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">Hints & Compass</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="hintOn"><span class="sfx-icon">🧭</span> Hint On</button>
+              <button class="audio-test-btn" data-sfx="trapped"><span class="sfx-icon">⚠️</span> Trapped</button>
+            </div>
+          </div>
+
+          <!-- 4. Interactive Tutorial -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">Tutorial Sandbox</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="tutorialSuccess"><span class="sfx-icon">✨</span> Step Solved</button>
+              <button class="audio-test-btn" data-sfx="tutorialWrong"><span class="sfx-icon">❓</span> Wrong Step</button>
+              <button class="audio-test-btn" data-sfx="tutorialComplete"><span class="sfx-icon">🏆</span> Tutorial Done</button>
+            </div>
+          </div>
+
+          <!-- 5. UI, Modals & Settings -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">UI & Settings</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="modalOpen"><span class="sfx-icon">📂</span> Modal Open</button>
+              <button class="audio-test-btn" data-sfx="modalClose"><span class="sfx-icon">📁</span> Modal Close</button>
+              <button class="audio-test-btn" data-sfx="themeSwitch"><span class="sfx-icon">🎨</span> Theme Switch</button>
+              <button class="audio-test-btn" data-sfx="navBack"><span class="sfx-icon">⬅️</span> Back Button</button>
+              <button class="audio-test-btn" data-sfx="trailToggle"><span class="sfx-icon">👣</span> Trail Toggle</button>
+              <button class="audio-test-btn" data-sfx="lifeGranted"><span class="sfx-icon">❤️</span> Life Granted</button>
+            </div>
+          </div>
+
+          <!-- 6. Level Designer -->
+          <div class="audio-lab-group">
+            <span class="audio-group-title">Level Designer (Lab)</span>
+            <div class="audio-btn-row">
+              <button class="audio-test-btn" data-sfx="editorTick"><span class="sfx-icon">✏️</span> Paint Cell</button>
+              <button class="audio-test-btn" data-sfx="editorSolvable"><span class="sfx-icon">✅</span> Solvable</button>
+              <button class="audio-test-btn" data-sfx="editorUnsolvable"><span class="sfx-icon">❌</span> Unsolvable</button>
+              <button class="audio-test-btn" data-sfx="editorExport"><span class="sfx-icon">📋</span> Export JSON</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Level Editor Hub Entry (Visible only in Editor Mode) -->
       <div class="editor-hub-card" id="editorHubCard" style="display:none;">
         <div class="editor-hub-info">

@@ -8,6 +8,7 @@
 import { SceneRouter } from "./scene-router.js";
 import { TargetConfig } from "../platform/target-config.js";
 import { showToast } from "./game-renderer.js";
+import { AudioEngine } from "../audio/audio-engine.js";
 
 export const SettingsController = {
   dom: {},
@@ -50,11 +51,17 @@ export const SettingsController = {
     }
 
     if (this.dom.privacyBackBtn) {
-      this.dom.privacyBackBtn.addEventListener("click", () => this.setView("main"));
+      this.dom.privacyBackBtn.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        this.setView("main");
+      });
     }
 
     if (this.dom.aboutBackBtn) {
-      this.dom.aboutBackBtn.addEventListener("click", () => this.setView("main"));
+      this.dom.aboutBackBtn.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        this.setView("main");
+      });
     }
 
     // In-App Purchase Action

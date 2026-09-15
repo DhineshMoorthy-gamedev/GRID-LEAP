@@ -1,6 +1,7 @@
 import { solve } from "../core/solver.js";
 import { TargetConfig } from "../platform/target-config.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
+import { AudioEngine } from "../audio/audio-engine.js";
 
 /**
  * UI Renderer & DOM Bindings
@@ -32,6 +33,7 @@ export const DOM = {
   dailyPlayText: document.getElementById("dailyPlayText"),
 
   editorLevelSelectSection: document.getElementById("editorLevelSelectSection"),
+  editorAudioLabSection: document.getElementById("editorAudioLabSection"),
   completionPill: document.getElementById("completionPill"),
   levelStrip: document.getElementById("levelStrip"),
   consumerLaunchSection: document.getElementById("consumerLaunchSection"),
@@ -245,6 +247,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
     // EDITOR MODE: Show Dev Controls, Hero Card, Level Selector
     // ----------------------------------------------------
     if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "block";
+    if (DOM.editorAudioLabSection) DOM.editorAudioLabSection.style.display = "block";
     if (DOM.heroBanner) DOM.heroBanner.style.display = "flex";
     if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "none";
 
@@ -302,6 +305,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
     // Dedicated single Next-Level Launch Card
     // ----------------------------------------------------
     if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "none";
+    if (DOM.editorAudioLabSection) DOM.editorAudioLabSection.style.display = "none";
     if (DOM.heroBanner) DOM.heroBanner.style.display = "none";
     if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "flex";
 
@@ -401,6 +405,7 @@ export function renderLivesHUD(lives, maxLives, isRelaxMode = false) {
 
 let creationAnimationTimer = null;
 let hapticDropTimer = null;
+let pendingReadySound = null;
 
 export function flushLevelCreationAnimation() {
   if (creationAnimationTimer) {
@@ -411,6 +416,7 @@ export function flushLevelCreationAnimation() {
     clearTimeout(hapticDropTimer);
     hapticDropTimer = null;
   }
+  pendingReadySound = null;
   if (DOM.board) {
     DOM.board.classList.remove("creating");
   }
@@ -445,8 +451,9 @@ export function calculateBoardSize(level) {
   return Math.round(Math.min(boardMax, availWidth, availHeight));
 }
 
-export function renderBoard(level, onCellClick, { animate = true } = {}) {
+export function renderBoard(level, onCellClick, { animate = true, onReadySound = null } = {}) {
   flushLevelCreationAnimation();
+  pendingReadySound = onReadySound;
 
   const maxDim = Math.max(level.w, level.h);
   DOM.board.dataset.gridSize = maxDim;
@@ -542,6 +549,10 @@ export function renderBoard(level, onCellClick, { animate = true } = {}) {
       });
     });
 
+    if (rings.length > 0) {
+      AudioEngine.playRadialTileGrow(rings.length, ringStepMs);
+    }
+
     // Breadcrumb Trail SVG layer (Multi-lane Overpass Architecture)
     const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
     const glowColor = isVellum ? "#1D4E6D" : "#FFB800";
@@ -613,6 +624,11 @@ export function renderBoard(level, onCellClick, { animate = true } = {}) {
     creationAnimationTimer = setTimeout(() => {
       if (DOM.board) DOM.board.classList.remove("creating");
       creationAnimationTimer = null;
+      if (typeof pendingReadySound === "function") {
+        const snd = pendingReadySound;
+        pendingReadySound = null;
+        snd();
+      }
     }, revealDuration);
 
     hapticDropTimer = setTimeout(() => {
@@ -679,6 +695,11 @@ export function renderBoard(level, onCellClick, { animate = true } = {}) {
       </div>
     `;
     DOM.board.appendChild(tokenEl);
+    if (typeof pendingReadySound === "function") {
+      const snd = pendingReadySound;
+      pendingReadySound = null;
+      snd();
+    }
   }
 }
 
