@@ -4321,8 +4321,17 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: transform 180ms ease;
+}
+
+.about-app-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 18px;
 }
 
 [data-theme="vellum"] .about-app-icon {
@@ -4420,12 +4429,16 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 .about-actions-row {
   width: 100%;
   max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 32px;
 }
 
+.about-action-btn,
 .about-more-btn {
   width: 100%;
-  height: 46px;
+  height: 44px;
   border-radius: 14px;
   font-size: 13.5px;
   font-weight: 600;
@@ -4440,6 +4453,19 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 .about-more-btn .about-external-icon {
   opacity: 0.7;
   margin-left: 2px;
+}
+
+.about-action-btn.btn-primary-highlight {
+  background: var(--teal) !important;
+  color: #0b141a !important;
+  border-color: var(--teal) !important;
+  box-shadow: 0 0 16px rgba(42, 161, 152, 0.4);
+}
+
+/* Hide Check for Updates on Web & Itch production targets */
+body[data-target-mode="web"] #aboutCheckUpdateBtn,
+body[data-target-mode="itch"] #aboutCheckUpdateBtn {
+  display: none !important;
 }
 
 .about-copyright-section {
@@ -4497,7 +4523,8 @@ body[data-target-mode="web"] .about-actions-row {
   left: 50%;
   transform: translateX(-50%) translateY(-10px);
   background: var(--ink-700);
-  border: 1px solid var(--danger);
+  border: 1px solid var(--teal, #2aa198);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
   color: var(--paper);
   padding: 8px 14px;
   border-radius: 8px;
@@ -4505,8 +4532,15 @@ body[data-target-mode="web"] .about-actions-row {
   opacity: 0;
   transition: opacity 160ms ease, transform 160ms ease;
   pointer-events: none;
-  z-index: 70;
+  z-index: 2500;
   white-space: nowrap;
+}
+
+[data-theme="vellum"] .toast {
+  background: #fffdf9;
+  border: 1px solid var(--teal, #2aa198);
+  color: #1a1a1a;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
 }
 
 .toast.show {
@@ -4521,6 +4555,38 @@ body[data-target-mode="web"] .about-actions-row {
   color: var(--amber);
   background: var(--ink-800);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.toast.danger {
+  border-color: var(--danger);
+  color: #ff6b6b;
+  background: var(--ink-800);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Home Hub Update Notification Dot */
+.update-badge-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--teal, #2aa198);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--teal, #2aa198);
+  display: none;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.update-badge-dot.show {
+  display: block;
+  animation: pulse-update-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-update-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
 }
 
 /* Developer Diagnostics Modal Overlay */
@@ -6039,11 +6105,13 @@ body[data-target-mode="playstore"] .tutorial-card {
 }
 
 /* Quick flash when tapping an invalid destination */
+.cell.illegal-tap,
 .tut-cell.illegal-tap {
   background: rgba(239, 68, 68, 0.3) !important;
   border: 2px solid #EF4444 !important;
 }
 
+[data-theme="vellum"] .cell.illegal-tap,
 [data-theme="vellum"] .tut-cell.illegal-tap {
   background: #FEE2E2 !important;
   border: 2px solid #DC2626 !important;

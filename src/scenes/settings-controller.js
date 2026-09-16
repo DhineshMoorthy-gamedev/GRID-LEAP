@@ -14,6 +14,7 @@ import { AudioEngine } from "../audio/audio-engine.js";
 export const SettingsController = {
   dom: {},
   currentView: "main",
+  versionName: "0.0.8",
 
   init() {
     this.dom = {
@@ -32,6 +33,15 @@ export const SettingsController = {
       hapticsUnavailablePill: document.getElementById("hapticsUnavailablePill"),
       settingHaptics: document.getElementById("settingHaptics")
     };
+
+    // Dynamic Version Sync across About pill and Settings footer
+    PlatformBridge.getAppVersion().then(ver => {
+      this.versionName = ver.versionName || "0.0.8";
+      const versionPill = document.querySelector(".about-version-pill");
+      if (versionPill) versionPill.textContent = `v${this.versionName}`;
+      const footerNote = document.querySelector(".settings-footer-note");
+      if (footerNote) footerNote.textContent = `GRID LEAP • v${this.versionName} • OLAI DIGITAL STUDIOS`;
+    });
 
     // Strategic Dimming: If haptics is unsupported on this device/browser
     const hapticsAvailable = PlatformBridge.isHapticsSupported();
@@ -104,6 +114,138 @@ export const SettingsController = {
         this.setView("main");
       });
     }
+
+    // In-App Updates Action (Google Play / Editor Simulator)
+    const checkUpdateBtn = document.getElementById("aboutCheckUpdateBtn");
+    const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
+
+    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.8") => {
+      if (!checkUpdateLabel) return;
+      if (state === "checking") {
+        checkUpdateLabel.textContent = "Checking...";
+      } else if (state === "downloading") {
+        checkUpdateLabel.textContent = "Downloading Update...";
+      } else if (state === "downloaded") {
+        checkUpdateLabel.textContent = "Restart to Apply Update 🚀";
+        if (checkUpdateBtn) checkUpdateBtn.classList.add("btn-primary-highlight");
+      } else if (state === "uptodate") {
+        checkUpdateLabel.textContent = `Latest Version (v${ver}) ✓`;
+        setTimeout(() => {
+          if (checkUpdateLabel) checkUpdateLabel.textContent = "Check for Updates";
+        }, 2500);
+      } else {
+        checkUpdateLabel.textContent = "Check for Updates";
+      }
+    };
+
+    if (checkUpdateBtn) {
+      checkUpdateBtn.addEventListener("click", async () => {
+        AudioEngine.playNavBack();
+        const curVer = this.versionName || TargetConfig.version || "0.0.8";
+        if ((TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) || TargetConfig.features.editorSettings) {
+          refreshUpdateBtnState("checking", curVer);
+          showToast("Checking Google Play for updates...");
+          const info = await PlatformBridge.checkForPlayStoreUpdate();
+          if (info?.isDownloaded) {
+            refreshUpdateBtnState("downloaded", curVer);
+            showToast("Update downloaded! Restarting to apply...", 2000);
+            setTimeout(() => {
+              PlatformBridge.completePlayStoreUpdate();
+            }, 1200);
+          } else if (info?.updateAvailable) {
+            showToast("Update found! Launching Google Play...", 2000);
+            const res = await PlatformBridge.startPlayStoreUpdate("flexible");
+            if (res?.userCanceled || res?.resultCode === 0) {
+              refreshUpdateBtnState("default", curVer);
+              showToast("Update canceled");
+            } else if (res?.userAccepted || res?.resultCode === -1 || res?.status === "flow_started") {
+              refreshUpdateBtnState("downloading", curVer);
+            } else {
+              refreshUpdateBtnState("default", curVer);
+            }
+          } else {
+            refreshUpdateBtnState("uptodate", curVer);
+            showToast(`You are on the latest version (v${curVer}) ✓`);
+          }
+        } else {
+          refreshUpdateBtnState("uptodate", curVer);
+          showToast(`You are on the latest version (v${curVer}) ✓`);
+        }
+      });
+    }
+
+    // Developer In-App Update Simulation Controls (Editor Mode)
+    const simAvailableBtn = document.getElementById("devSimUpdateAvailableBtn");
+    const simDownloadedBtn = document.getElementById("devSimUpdateDownloadedBtn");
+    const simResetBtn = document.getElementById("devSimUpdateResetBtn");
+
+    const highlightSimBtn = (activeBtn) => {
+      [simAvailableBtn, simDownloadedBtn, simResetBtn].forEach(b => {
+        if (b) {
+          b.style.borderColor = (b === activeBtn) ? "var(--teal)" : "";
+          b.style.color = (b === activeBtn) ? "var(--teal)" : "";
+        }
+      });
+    };
+
+    if (simAvailableBtn) {
+      simAvailableBtn.addEventListener("click", () => {
+        PlatformBridge.setSimulatedUpdateState({
+          updateAvailable: true,
+          availableVersionCode: 9,
+          isFlexibleAllowed: true,
+          installStatus: "PENDING"
+        });
+        highlightSimBtn(simAvailableBtn);
+        if (checkUpdateLabel) checkUpdateLabel.textContent = "Check for Updates";
+        const dot = document.getElementById("updateBadgeDot");
+        if (dot) dot.classList.add("show");
+        showToast("Simulated: Update Available (v0.0.9)");
+      });
+    }
+
+    if (simDownloadedBtn) {
+      simDownloadedBtn.addEventListener("click", () => {
+        PlatformBridge.setSimulatedUpdateState({
+          updateAvailable: false,
+          isDownloaded: true,
+          installStatus: "DOWNLOADED"
+        });
+        highlightSimBtn(simDownloadedBtn);
+        refreshUpdateBtnState("downloaded", this.versionName);
+        const dot = document.getElementById("updateBadgeDot");
+        if (dot) dot.classList.add("show");
+        showToast("Simulated: Update Downloaded (Ready)");
+      });
+    }
+
+    if (simResetBtn) {
+      simResetBtn.addEventListener("click", () => {
+        PlatformBridge.setSimulatedUpdateState(null);
+        highlightSimBtn(simResetBtn);
+        refreshUpdateBtnState("default", this.versionName);
+        const dot = document.getElementById("updateBadgeDot");
+        if (dot) dot.classList.remove("show");
+        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.8"})`);
+      });
+    }
+
+    // Lifecycle Update Listeners
+    PlatformBridge.onPlayStoreUpdateDownloading(() => {
+      refreshUpdateBtnState("downloading", this.versionName);
+    });
+
+    PlatformBridge.onPlayStoreUpdateCanceled(() => {
+      refreshUpdateBtnState("default", this.versionName);
+      showToast("Update canceled");
+    });
+
+    PlatformBridge.onPlayStoreUpdateDownloaded(() => {
+      refreshUpdateBtnState("downloaded", this.versionName);
+      const dot = document.getElementById("updateBadgeDot");
+      if (dot) dot.classList.add("show");
+      showToast("🚀 Update Downloaded! Restart to apply.", 4000);
+    });
 
     // "More Games by Olai" Action
     const moreGamesBtn = document.getElementById("aboutMoreGamesBtn");

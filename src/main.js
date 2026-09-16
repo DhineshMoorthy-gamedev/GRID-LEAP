@@ -35,7 +35,8 @@ import {
   renderWinModal,
   renderFinalModal,
   calculateBoardSize,
-  applyTheme
+  applyTheme,
+  shakeActiveCell
 } from "./scenes/game-renderer.js";
 import { TutorialController } from "./scenes/tutorial-controller.js";
 import { SettingsController } from "./scenes/settings-controller.js";
@@ -319,6 +320,7 @@ export function attemptMoveTo(r, c) {
   const match = GameState.legalDests.find(d => d.r === r && d.c === c);
   if (!match) {
     AudioEngine.playBlocked();
+    shakeActiveCell(GameState.player, r, c);
     return;
   }
   doMove(r, c);
@@ -1288,6 +1290,7 @@ export function bootApp() {
         doMove(match.r, match.c);
       } else {
         AudioEngine.playBlocked();
+        shakeActiveCell(GameState.player);
         showToast();
       }
     },
@@ -1412,6 +1415,28 @@ export function bootApp() {
 
   // Open Home Hub on boot
   openHome();
+
+  // Background check for Play Store update on boot
+  if (TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) {
+    PlatformBridge.checkForPlayStoreUpdate().then(async info => {
+      const dot = document.getElementById("updateBadgeDot");
+      if (info?.isDownloaded) {
+        if (dot) dot.classList.add("show");
+        showToast("🚀 Update downloaded! Tap Settings > About to apply.", 5000);
+      } else if (info?.updateAvailable) {
+        if (dot) dot.classList.add("show");
+        showToast("New version available on Google Play", 3000);
+        try {
+          const res = await PlatformBridge.startPlayStoreUpdate("flexible");
+          if (res?.userAccepted) {
+            showToast("Downloading update in background...", 3500);
+          }
+        } catch (err) {
+          console.log("[PlayStore] Auto-update flow error:", err);
+        }
+      }
+    });
+  }
 }
 
 // Start application

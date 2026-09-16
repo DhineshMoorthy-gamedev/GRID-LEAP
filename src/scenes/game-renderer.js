@@ -764,10 +764,10 @@ export function updateGameHeader(levelIndex, level, moveCount, historyLength) {
   if (DOM.undoBtn) DOM.undoBtn.disabled = historyLength === 0;
 }
 
-export function showToast(msg, durationMs = 1500) {
+export function showToast(msg = "No legal move that way", durationMs = 1500) {
   if (!DOM.toast) return;
-  if (msg) DOM.toast.textContent = msg;
-  DOM.toast.classList.remove("warning");
+  DOM.toast.textContent = msg || "";
+  DOM.toast.classList.remove("warning", "danger");
   DOM.toast.classList.add("show");
   if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => {
@@ -781,8 +781,7 @@ export function hideToast() {
     toastTimeout = null;
   }
   if (DOM.toast) {
-    DOM.toast.classList.remove("show", "warning");
-    DOM.toast.textContent = "No legal move that way";
+    DOM.toast.classList.remove("show", "warning", "danger");
   }
 }
 
@@ -794,6 +793,40 @@ export function showDeadEndToast() {
   toastTimeout = setTimeout(() => {
     hideToast();
   }, 2500);
+}
+
+export function shakeActiveCell(playerPos, tappedR = null, tappedC = null) {
+  // 1. Shake the active cell under the player token
+  if (cellEls && cellEls.length && playerPos) {
+    const [pr, pc] = playerPos;
+    const currentCell = cellEls[pr]?.[pc];
+    if (currentCell) {
+      currentCell.classList.remove("shake-error");
+      void currentCell.offsetWidth;
+      currentCell.classList.add("shake-error");
+      setTimeout(() => currentCell?.classList.remove("shake-error"), 400);
+    }
+  }
+
+  // 2. Shake the player token frame / inner
+  if (tokenEl) {
+    const inner = tokenEl.querySelector(".token-inner") || tokenEl;
+    if (inner) {
+      inner.classList.remove("shake-error-inner");
+      void inner.offsetWidth;
+      inner.classList.add("shake-error-inner");
+      setTimeout(() => inner?.classList.remove("shake-error-inner"), 400);
+    }
+  }
+
+  // 3. If an invalid destination cell was clicked/tapped, flash it red
+  if (tappedR !== null && tappedC !== null && cellEls && cellEls[tappedR]?.[tappedC]) {
+    const tappedCell = cellEls[tappedR][tappedC];
+    tappedCell.classList.remove("illegal-tap", "shake-error");
+    void tappedCell.offsetWidth;
+    tappedCell.classList.add("illegal-tap", "shake-error");
+    setTimeout(() => tappedCell?.classList.remove("illegal-tap", "shake-error"), 400);
+  }
 }
 
 export function clearDeadEndFeedback() {

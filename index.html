@@ -58,8 +58,9 @@
           <span>?</span>
           <kbd class="kbd-badge">?</kbd>
         </button>
-        <button class="nav-icon-btn" id="homeSettingsBtn" aria-label="Settings">
+        <button class="nav-icon-btn" id="homeSettingsBtn" aria-label="Settings" style="position: relative;">
           <span>⚙</span>
+          <span class="update-badge-dot" id="updateBadgeDot"></span>
           <kbd class="kbd-badge">S</kbd>
         </button>
         <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
@@ -1008,7 +1009,7 @@
 </div>
 
 <!-- Floating Toast -->
-<div class="toast" id="toast">No legal move that way</div>
+<div class="toast" id="toast"></div>
 
 <!-- ======================================================== -->
 <!-- MODALS & OVERLAYS                                        -->
@@ -1262,10 +1263,18 @@
             <span class="settings-label-title">Interactive Tutorial</span>
             <button class="btn btn-secondary" id="settingsHowToPlayBtn" style="padding: 4px 12px; font-size: 11px;">Play Tutorial</button>
           </div>
+          <div class="settings-row" id="settingRowUpdateSim">
+            <span class="settings-label-title">Simulate In-App Update</span>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.0.9)</button>
+              <button class="btn btn-secondary" id="devSimUpdateDownloadedBtn" style="padding: 3px 8px; font-size: 10px;">Downloaded</button>
+              <button class="btn btn-secondary" id="devSimUpdateResetBtn" style="padding: 3px 8px; font-size: 10px;">Reset</button>
+            </div>
+          </div>
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v0.0.3 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.8 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -1361,24 +1370,16 @@
 
       <div class="settings-scroll-area about-scroll-area">
         <div class="about-container">
-          <!-- App Icon Placeholder -->
+          <!-- App Icon -->
           <div class="about-app-icon-wrap">
             <div class="about-app-icon" id="aboutAppIcon">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="2" width="40" height="40" rx="9" fill="var(--bg-card)" stroke="var(--accent-primary)" stroke-width="2"/>
-                <circle cx="12" cy="12" r="3.5" fill="var(--accent-primary)" />
-                <circle cx="32" cy="12" r="3" fill="var(--text-muted)" opacity="0.4" />
-                <circle cx="12" cy="32" r="3" fill="var(--text-muted)" opacity="0.4" />
-                <circle cx="32" cy="32" r="4.5" fill="var(--goal-color)" />
-                <path d="M 12 12 Q 22 2 32 12 T 32 32" fill="none" stroke="var(--accent-primary)" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/>
-                <path d="M 32 29.5 L 32.8 31.2 L 34.5 32 L 32.8 32.8 L 32 34.5 L 31.2 32.8 L 29.5 32 L 31.2 31.2 Z" fill="#FFFFFF"/>
-              </svg>
+              <img src="/app-icon.png" alt="Grid Leap" class="about-app-icon-img" width="76" height="76" />
             </div>
           </div>
 
           <!-- Title & Version -->
           <h1 class="about-game-title">GRID LEAP</h1>
-          <div class="about-version-pill">v0.0.3</div>
+          <div class="about-version-pill">v0.0.8</div>
 
           <!-- Developer Credits -->
           <div class="about-dev-section">
@@ -1395,15 +1396,13 @@
             </div>
           </div>
 
-          <!-- Platform-Adaptive "More Games by Olai" Button -->
+          <!-- Platform-Adaptive Action Buttons -->
           <div class="about-actions-row">
+            <button class="btn btn-secondary about-action-btn" id="aboutCheckUpdateBtn">
+              <span id="aboutCheckUpdateLabel">Check for Updates</span>
+            </button>
             <button class="btn btn-secondary about-more-btn" id="aboutMoreGamesBtn">
-              <span class="btn-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="6 3 20 12 6 21 6 3"></polygon>
-                </svg>
-              </span>
-              <span>More Games by Olai</span>
+              <span>More Games by OLAI</span>
               <svg class="about-external-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                 <polyline points="15 3 21 3 21 9"></polyline>
