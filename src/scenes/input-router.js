@@ -74,9 +74,12 @@ export function setupInputRouter({
     const isTutorialOpen = SceneRouter.isModalOpen("RULES") || document.getElementById("rulesModal")?.classList.contains("show");
     const isPauseOpen = SceneRouter.isModalOpen("PAUSE") || document.getElementById("pauseModal")?.classList.contains("show");
 
+    const isCalendarOpen = SceneRouter.isModalOpen("DAILY_CALENDAR") || document.getElementById("dailyCalendarModal")?.classList.contains("show");
+    const isAchievementsOpen = SceneRouter.isModalOpen("ACHIEVEMENTS") || document.getElementById("achievementsModal")?.classList.contains("show");
+
     // Handle Tab key focus trapping for active modal overlays
     if (e.key === "Tab") {
-      const activeModalIds = ["settingsModal", "rulesModal", "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal", "devModal"];
+      const activeModalIds = ["settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal", "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal", "devModal"];
       let activeModalEl = null;
       for (const id of activeModalIds) {
         const el = document.getElementById(id);
@@ -132,6 +135,14 @@ export function setupInputRouter({
         } else {
           document.getElementById("winNextBtn")?.click();
         }
+        return;
+      }
+      if (isAchievementsOpen && window.AchievementsController) {
+        window.AchievementsController.close();
+        return;
+      }
+      if (isCalendarOpen && window.DailyCalendarController) {
+        window.DailyCalendarController.close();
         return;
       }
       if (isSettingsOpen && window.SettingsController) {

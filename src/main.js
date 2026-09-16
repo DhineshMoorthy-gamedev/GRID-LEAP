@@ -40,6 +40,10 @@ import {
 } from "./scenes/game-renderer.js";
 import { TutorialController } from "./scenes/tutorial-controller.js";
 import { SettingsController } from "./scenes/settings-controller.js";
+import { UpdateController } from "./scenes/update-controller.js";
+import { DailyCalendarController } from "./scenes/daily-calendar-controller.js";
+import { AchievementsController } from "./scenes/achievements-controller.js";
+import { AchievementManager } from "./state/achievement-manager.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 
 // Validate all shipped levels on load
@@ -78,7 +82,7 @@ export function openHome() {
   SceneRouter.navigateTo("screenHome");
 }
 
-export function startDailyLevel() {
+export function startDailyLevel(targetDateKey = null) {
   // Offline verification gate requested by user
   if (!DailyManager.isOnline()) {
     showToast("⚠️ You need to be online to play the Daily Challenge!");
@@ -90,12 +94,13 @@ export function startDailyLevel() {
   hideToast();
   devStopAutoPlay();
 
-  const dailyLv = DailyManager.getTodayLevel();
+  const dailyLv = targetDateKey ? DailyManager.getLevelForDate(targetDateKey) : DailyManager.getTodayLevel();
   GameState.customLevel = dailyLv;
   GameState.player = [dailyLv.start[0], dailyLv.start[1]];
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.solutionPathVisible = false;
+  GameState.hadDeadEndBeforeRestart = false;
   GameState.resetLives();
 
   if (DOM.devShowSolutionBtn) {
@@ -112,8 +117,6 @@ export function startDailyLevel() {
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(888, dailyLv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
-  if (DOM.gameTitle) DOM.gameTitle.textContent = "DAILY";
-  if (DOM.gameChapter) DOM.gameChapter.textContent = `${formatDisplayDate(dailyLv.dateKey)} • ${dailyLv.name}`;
   tick();
 }
 
@@ -131,6 +134,7 @@ export function startLevel(i) {
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.solutionPathVisible = false;
+  GameState.hadDeadEndBeforeRestart = false;
   GameState.resetLives();
 
   if (DOM.hintBtn) {
@@ -427,6 +431,7 @@ export function undo(isAuto = false) {
   if (!GameState.history.length || GameState.animating || SceneRouter.isInputBlocked()) return;
   if (isAuto !== true) {
     AudioEngine.playUndo();
+    AchievementManager.check("UNDO_USED");
   }
   const prev = GameState.history.pop();
   GameState.player = prev.player;
@@ -466,6 +471,7 @@ export function restart() {
   devStopAutoPlay();
   if (GameState.animating) return;
   AudioEngine.playRestart();
+  GameState.hadDeadEndBeforeRestart = (GameState.deadEndsEncountered > 0);
   GameState.clearSession();
   const lv = GameState.currentLevel();
   GameState.player = [lv.start[0], lv.start[1]];
@@ -494,14 +500,36 @@ export function showWin() {
   const isCustom = Boolean(GameState.customLevel) && !isDaily;
   const isLast = (GameState.levelIndex >= LEVELS.length - 1);
 
+  let isNewBest = false;
   let dailyResult = null;
   if (isDaily) {
-    dailyResult = DailyManager.recordCompletion(GameState.moveCount, lv.optimal);
+    dailyResult = DailyManager.recordDateCompletion(lv.dateKey, GameState.moveCount, lv.optimal);
+    const todayKey = DailyManager.getTodayDateKey();
+    const isPastArchive = Boolean(lv.dateKey && lv.dateKey < todayKey);
+    const monthKey = lv.dateKey.slice(0, 7);
+    const monthCount = Object.keys(DailyManager.data.history).filter(k => k.startsWith(monthKey)).length;
+    AchievementManager.check("DAILY_COMPLETED", {
+      dateKey: lv.dateKey,
+      isPastArchive,
+      streak: dailyResult ? dailyResult.streak : DailyManager.data.currentStreak,
+      monthCount
+    });
+  } else if (!isCustom) {
+    const result = GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
+    isNewBest = result.isNewBest;
+    const completedCount = GameState.completed.filter(Boolean).length;
+    AchievementManager.check("LEVEL_COMPLETED", {
+      levelIndex: GameState.levelIndex,
+      completedCount,
+      moveCount: GameState.moveCount,
+      optimal: lv.optimal || 1,
+      livesRemaining: GameState.lives,
+      deadEndsEncountered: GameState.deadEndsEncountered,
+      isNewBest,
+      isImprovedReplay: result.isImprovedReplay,
+      hadDeadEndBeforeRestart: GameState.hadDeadEndBeforeRestart
+    });
   }
-
-  const { isNewBest } = (isCustom || isDaily)
-    ? { isNewBest: false }
-    : GameState.recordLevelResult(GameState.levelIndex, GameState.moveCount);
 
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
 
@@ -659,6 +687,7 @@ export function toggleSolutionPath() {
 
   // Viable state: activate hint and illuminate single-step compass target
   AudioEngine.playHintOn();
+  AchievementManager.check("HINT_USED");
   GameState.solutionPathVisible = true;
   if (DOM.hintBtn) DOM.hintBtn.classList.add("active");
   if (DOM.devShowSolutionBtn) {
@@ -1021,6 +1050,34 @@ export function bootApp() {
   SettingsController.init();
   window.SettingsController = SettingsController;
 
+  // Initialize Local In-Game Achievements
+  AchievementManager.init();
+  AchievementsController.init();
+  window.AchievementsController = AchievementsController;
+  window.AchievementManager = AchievementManager;
+  window.resetAllData = () => {
+    try {
+      GameState.resetToDefault();
+      DailyManager.reset();
+      AchievementManager.reset();
+      localStorage.removeItem("number_grid_maze_save_v1");
+      localStorage.removeItem("grid_leap_daily_save_v1");
+      localStorage.removeItem("grid_leap_achievements_v1");
+      localStorage.clear();
+      window.location.reload();
+    } catch (e) {
+      console.error("Reset error:", e);
+    }
+  };
+  AchievementManager.updateHomeBadge();
+
+  if (DOM.homeAchievementsBtn) {
+    DOM.homeAchievementsBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
+      AchievementsController.open();
+    });
+  }
+
   // Play Studio Intro Screen & Launch FTUE Tutorial for first-time players
   runStudioIntro(() => {
     if (!GameState.settings.hasSeenRules) {
@@ -1028,17 +1085,46 @@ export function bootApp() {
     }
   });
 
-  if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => TutorialController.open());
+  if (DOM.homeHelpBtn) {
+    DOM.homeHelpBtn.addEventListener("click", () => {
+      TutorialController.open();
+    });
+  }
   if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SettingsController.open());
 
-  // Initialize Daily Manager
+  // Initialize Daily Manager & Calendar Archive
   DailyManager.init();
+  DailyCalendarController.init({
+    onPlayDate: (dateKey) => startDailyLevel(dateKey)
+  });
+  window.DailyCalendarController = DailyCalendarController;
 
-  // Daily Challenge Card Launch Action
+  // Initialize In-App Update Controller
+  UpdateController.init();
+  window.UpdateController = UpdateController;
+
+  // Sync existing historical progress into AchievementManager
+  const initCompletedCampaign = (GameState.completed || []).filter(Boolean).length;
+  const initTotalDaily = DailyManager.getTotalCompletedCount?.() || 0;
+  const initStreak = DailyManager.data?.currentStreak || 0;
+  const initToday = DailyManager.getTodayDateKey?.() || "";
+  const initMonthKey = initToday.slice(0, 7);
+  const initMonthDaily = Object.keys(DailyManager.data?.history || {}).filter(k => k.startsWith(initMonthKey)).length;
+  AchievementManager.syncExistingProgress(initCompletedCampaign, initStreak, initMonthDaily, initTotalDaily);
+  AchievementManager.updateHomeBadge();
+
+  // Daily Challenge Card Launch & Calendar Actions
   if (DOM.dailyPlayBtn) DOM.dailyPlayBtn.addEventListener("click", () => startDailyLevel());
+  if (DOM.dailyCalendarBtn) {
+    DOM.dailyCalendarBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      AudioEngine.playNavBack();
+      DailyCalendarController.open();
+    });
+  }
   if (DOM.dailyChallengeCard) {
     DOM.dailyChallengeCard.addEventListener("click", (e) => {
-      if (!DOM.dailyPlayBtn?.contains(e.target)) {
+      if (!DOM.dailyPlayBtn?.contains(e.target) && !DOM.dailyCalendarBtn?.contains(e.target)) {
         startDailyLevel();
       }
     });
@@ -1360,9 +1446,11 @@ export function bootApp() {
     onPause: () => {
       GameState.save();
       AudioEngine.suspend();
+      AchievementManager.stopPlayTimeTicker();
     },
     onResume: () => {
       AudioEngine.resume();
+      AchievementManager.startPlayTimeTicker();
       handleResize();
       if (GameState.animating) {
         GameState.animating = false;
@@ -1381,6 +1469,10 @@ export function bootApp() {
       if (activeModal) {
         if (activeModal.name === "SETTINGS") {
           return SettingsController.back();
+        }
+        if (activeModal.name === "UPDATE") {
+          UpdateController.close();
+          return true;
         }
         if (activeModal.name === "OUT_OF_LIVES") {
           SceneRouter.popModal();
@@ -1419,22 +1511,16 @@ export function bootApp() {
   // Background check for Play Store update on boot
   if (TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) {
     PlatformBridge.checkForPlayStoreUpdate().then(async info => {
-      const dot = document.getElementById("updateBadgeDot");
       if (info?.isDownloaded) {
-        if (dot) dot.classList.add("show");
-        showToast("🚀 Update downloaded! Tap Settings > About to apply.", 5000);
+        UpdateController.setUpdateAvailable(info);
+        UpdateController.open(info);
       } else if (info?.updateAvailable) {
-        if (dot) dot.classList.add("show");
-        showToast("New version available on Google Play", 3000);
-        try {
-          const res = await PlatformBridge.startPlayStoreUpdate("flexible");
-          if (res?.userAccepted) {
-            showToast("Downloading update in background...", 3500);
-          }
-        } catch (err) {
-          console.log("[PlayStore] Auto-update flow error:", err);
-        }
+        UpdateController.setUpdateAvailable(info);
+        // Display dedicated in-app update popup on Home Screen
+        UpdateController.open(info);
       }
+    }).catch(err => {
+      console.log("[PlayStore] Boot update check error:", err);
     });
   }
 }

@@ -10,11 +10,12 @@ import { TargetConfig } from "../platform/target-config.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { showToast } from "./game-renderer.js";
 import { AudioEngine } from "../audio/audio-engine.js";
+import { UpdateController } from "./update-controller.js";
 
 export const SettingsController = {
   dom: {},
   currentView: "main",
-  versionName: "0.0.8",
+  versionName: "0.0.10",
 
   init() {
     this.dom = {
@@ -36,7 +37,7 @@ export const SettingsController = {
 
     // Dynamic Version Sync across About pill and Settings footer
     PlatformBridge.getAppVersion().then(ver => {
-      this.versionName = ver.versionName || "0.0.8";
+      this.versionName = ver.versionName || "0.0.10";
       const versionPill = document.querySelector(".about-version-pill");
       if (versionPill) versionPill.textContent = `v${this.versionName}`;
       const footerNote = document.querySelector(".settings-footer-note");
@@ -119,7 +120,7 @@ export const SettingsController = {
     const checkUpdateBtn = document.getElementById("aboutCheckUpdateBtn");
     const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
 
-    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.8") => {
+    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.10") => {
       if (!checkUpdateLabel) return;
       if (state === "checking") {
         checkUpdateLabel.textContent = "Checking...";
@@ -141,28 +142,21 @@ export const SettingsController = {
     if (checkUpdateBtn) {
       checkUpdateBtn.addEventListener("click", async () => {
         AudioEngine.playNavBack();
-        const curVer = this.versionName || TargetConfig.version || "0.0.8";
+        const curVer = this.versionName || TargetConfig.version || "0.0.10";
         if ((TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) || TargetConfig.features.editorSettings) {
           refreshUpdateBtnState("checking", curVer);
           showToast("Checking Google Play for updates...");
           const info = await PlatformBridge.checkForPlayStoreUpdate();
           if (info?.isDownloaded) {
             refreshUpdateBtnState("downloaded", curVer);
-            showToast("Update downloaded! Restarting to apply...", 2000);
-            setTimeout(() => {
-              PlatformBridge.completePlayStoreUpdate();
-            }, 1200);
+            this.close();
+            UpdateController.setUpdateAvailable(info);
+            UpdateController.open(info);
           } else if (info?.updateAvailable) {
-            showToast("Update found! Launching Google Play...", 2000);
-            const res = await PlatformBridge.startPlayStoreUpdate("flexible");
-            if (res?.userCanceled || res?.resultCode === 0) {
-              refreshUpdateBtnState("default", curVer);
-              showToast("Update canceled");
-            } else if (res?.userAccepted || res?.resultCode === -1 || res?.status === "flow_started") {
-              refreshUpdateBtnState("downloading", curVer);
-            } else {
-              refreshUpdateBtnState("default", curVer);
-            }
+            refreshUpdateBtnState("default", curVer);
+            this.close();
+            UpdateController.setUpdateAvailable(info);
+            UpdateController.open(info);
           } else {
             refreshUpdateBtnState("uptodate", curVer);
             showToast(`You are on the latest version (v${curVer}) ✓`);
@@ -190,32 +184,37 @@ export const SettingsController = {
 
     if (simAvailableBtn) {
       simAvailableBtn.addEventListener("click", () => {
-        PlatformBridge.setSimulatedUpdateState({
+        const updateData = {
           updateAvailable: true,
-          availableVersionCode: 9,
+          availableVersionCode: 11,
           isFlexibleAllowed: true,
           installStatus: "PENDING"
-        });
+        };
+        PlatformBridge.setSimulatedUpdateState(updateData);
         highlightSimBtn(simAvailableBtn);
         if (checkUpdateLabel) checkUpdateLabel.textContent = "Check for Updates";
-        const dot = document.getElementById("updateBadgeDot");
-        if (dot) dot.classList.add("show");
-        showToast("Simulated: Update Available (v0.0.9)");
+        UpdateController.setUpdateAvailable(updateData);
+        this.close();
+        UpdateController.open(updateData);
+        showToast("Simulated: Update Available (v0.1.1)");
       });
     }
 
     if (simDownloadedBtn) {
       simDownloadedBtn.addEventListener("click", () => {
-        PlatformBridge.setSimulatedUpdateState({
+        const updateData = {
           updateAvailable: false,
           isDownloaded: true,
           installStatus: "DOWNLOADED"
-        });
+        };
+        PlatformBridge.setSimulatedUpdateState(updateData);
         highlightSimBtn(simDownloadedBtn);
         refreshUpdateBtnState("downloaded", this.versionName);
-        const dot = document.getElementById("updateBadgeDot");
-        if (dot) dot.classList.add("show");
-        showToast("Simulated: Update Downloaded (Ready)");
+        UpdateController.setUpdateAvailable(updateData);
+        UpdateController.setDownloadedState();
+        this.close();
+        UpdateController.open(updateData);
+        showToast("Simulated: Update Downloaded (Ready to Install)");
       });
     }
 
@@ -224,9 +223,8 @@ export const SettingsController = {
         PlatformBridge.setSimulatedUpdateState(null);
         highlightSimBtn(simResetBtn);
         refreshUpdateBtnState("default", this.versionName);
-        const dot = document.getElementById("updateBadgeDot");
-        if (dot) dot.classList.remove("show");
-        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.8"})`);
+        UpdateController.clearUpdate();
+        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.10"})`);
       });
     }
 
@@ -242,9 +240,8 @@ export const SettingsController = {
 
     PlatformBridge.onPlayStoreUpdateDownloaded(() => {
       refreshUpdateBtnState("downloaded", this.versionName);
-      const dot = document.getElementById("updateBadgeDot");
-      if (dot) dot.classList.add("show");
-      showToast("🚀 Update Downloaded! Restart to apply.", 4000);
+      UpdateController.setDownloadedState();
+      showToast("🚀 Update Downloaded! Ready to install.", 4000);
     });
 
     // "More Games by Olai" Action

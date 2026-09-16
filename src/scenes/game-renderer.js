@@ -1,4 +1,5 @@
 import { solve } from "../core/solver.js";
+import { formatDisplayDate, getTodayDateKey } from "../core/daily-seed.js";
 import { TargetConfig } from "../platform/target-config.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { AudioEngine } from "../audio/audio-engine.js";
@@ -29,6 +30,8 @@ export const DOM = {
   targetModePill: document.getElementById("targetModePill"),
   homeHelpBtn: document.getElementById("homeHelpBtn"),
   homeSettingsBtn: document.getElementById("homeSettingsBtn"),
+  homeAchievementsBtn: document.getElementById("homeAchievementsBtn"),
+  achievementsBadgeDot: document.getElementById("achievementsBadgeDot"),
   homeThemeToggleBtn: document.getElementById("homeThemeToggleBtn"),
   heroBanner: document.getElementById("heroBanner"),
   heroBadge: document.getElementById("heroBadge"),
@@ -44,6 +47,7 @@ export const DOM = {
   dailyPlayBtn: document.getElementById("dailyPlayBtn"),
   dailyPlayIcon: document.getElementById("dailyPlayIcon"),
   dailyPlayText: document.getElementById("dailyPlayText"),
+  dailyCalendarBtn: document.getElementById("dailyCalendarBtn"),
 
   editorLevelSelectSection: document.getElementById("editorLevelSelectSection"),
   editorAudioLabSection: document.getElementById("editorAudioLabSection"),
@@ -382,9 +386,7 @@ export function renderDailyChallengeCard({ isCompleted, streak, dateKey, display
   }
 
   if (DOM.dailyCardSub) {
-    DOM.dailyCardSub.textContent = isCompleted
-      ? `Completed! Resets in ${timeRemaining}`
-      : `Resets in ${timeRemaining}`;
+    DOM.dailyCardSub.textContent = `Resets in ${timeRemaining}`;
   }
 
   DOM.dailyChallengeCard.classList.toggle("completed", Boolean(isCompleted));
@@ -758,8 +760,30 @@ export function placeToken(playerPos, instant = false) {
 }
 
 export function updateGameHeader(levelIndex, level, moveCount, historyLength) {
-  if (DOM.gameTitle) DOM.gameTitle.textContent = `Level ${String(levelIndex + 1).padStart(levelIndex + 1 >= 100 ? 3 : 2, "0")}`;
-  if (DOM.gameChapter) DOM.gameChapter.textContent = `${level.phase || ""} • ${level.name || ""}`;
+  if (level?.isDaily) {
+    if (DOM.gameTitle) DOM.gameTitle.textContent = "DAILY CHALLENGE";
+    const dateStr = level.dateKey ? formatDisplayDate(level.dateKey) : formatDisplayDate(getTodayDateKey());
+    if (DOM.gameChapter) {
+      DOM.gameChapter.textContent = dateStr;
+      DOM.gameChapter.style.display = "block";
+    }
+  } else if (level?.isCustom) {
+    if (DOM.gameTitle) DOM.gameTitle.textContent = "CUSTOM LEVEL";
+    if (DOM.gameChapter) {
+      DOM.gameChapter.textContent = level.name || "Puzzle";
+      DOM.gameChapter.style.display = "block";
+    }
+  } else {
+    if (DOM.gameTitle) DOM.gameTitle.textContent = `Level ${String(levelIndex + 1).padStart(levelIndex + 1 >= 100 ? 3 : 2, "0")}`;
+    if (DOM.gameChapter) {
+      DOM.gameChapter.textContent = `${level?.phase || ""} • ${level?.name || ""}`;
+      if (document.body.getAttribute("data-target-mode") !== "editor") {
+        DOM.gameChapter.style.display = "none";
+      } else {
+        DOM.gameChapter.style.display = "block";
+      }
+    }
+  }
   if (DOM.hudMoves) DOM.hudMoves.textContent = moveCount;
   if (DOM.undoBtn) DOM.undoBtn.disabled = historyLength === 0;
 }

@@ -1238,6 +1238,43 @@ class ProceduralAudioEngine {
       this._bindCleanup(osc, gain);
     });
   }
+
+  // ==========================================
+  // SFX-28: Achievement Unlocked Fanfare
+  // ==========================================
+  playAchievementUnlocked() {
+    if (!this.isEnabled() || !this._checkThrottle("achievementUnlocked", 400)) return;
+    const ctx = this._getCtx();
+    if (!ctx) return;
+
+    const t = ctx.currentTime;
+    // Ascending celebratory major arpeggio with shimmering chime decay (C5, E5, G5, C6)
+    const notes = [
+      { freq: 523.25, delay: 0.00, dur: 0.18, vol: 0.22 }, // C5
+      { freq: 659.25, delay: 0.08, dur: 0.20, vol: 0.25 }, // E5
+      { freq: 783.99, delay: 0.16, dur: 0.24, vol: 0.28 }, // G5
+      { freq: 1046.50, delay: 0.24, dur: 0.55, vol: 0.32 } // C6 (long ring)
+    ];
+
+    notes.forEach(note => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(note.freq, t + note.delay);
+
+      const start = t + note.delay;
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.linearRampToValueAtTime(note.vol, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + note.dur);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(start);
+      osc.stop(start + note.dur + 0.05);
+      this._bindCleanup(osc, gain);
+    });
+  }
 }
 
 export const AudioEngine = new ProceduralAudioEngine();

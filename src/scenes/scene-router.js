@@ -14,7 +14,10 @@ const MODAL_ELEMENTS = {
   SETTINGS: "settingsModal",
   DEV: "devModal",
   EDITOR_JSON: "editorJsonModal",
-  OUT_OF_LIVES: "outOfLivesModal"
+  OUT_OF_LIVES: "outOfLivesModal",
+  DAILY_CALENDAR: "dailyCalendarModal",
+  ACHIEVEMENTS: "achievementsModal",
+  UPDATE: "updateModal"
 };
 
 let currentScreen = "screenHome"; // "screenHome" | "screenGame"

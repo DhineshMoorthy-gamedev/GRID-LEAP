@@ -596,6 +596,45 @@ body:not([data-target-mode="editor"]) #consumerLaunchSection {
   color: var(--paper-dim);
 }
 
+.daily-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.daily-cal-trigger-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, color 120ms ease;
+  flex-shrink: 0;
+}
+
+[data-theme="vellum"] .daily-cal-trigger-btn {
+  background: #FFFFFF;
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+
+.daily-cal-trigger-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.daily-cal-trigger-btn:active {
+  transform: scale(0.94);
+}
+
 .daily-play-btn {
   width: 44px;
   height: 44px;
@@ -1074,9 +1113,7 @@ body[data-target-mode="editor"] #consumerLaunchSection {
 body:not([data-target-mode="editor"]) #trailToggleBtn,
 body:not([data-target-mode="editor"]) #gameThemeToggleBtn,
 body:not([data-target-mode="editor"]) #devToggleBtn,
-body:not([data-target-mode="editor"]) #devPlaytestBar,
-body:not([data-target-mode="editor"]) #gameChapter,
-body[data-target-mode="playstore"] #gameChapter {
+body:not([data-target-mode="editor"]) #devPlaytestBar {
   display: none !important;
 }
 
@@ -1107,6 +1144,7 @@ body:not([data-target-mode="editor"]) .game-meta,
 body[data-target-mode="playstore"] .game-meta {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -1415,6 +1453,9 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   font-size: 11px;
   color: var(--paper-dim);
   font-family: var(--font-num);
+  opacity: 0.65;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
 }
 
 .game-top-actions {
@@ -1451,14 +1492,36 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   min-width: 38px;
   min-height: 38px;
   border-radius: 10px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1;
   transition: all 140ms ease;
   user-select: none;
   position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.nav-icon-btn > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.nav-icon-btn svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  color: inherit;
+  opacity: 0.9;
+  transition: color 140ms ease;
 }
 
 .nav-icon-btn:hover {
@@ -1481,7 +1544,7 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 [data-theme="vellum"] .nav-icon-btn {
   background: #FFFFFF;
   border: 1px solid var(--line);
-  color: var(--text-dim);
+  color: var(--text-main);
   box-shadow: 0 1px 3px rgba(60, 50, 40, 0.05);
 }
 
@@ -6553,4 +6616,1052 @@ body[data-target-mode="playstore"] .tutorial-card {
   margin-right: -0.3em; /* Optical compensation for letter-spacing */
   opacity: 0.85;
   transition: color 0.4s ease;
+}
+
+/* ==========================================================================
+   DAILY CHALLENGE CALENDAR & ARCHIVE MODAL
+   ========================================================================== */
+
+.daily-calendar-card {
+  max-width: 440px;
+  width: 92vw;
+  padding: 20px 22px;
+  text-align: left;
+  border-radius: 22px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--line-soft);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+[data-theme="vellum"] .daily-calendar-card {
+  background: #FFFFFF;
+  border-color: var(--line);
+  box-shadow: 0 16px 40px rgba(60, 50, 40, 0.15);
+}
+
+.daily-cal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.daily-cal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.daily-cal-eyebrow {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.daily-cal-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.daily-cal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+[data-theme="vellum"] .daily-cal-close-btn {
+  background: #F4EEE3;
+  border-color: var(--line);
+}
+
+.daily-cal-close-btn:hover {
+  transform: scale(1.08);
+  color: var(--text-main);
+}
+
+/* Month Navigation Bar */
+.daily-cal-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+
+[data-theme="vellum"] .daily-cal-nav-bar {
+  background: #FAF6F0;
+  border-color: var(--line);
+}
+
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.cal-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.1);
+}
+
+[data-theme="vellum"] .cal-nav-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.cal-month-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-main);
+}
+
+/* Monthly Stats Strip */
+.daily-cal-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  padding: 8px 10px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+[data-theme="vellum"] .daily-cal-stats-strip {
+  background: #FAF6F0;
+  border-color: var(--line);
+}
+
+.cal-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cal-stat-label {
+  font-family: var(--font-num);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.cal-stat-val {
+  font-family: var(--font-num);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.cal-stat-val svg {
+  color: var(--accent-primary);
+  margin-right: 0 !important;
+}
+
+/* 7-Column Calendar Grid */
+.daily-cal-grid-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cal-weekday-header {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+/* Day Tiles */
+.cal-day-tile {
+  aspect-ratio: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 3px;
+  color: var(--text-main);
+  cursor: default;
+  position: relative;
+  transition: transform 140ms cubic-bezier(0.2, 0.9, 0.4, 1), border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  font-family: var(--font-num);
+  box-sizing: border-box;
+}
+
+[data-theme="vellum"] .cal-day-tile {
+  background: #FAF6F0;
+  border-color: var(--line);
+}
+
+.cal-day-tile.empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cal-day-tile .day-num {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+/* 1. Before Launch */
+.cal-day-tile.before-launch {
+  opacity: 0.3;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--line-soft);
+}
+
+.cal-day-tile.before-launch .day-unreleased-dash {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+/* 2. Future / Locked */
+.cal-day-tile.future {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: not-allowed;
+}
+
+[data-theme="vellum"] .cal-day-tile.future {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cal-day-tile.future .day-num {
+  opacity: 0.35;
+  color: var(--text-dim);
+}
+
+.cal-day-tile.future .day-lock-icon {
+  color: var(--text-dim);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* 3. Completed */
+.cal-day-tile.completed {
+  cursor: pointer;
+  border: 1.5px solid rgba(42, 161, 152, 0.65);
+  background: linear-gradient(145deg, rgba(42, 161, 152, 0.22) 0%, rgba(42, 161, 152, 0.08) 100%), var(--bg-card);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="vellum"] .cal-day-tile.completed {
+  background: linear-gradient(145deg, #E6F5F3 0%, #FFFFFF 100%);
+  border-color: rgba(42, 161, 152, 0.7);
+  box-shadow: 0 2px 6px rgba(42, 161, 152, 0.15);
+}
+
+.cal-day-tile.completed .day-num {
+  color: var(--paper);
+  font-weight: 800;
+  opacity: 1;
+}
+
+[data-theme="vellum"] .cal-day-tile.completed .day-num {
+  color: var(--teal-deep, #073642);
+}
+
+.cal-day-tile.completed .day-check-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--teal, #2aa198);
+  color: #073642;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(42, 161, 152, 0.4);
+  line-height: 1;
+}
+
+[data-theme="vellum"] .cal-day-tile.completed .day-check-circle {
+  background: #2aa198;
+  color: #FFFFFF;
+}
+
+.cal-day-tile.completed:hover {
+  transform: translateY(-2px);
+  border-color: var(--teal, #2aa198);
+  box-shadow: 0 4px 14px rgba(42, 161, 152, 0.35);
+}
+
+/* 4. Playable Past Archive */
+.cal-day-tile.playable {
+  cursor: pointer;
+}
+
+.cal-day-tile.playable:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.cal-day-tile.playable .day-play-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  opacity: 0.85;
+}
+
+/* 5. Today (Active) */
+.cal-day-tile.today {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px var(--accent-primary-glow);
+}
+
+.cal-day-tile.today .day-play-pill {
+  font-size: 7px;
+  font-weight: 900;
+  color: var(--accent-contrast);
+  background: var(--accent-primary);
+  padding: 2px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.daily-cal-footer-note {
+  font-family: var(--font-num);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  padding-top: 8px;
+  opacity: 0.75;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ======================================================== */
+/* ACHIEVEMENTS SYSTEM & NOTIFICATION BANNER                */
+/* ======================================================== */
+
+/* 1. Real-time In-Game Unlock Toasts Stack (Pops from Right) */
+.achievement-toast-container {
+  position: fixed;
+  top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+  right: max(12px, calc(env(safe-area-inset-right, 0px) + 12px));
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: calc(100vw - max(24px, calc(env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px) + 24px)));
+  width: min(320px, calc(100vw - 28px));
+}
+
+.ach-toast-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(19, 31, 43, 0.96) 0%, rgba(11, 19, 26, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(56, 189, 248, 0.45);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(56, 189, 248, 0.25);
+  box-sizing: border-box;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1), opacity 260ms ease;
+  pointer-events: auto;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ach-toast-card.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.ach-toast-card.hide {
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 320ms cubic-bezier(0.7, 0, 0.84, 0), opacity 220ms ease;
+}
+
+[data-theme="vellum"] .ach-toast-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: var(--accent-primary);
+  box-shadow: 0 14px 36px rgba(60, 50, 40, 0.16), 0 2px 14px rgba(43, 93, 125, 0.2);
+}
+
+.ach-toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-primary-dim);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px var(--accent-primary-dim);
+}
+
+.ach-toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ach-toast-eyebrow {
+  font-family: var(--font-num);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ach-toast-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 850;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.ach-toast-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* 2. Achievements Showcase Modal Card */
+.achievements-card {
+  width: 92vw;
+  max-width: 440px;
+  height: min(580px, 84vh);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 22px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+}
+
+[data-theme="vellum"] .achievements-card {
+  background: #FFFFFF;
+  border-color: var(--line);
+  box-shadow: 0 16px 40px rgba(60, 50, 40, 0.15);
+}
+
+/* Hero Showcase Header */
+.ach-hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 2px;
+}
+
+.ach-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ach-trophy-ring-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ach-ring-svg {
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ach-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 2.8;
+}
+
+[data-theme="vellum"] .ach-ring-bg {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+.ach-ring-fill {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ach-trophy-icon-inner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-primary-dim);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+[data-theme="vellum"] .ach-trophy-icon-inner {
+  border-color: rgba(43, 93, 125, 0.3);
+}
+
+.ach-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ach-hero-eyebrow {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--accent-primary);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.ach-hero-title {
+  font-size: 18px;
+  font-weight: 850;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+  margin: 3px 0 0 0;
+  line-height: 1.15;
+}
+
+.ach-hero-sub {
+  font-family: var(--font-num);
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+.ach-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 120ms ease, color 120ms ease;
+  flex-shrink: 0;
+}
+
+[data-theme="vellum"] .ach-close-btn {
+  background: #F4EEE3;
+  border-color: var(--line);
+  color: var(--text-main);
+}
+
+.ach-close-btn:hover {
+  transform: scale(1.08);
+  color: var(--text-main);
+}
+
+/* Category Filter Tabs */
+.ach-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.ach-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.ach-tab-btn {
+  font-family: var(--font-num);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 120ms ease;
+  flex-shrink: 0;
+}
+
+[data-theme="vellum"] .ach-tab-btn {
+  background: #FAF6F0;
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+
+.ach-tab-btn.active {
+  background: var(--accent-primary);
+  color: var(--accent-contrast, #FFFFFF);
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px var(--accent-primary-dim);
+}
+
+/* Scrollable Achievement Rows Area */
+.achievements-scroll-area {
+  flex: 1;
+  height: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.achievements-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Individual Sleek Compact Achievement Rows */
+.achievement-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background: var(--bg-card);
+  box-sizing: border-box;
+  transition: transform 120ms ease, border-color 120ms ease;
+  opacity: 1;
+}
+
+[data-theme="vellum"] .achievement-row {
+  background: #FAF6F0;
+  border-color: var(--line);
+}
+
+.achievement-row.unlocked {
+  border-color: rgba(42, 161, 152, 0.5);
+  background: linear-gradient(135deg, rgba(42, 161, 152, 0.12) 0%, var(--bg-card) 100%);
+}
+
+[data-theme="vellum"] .achievement-row.unlocked {
+  background: linear-gradient(135deg, rgba(42, 161, 152, 0.14) 0%, #FFFFFF 100%);
+  border-color: rgba(42, 161, 152, 0.55);
+}
+
+.achievement-row.locked {
+  opacity: 1;
+  background: var(--bg-card);
+}
+
+[data-theme="vellum"] .achievement-row.locked {
+  background: #FAF6F0;
+}
+
+.ach-emblem-disc {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.ach-emblem-disc.unlocked {
+  background: var(--accent-primary-dim);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.ach-emblem-disc.locked {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(244, 244, 245, 0.65);
+}
+
+[data-theme="vellum"] .ach-emblem-disc.locked {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #64748B;
+}
+
+.ach-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ach-row-title-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ach-row-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.ach-row-date {
+  font-family: var(--font-num);
+  font-size: 10.5px;
+  font-weight: 750;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.ach-row-desc {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9EABB8;
+  line-height: 1.4;
+}
+
+[data-theme="vellum"] .ach-row-desc {
+  color: #4B5563;
+}
+
+.achievement-row.unlocked .ach-row-desc {
+  color: #D1D8E0;
+}
+
+[data-theme="vellum"] .achievement-row.unlocked .ach-row-desc {
+  color: #1F2937;
+}
+
+.ach-row-status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ach-status-badge.unlocked {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(42, 161, 152, 0.35);
+}
+
+.ach-status-badge.locked {
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+[data-theme="vellum"] .ach-status-badge.locked {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #1E293B;
+}
+
+/* ======================================================== */
+/* IN-APP UPDATE MODAL & TOPBAR UPDATE PILL                 */
+/* ======================================================== */
+
+/* 1. Home Topbar Update Pill */
+.home-update-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.16) 0%, rgba(234, 179, 8, 0.06) 100%);
+  border: 1px solid #EAB308;
+  color: #EAB308;
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 140ms ease;
+  flex-shrink: 0;
+  animation: updatePillPulse 2.8s infinite;
+}
+
+[data-theme="vellum"] .home-update-pill-btn {
+  background: #FFFBEB;
+  border-color: #D97706;
+  color: #B45309;
+}
+
+.home-update-pill-btn.downloaded {
+  background: linear-gradient(135deg, rgba(42, 161, 152, 0.22) 0%, rgba(42, 161, 152, 0.08) 100%);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.home-update-pill-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 10px rgba(234, 179, 8, 0.3);
+}
+
+@keyframes updatePillPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(234, 179, 8, 0); }
+  50% { transform: scale(1.03); box-shadow: 0 0 10px rgba(234, 179, 8, 0.35); }
+}
+
+/* 2. Dedicated In-App Update Modal */
+.update-modal-card {
+  width: 90vw;
+  max-width: 380px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 22px;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  position: relative;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+  box-sizing: border-box;
+}
+
+[data-theme="vellum"] .update-modal-card {
+  background: #FFFFFF;
+  border-color: var(--line);
+  box-shadow: 0 16px 40px rgba(60, 50, 40, 0.18);
+}
+
+.update-emblem-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.update-icon-disc {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: var(--accent-primary-dim);
+  border: 1.5px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px var(--accent-primary-glow);
+}
+
+.update-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.update-eyebrow {
+  font-family: var(--font-num);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+}
+
+.update-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.update-version-tag {
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--text-dim);
+}
+
+.update-feature-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+[data-theme="vellum"] .update-feature-list {
+  background: #FAF6F0;
+  border-color: var(--line);
+}
+
+.update-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.feature-dot {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.update-progress-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.update-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+[data-theme="vellum"] .update-progress-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.update-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--accent-primary) 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.update-progress-label {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 750;
+  color: var(--text-dim);
+}
+
+.update-actions-row {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.update-later-btn {
+  flex: 1;
+  padding: 11px;
+  font-size: 12px;
+}
+
+.update-action-btn {
+  flex: 1.5;
+  padding: 11px;
+  font-size: 12px;
 }

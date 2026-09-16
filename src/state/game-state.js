@@ -52,6 +52,34 @@ export const GameState = {
     this.resetLives();
   },
 
+  resetToDefault() {
+    this.levelIndex = 0;
+    this.player = null;
+    this.moveCount = 0;
+    this.history = [];
+    this.animating = false;
+    this.legalDests = [];
+    this.lives = 3;
+    this.maxLives = 3;
+    this.deadEndsEncountered = 0;
+    this.completed = new Array(LEVELS.length).fill(false);
+    this.stars = new Array(LEVELS.length).fill(0);
+    this.bestMoves = new Array(LEVELS.length).fill(null);
+    this.activeSession = null;
+    this.settings = {
+      theme: "vellum",
+      hasSeenRules: false,
+      devModeEnabled: false,
+      soundEnabled: true,
+      hapticsEnabled: true,
+      relaxMode: false,
+      showTrail: false
+    };
+    this.devModeEnabled = false;
+    storage.clear();
+    this.save();
+  },
+
   save() {
     storage.save({
       lastPlayedLevel: this.levelIndex,
@@ -144,9 +172,11 @@ export const GameState = {
 
   recordLevelResult(idx, moveCount, starsEarned) {
     if (idx >= 0 && idx < this.completed.length) {
+      const isReplay = Boolean(this.completed[idx]);
       this.completed[idx] = true;
       const prevBest = this.bestMoves[idx];
       const isNewBest = (prevBest === null || moveCount < prevBest);
+      const isImprovedReplay = Boolean(isReplay && prevBest !== null && moveCount < prevBest);
       if (isNewBest) {
         this.bestMoves[idx] = moveCount;
       }
@@ -160,9 +190,9 @@ export const GameState = {
         this.activeSession = null;
       }
       this.save();
-      return { isNewBest, stars, prevBest };
+      return { isNewBest, isImprovedReplay, stars, prevBest };
     }
-    return { isNewBest: false, stars: 1, prevBest: null };
+    return { isNewBest: false, isImprovedReplay: false, stars: 1, prevBest: null };
   },
 
   getTotalStars() {

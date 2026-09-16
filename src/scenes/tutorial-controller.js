@@ -303,6 +303,27 @@ export const TutorialController = {
       this.dom.closeBtn.addEventListener("click", () => this.close());
     }
 
+    const handleBackdropClick = (e) => {
+      if (
+        e.target === this.dom.modal ||
+        e.target === this.dom.welcomeView ||
+        e.target === this.dom.completeView
+      ) {
+        AudioEngine.playNavBack();
+        this.close();
+      }
+    };
+
+    if (this.dom.modal) {
+      this.dom.modal.addEventListener("click", handleBackdropClick);
+    }
+    if (this.dom.welcomeView) {
+      this.dom.welcomeView.addEventListener("click", handleBackdropClick);
+    }
+    if (this.dom.completeView) {
+      this.dom.completeView.addEventListener("click", handleBackdropClick);
+    }
+
     window.addEventListener("resize", () => {
       if (this.isOpen()) {
         const stage = TUTORIAL_STAGES[this.currentStageIdx];
@@ -797,6 +818,9 @@ export const TutorialController = {
     this.setView("complete");
     PlatformBridge.vibrateSuccess?.();
     AudioEngine.playTutorialComplete();
+    if (typeof window !== "undefined" && window.AchievementManager) {
+      window.AchievementManager.check("TUTORIAL_COMPLETED");
+    }
   },
 
   isOpen() {

@@ -54,13 +54,23 @@
           <span class="theme-icon">🌙</span>
           <span class="theme-label">OBSIDIAN</span>
         </button>
+        <button class="nav-icon-btn" id="homeAchievementsBtn" aria-label="Achievements">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+          </svg>
+          <span class="update-badge-dot" id="achievementsBadgeDot" style="display:none;"></span>
+          <kbd class="kbd-badge">A</kbd>
+        </button>
+        <button class="home-update-pill-btn" id="homeUpdateBtn" aria-label="Update Available" style="display: none;">
+          <span class="update-pill-icon">🚀</span>
+          <span class="update-pill-text">UPDATE</span>
+        </button>
         <button class="nav-icon-btn" id="homeHelpBtn" aria-label="How to Play">
           <span>?</span>
           <kbd class="kbd-badge">?</kbd>
         </button>
-        <button class="nav-icon-btn" id="homeSettingsBtn" aria-label="Settings" style="position: relative;">
+        <button class="nav-icon-btn" id="homeSettingsBtn" aria-label="Settings">
           <span>⚙</span>
-          <span class="update-badge-dot" id="updateBadgeDot"></span>
           <kbd class="kbd-badge">S</kbd>
         </button>
         <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
@@ -81,11 +91,21 @@
             <h3 class="daily-card-title" id="dailyCardTitle">Today's Puzzle</h3>
             <p class="daily-card-sub" id="dailyCardSub">Resets in 12h 00m</p>
           </div>
-          <button class="daily-play-btn" id="dailyPlayBtn" aria-label="Play Daily Challenge">
-            <span class="daily-play-icon" id="dailyPlayIcon">▶</span>
-            <span class="daily-play-text" id="dailyPlayText">PLAY</span>
-            <kbd class="kbd-badge">D</kbd>
-          </button>
+          <div class="daily-card-actions">
+            <button class="daily-cal-trigger-btn" id="dailyCalendarBtn" aria-label="Daily Challenge Archive" title="Archive &amp; Calendar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </button>
+            <button class="daily-play-btn" id="dailyPlayBtn" aria-label="Play Daily Challenge">
+              <span class="daily-play-icon" id="dailyPlayIcon">▶</span>
+              <span class="daily-play-text" id="dailyPlayText">PLAY</span>
+              <kbd class="kbd-badge">D</kbd>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1266,7 +1286,7 @@
           <div class="settings-row" id="settingRowUpdateSim">
             <span class="settings-label-title">Simulate In-App Update</span>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.0.9)</button>
+              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.1)</button>
               <button class="btn btn-secondary" id="devSimUpdateDownloadedBtn" style="padding: 3px 8px; font-size: 10px;">Downloaded</button>
               <button class="btn btn-secondary" id="devSimUpdateResetBtn" style="padding: 3px 8px; font-size: 10px;">Reset</button>
             </div>
@@ -1274,7 +1294,7 @@
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v0.0.8 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.10 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -1379,7 +1399,7 @@
 
           <!-- Title & Version -->
           <h1 class="about-game-title">GRID LEAP</h1>
-          <div class="about-version-pill">v0.0.8</div>
+          <div class="about-version-pill">v0.0.10</div>
 
           <!-- Developer Credits -->
           <div class="about-dev-section">
@@ -1570,6 +1590,151 @@
       <button class="btn primary" id="editorJsonCopyBtn">Copy Code</button>
       <button class="btn" id="editorJsonApplyBtn" style="display:none;">Apply JSON</button>
       <button class="btn" id="closeEditorJsonBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dedicated Daily Challenge Calendar & Archive Modal -->
+<div class="overlay" id="dailyCalendarModal">
+  <div class="card daily-calendar-card">
+    <div class="daily-cal-header">
+      <div class="daily-cal-title-wrap">
+        <h2 class="daily-cal-title">Puzzle Calendar</h2>
+      </div>
+      <button class="daily-cal-close-btn" id="dailyCalendarCloseBtn" aria-label="Close Calendar">✕</button>
+    </div>
+
+    <!-- Month Navigation Bar -->
+    <div class="daily-cal-nav-bar">
+      <button class="cal-nav-btn" id="dailyCalPrevBtn" aria-label="Previous Month">‹</button>
+      <div class="cal-month-title" id="dailyCalMonthTitle">SEPTEMBER 2026</div>
+      <button class="cal-nav-btn" id="dailyCalNextBtn" aria-label="Next Month">›</button>
+    </div>
+
+    <!-- Monthly & All-Time Stats Strip -->
+    <div class="daily-cal-stats-strip">
+      <div class="cal-stat-item">
+        <span class="cal-stat-label">THIS MONTH</span>
+        <span class="cal-stat-val" id="dailyCalStatCompleted">0/0</span>
+      </div>
+      <div class="cal-stat-item">
+        <span class="cal-stat-label">LIVE STREAK</span>
+        <span class="cal-stat-val" id="dailyCalStatStreak">0</span>
+      </div>
+      <div class="cal-stat-item">
+        <span class="cal-stat-label">ALL-TIME SOLVED</span>
+        <span class="cal-stat-val" id="dailyCalStatTotal">0</span>
+      </div>
+    </div>
+
+    <!-- 7-Column Calendar Grid Container -->
+    <div class="daily-cal-grid-container" id="dailyCalGrid">
+      <!-- Generated dynamically by DailyCalendarController -->
+    </div>
+
+    <!-- Footer Guide -->
+    <div class="daily-cal-footer-note">
+      <span>Daily puzzles available from Sept 16, 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- Real-time In-Game Achievement Toasts Container (Pops from Right) -->
+<div class="achievement-toast-container" id="achievementToastContainer"></div>
+
+<!-- Dedicated Achievements Showcase Modal -->
+<div class="overlay" id="achievementsModal">
+  <div class="card achievements-card">
+    <!-- Hero Showcase Header -->
+    <div class="ach-hero-header">
+      <div class="ach-hero-left">
+        <div class="ach-trophy-ring-wrap">
+          <svg class="ach-ring-svg" viewBox="0 0 36 36">
+            <path class="ach-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="ach-ring-fill" id="achHeroRingFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="ach-trophy-icon-inner">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ach-hero-text">
+          <span class="ach-hero-eyebrow">GRID MASTERY</span>
+          <h2 class="ach-hero-title" id="achSummaryText">0 / 25 Unlocked</h2>
+          <span class="ach-hero-sub" id="achHeroSub">0% Completed</span>
+        </div>
+      </div>
+      <button class="ach-close-btn" id="achievementsCloseBtn" aria-label="Close Achievements">✕</button>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="ach-tabs-container" id="achTabsContainer">
+      <button class="ach-tab-btn active" data-category="all">ALL</button>
+      <button class="ach-tab-btn" data-category="campaign">CAMPAIGN</button>
+      <button class="ach-tab-btn" data-category="mastery">MASTERY</button>
+      <button class="ach-tab-btn" data-category="daily">DAILY</button>
+      <button class="ach-tab-btn" data-category="strategy">STRATEGY</button>
+      <button class="ach-tab-btn" data-category="time">TIME</button>
+    </div>
+
+    <!-- Scrollable Achievement Cards Grid/List -->
+    <div class="achievements-scroll-area">
+      <div class="achievements-grid" id="achievementsGrid">
+        <!-- Rendered dynamically by AchievementsController -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dedicated In-App Update Modal -->
+<div class="overlay" id="updateModal">
+  <div class="card update-modal-card">
+    <button class="tutorial-close-x corner" id="updateModalCloseX" aria-label="Close">✕</button>
+    <div class="update-emblem-wrap">
+      <div class="update-icon-disc">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="update-header-text">
+      <span class="update-eyebrow">GOOGLE PLAY UPDATE</span>
+      <h2 class="update-title">New Version Ready</h2>
+      <span class="update-version-tag" id="updateModalVersionTag">v0.1.0 Available</span>
+    </div>
+
+    <!-- What's New Feature Highlights -->
+    <div class="update-feature-list" id="updateFeatureList">
+      <div class="update-feature-item">
+        <span class="feature-dot">✨</span>
+        <span class="feature-text">New Daily Challenges &amp; Puzzle Calendar Archive</span>
+      </div>
+      <div class="update-feature-item">
+        <span class="feature-dot">🏆</span>
+        <span class="feature-text">Complete 25-Achievement In-Game Mastery System</span>
+      </div>
+      <div class="update-feature-item">
+        <span class="feature-dot">⚡</span>
+        <span class="feature-text">Engine responsiveness &amp; touch optimization</span>
+      </div>
+    </div>
+
+    <!-- Live Progress Bar (Shown when downloading) -->
+    <div class="update-progress-wrap" id="updateProgressWrap" style="display: none;">
+      <div class="update-progress-bar">
+        <div class="update-progress-fill" id="updateProgressFill" style="width: 0%;"></div>
+      </div>
+      <span class="update-progress-label" id="updateProgressLabel">Downloading in background...</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="update-actions-row">
+      <button class="btn btn-secondary update-later-btn" id="updateModalLaterBtn">LATER</button>
+      <button class="btn btn-primary update-action-btn" id="updateModalActionBtn">UPDATE NOW</button>
     </div>
   </div>
 </div>
