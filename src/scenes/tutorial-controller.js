@@ -7,6 +7,7 @@ import { calculateLegalDestinations } from "../core/rules.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { SceneRouter } from "./scene-router.js";
 import { AudioEngine } from "../audio/audio-engine.js";
+import { GameState } from "../state/game-state.js";
 
 const TUTORIAL_STAGES = [
   // --- LESSON 1: Leap Distance 1 ---
@@ -201,6 +202,10 @@ export const TutorialController = {
     completeCloseX: null
   },
 
+  isOpen() {
+    return SceneRouter.isModalOpen("RULES") || Boolean(this.dom.modal?.classList.contains("show") || this.dom.modal?.classList.contains("active"));
+  },
+
   setView(viewName) {
     const modal = this.dom.modal || document.getElementById("rulesModal");
     if (modal) {
@@ -208,7 +213,10 @@ export const TutorialController = {
     }
   },
 
-  init() {
+  options: {},
+
+  init(options = {}) {
+    this.options = options || {};
     this.dom.modal = document.getElementById("tutorialModal") || document.getElementById("rulesModal");
     this.dom.board = document.getElementById("tutorialBoard");
     this.dom.boardContainer = document.getElementById("tutorialBoardContainer");
@@ -251,8 +259,10 @@ export const TutorialController = {
     if (this.dom.completeCampaignBtn) {
       this.dom.completeCampaignBtn.addEventListener("click", () => {
         this.close();
-        if (window.SceneRouter) {
-          window.SceneRouter.showScreen("GAME");
+        if (typeof this.options?.onStartCampaign === "function") {
+          this.options.onStartCampaign();
+        } else if (window.SceneRouter) {
+          window.SceneRouter.navigateTo("screenGame");
         }
       });
     }
@@ -261,7 +271,7 @@ export const TutorialController = {
       this.dom.completeHomeBtn.addEventListener("click", () => {
         this.close();
         if (window.SceneRouter) {
-          window.SceneRouter.showScreen("HOME");
+          window.SceneRouter.navigateTo("screenHome");
         }
       });
     }
@@ -325,6 +335,10 @@ export const TutorialController = {
 
   startTutorialFromWelcome() {
     AudioEngine.playLevelStart();
+    if (GameState && GameState.settings) {
+      GameState.settings.hasSeenRules = true;
+      GameState.save();
+    }
     this.currentStageIdx = 0;
     this.loadStage(0);
   },
@@ -333,6 +347,13 @@ export const TutorialController = {
     clearTimeout(this._autoAdvanceTimer);
     clearTimeout(this._autoResetTimer);
     clearTimeout(this._promptResetTimer);
+    if (GameState && GameState.settings) {
+      GameState.settings.hasSeenRules = true;
+      GameState.save();
+    }
+    if (typeof this.options?.onClose === "function") {
+      this.options.onClose();
+    }
     SceneRouter.popModal();
   },
 
@@ -351,7 +372,7 @@ export const TutorialController = {
 
     // Reset Prompt Box styles
     if (this.dom.promptBox) {
-      this.dom.promptBox.classList.remove("error-state");
+      this.dom.promptBox.classList.remove("error-state", "solved-state");
     }
     if (this.dom.prompt) {
       this.dom.prompt.textContent = stage.prompt;
@@ -361,18 +382,14 @@ export const TutorialController = {
       this.dom.resetBtn.classList.remove("attention", "shake-error");
     }
 
-    // Update Lesson Badge & Step Dots
+    // Update Lesson Badge & Step Dots (Pure indicator)
     if (this.dom.eyebrow) {
       this.dom.eyebrow.textContent = `LESSON ${stage.lessonNum}`;
     }
     if (this.dom.dots) {
       this.dom.dots.innerHTML = TUTORIAL_STAGES.map((s, i) =>
-        `<span class="tut-dot ${i === idx ? "active" : ""}${i < idx ? " done" : ""}" title="${s.title}"></span>`
+        `<span class="tut-dot ${i === idx ? "active" : ""}${i < idx ? " done" : ""}"></span>`
       ).join("");
-      this.dom.dots.querySelectorAll(".tut-dot").forEach((dot, i) => {
-        dot.style.cursor = "pointer";
-        dot.addEventListener("click", () => this.loadStage(i));
-      });
     }
 
     // Update Title & Action Button
@@ -736,6 +753,7 @@ export const TutorialController = {
 
     if (this.dom.promptBox) {
       this.dom.promptBox.classList.remove("error-state");
+      this.dom.promptBox.classList.add("solved-state");
     }
 
     if (this.dom.prompt) {
@@ -756,6 +774,11 @@ export const TutorialController = {
     // Flash goal
     const goalCell = this.dom.board?.querySelector(".tut-cell.goal-cell");
     if (goalCell) goalCell.classList.add("pulse-success");
+
+    // Clear trajectories and chevrons on goal reached
+    this.hideArcGuide();
+    const tokenArrows = this.dom.token?.querySelectorAll(".token-dir-arrow");
+    if (tokenArrows) tokenArrows.forEach(a => a.classList.add("disabled"));
 
     // Automated advance to next stage (~750ms) or transition to Complete screen after final stage (~850ms)
     const isLastStage = (this.currentStageIdx >= TUTORIAL_STAGES.length - 1);
@@ -807,7 +830,7 @@ export const TutorialController = {
 
     const isInteractiveTarget = (target) => {
       if (!target || typeof target.closest !== "function") return false;
-      return Boolean(target.closest("#tutorialCloseX, .tut-dot, button, a, input, select, textarea"));
+      return Boolean(target.closest("#tutorialCloseX, button, a, input, select, textarea"));
     };
 
     // --- 1. Touch Events: Swipe anywhere on screen while tutorial is active ---

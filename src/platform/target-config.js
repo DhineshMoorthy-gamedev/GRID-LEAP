@@ -31,8 +31,8 @@ export const TargetConfig = {
     nativePlugins: activeMode === TARGET_MODES.PLAYSTORE,
     // Itch.io / Desktop fullscreen toggle
     fullscreenControl: activeMode === TARGET_MODES.ITCH || activeMode === TARGET_MODES.WEB,
-    // Keyboard hint pill on screen
-    keyboardHints: activeMode === TARGET_MODES.ITCH || (activeMode === TARGET_MODES.WEB && !("ontouchstart" in (typeof window !== "undefined" ? window : {}))),
+    // Keyboard hint pill on screen (disabled to keep clean minimalist gameplay UI)
+    keyboardHints: false,
     // Web Share API
     socialShare: activeMode === TARGET_MODES.WEB,
     // Home Hub Dev topbar controls (Mode pill)

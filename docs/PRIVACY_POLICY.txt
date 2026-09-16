@@ -1,0 +1,168 @@
+================================================================================
+                           PRIVACY POLICY
+================================================================================
+Game Title: Grid Leap
+Developer / Publisher: OLAI Digital Studios
+Lead Developer: Dhinesh
+Location: Chennai, Tamil Nadu, India
+Contact Email: olaidigitalstudios@gmail.com
+Effective Date: September 16, 2026
+Last Updated: September 16, 2026
+================================================================================
+
+1. INTRODUCTION & SCOPE
+--------------------------------------------------------------------------------
+This Privacy Policy applies to the game "Grid Leap" across all supported platforms
+and distribution channels, including:
+  • Mobile Applications (Google Play Store / Android)
+  • Web Editions (Hosted on Netlify / Browser Platforms)
+  • Desktop Editions (Itch.io / Standalone Windows & macOS Builds)
+  • Any related services operated by OLAI Digital Studios ("we", "us", or "our").
+
+OLAI Digital Studios is committed to protecting the privacy of our players. 
+Grid Leap is designed with an offline-first architecture to provide an enjoyable, 
+privacy-respecting puzzle experience. We do not collect, sell, or rent your 
+personally identifiable information (PII).
+
+
+2. INFORMATION WE DO NOT COLLECT
+--------------------------------------------------------------------------------
+Grid Leap does NOT require account creation or registration. We do not collect, 
+harvest, or store:
+  • Real names, physical addresses, or telephone numbers
+  • Email addresses (unless you voluntarily contact our support team)
+  • Contacts, photos, camera, or microphone data
+  • Precise geolocation or GPS coordinates
+  • Biometric or financial account details
+
+
+3. LOCAL ON-DEVICE STORAGE (GAMEPLAY PROGRESS & SETTINGS)
+--------------------------------------------------------------------------------
+Grid Leap stores puzzle progress and user preferences exclusively on your local 
+device using standard local storage technologies (e.g., HTML5 localStorage).
+
+This local data includes:
+  • Cleared puzzle levels, star ratings, and least-moves records
+  • Daily Challenge streak counts and completion timestamps
+  • Custom levels created in the Level Designer
+  • Player preferences: Audio settings (SFX volume), Haptic feedback state, 
+    and Visual themes (Obsidian Dark / Vellum Paper).
+
+This data remains strictly on your local device and is NEVER transmitted to external 
+servers or databases. You may reset or erase your data at any time by clearing the 
+app's storage/cache in your device or browser settings.
+
+
+4. PLATFORM-SPECIFIC MONETIZATION & ADVERTISING
+--------------------------------------------------------------------------------
+To support ongoing game development, Grid Leap utilizes platform-appropriate 
+monetization models as outlined below:
+
+A. MOBILE APPLICATIONS (Google Play Store / Android):
+   • Advertising (Google AdMob):
+     We may display non-intrusive banner, interstitial, or rewarded video 
+     advertisements served by Google AdMob. AdMob may process pseudonymous 
+     device identifiers (such as Google Advertising ID / GAID), IP addresses, 
+     and diagnostic data to deliver contextual or personalized ads and detect fraud.
+     - Google Privacy Policy: https://policies.google.com/privacy
+     - AdMob Opt-Out: You can opt out of personalized ads via your Android 
+       device settings (Settings > Google > Ads > Delete/Reset Advertising ID).
+
+   • In-App Purchases (Google Play Billing):
+     Players may purchase the optional "Remove Ads" upgrade to permanently 
+     disable all banner and interstitial advertisements. All financial 
+     transactions are handled exclusively and securely by Google Play Billing. 
+     OLAI Digital Studios does not receive, process, or store your credit card or 
+     banking information.
+
+B. WEB EDITIONS (Netlify / Web Browsers):
+   • Web Advertising (Google AdSense):
+     The web browser edition may display display advertisements served by Google 
+     AdSense. Google AdSense uses cookies, web beacons, and device characteristics 
+     to serve ads based on your visits to this and other websites.
+     - You can manage or opt out of personalized Google web ads at:
+       https://adssettings.google.com
+     - You can opt out of third-party advertising cookies at:
+       https://www.aboutads.info/choices or https://optout.networkadvertising.org
+
+C. DESKTOP EDITIONS (Itch.io / Standalone Builds):
+   • 100% Offline & Ad-Free:
+     The desktop standalone edition is fully self-contained, serves ZERO 
+     third-party advertisements, uses no tracking cookies, and performs no 
+     network requests during gameplay.
+
+
+5. THIRD-PARTY SERVICES & LIBRARIES
+--------------------------------------------------------------------------------
+Grid Leap integrates standard third-party developer frameworks to enable 
+native capabilities and platform functionality:
+
+  • Google Play Services / AdMob (Mobile ad delivery and consent management)
+    Privacy Policy: https://policies.google.com/privacy
+  • Capacitor / Ionic Framework (Native hardware bridges: haptics & status bar)
+    Privacy Policy: https://ionic.io/privacy
+  • Google AdSense (Web banner display advertising)
+    Privacy Policy: https://policies.google.com/technologies/ads
+
+These third parties operate under their own independent privacy policies and 
+comply with applicable international data privacy standards.
+
+
+6. CHILDREN’S PRIVACY (COPPA & GDPR-K COMPLIANCE)
+--------------------------------------------------------------------------------
+Grid Leap is a family-friendly mathematical logic puzzle designed for general 
+audiences of all ages. 
+
+We do not knowingly collect, request, or solicit any personal information from 
+children under the age of 13 (or under 16 in the European Union), in accordance 
+with the Children’s Online Privacy Protection Act (COPPA) and the General Data 
+Protection Regulation (GDPR). 
+
+In mobile distributions, ad requests comply with Google Play Families Policy 
+requirements, ensuring child-appropriate ad categorization where applicable. If a 
+parent or guardian becomes aware that personal data has been inadvertently collected, 
+please contact us at olaidigitalstudios@gmail.com, and we will promptly take steps 
+to remove such information.
+
+
+7. INTERNATIONAL DATA RIGHTS (GDPR & CCPA/CPRA)
+--------------------------------------------------------------------------------
+Depending on your jurisdiction, you may have specific rights regarding your data:
+
+  • European Economic Area (EEA) & United Kingdom (GDPR / UK GDPR):
+    You have the right to access, rectify, or erase any personal data held by 
+    third-party ad providers, object to processing, and withdraw consent for 
+    personalized advertising via the in-game consent dialog or device settings.
+
+  • California & US State Laws (CCPA / CPRA):
+    We do not sell personal information or share personal data for monetary 
+    value. You have the right to request disclosure of data practices and opt 
+    out of cross-context behavioral advertising.
+
+
+8. SECURITY
+--------------------------------------------------------------------------------
+We value your trust in playing our games. Because Grid Leap operates predominantly 
+offline and stores your progress locally on your hardware, your gameplay data is 
+protected by the built-in operating system security of your individual device.
+
+
+9. CHANGES TO THIS PRIVACY POLICY
+--------------------------------------------------------------------------------
+We may periodically update our Privacy Policy to reflect changes in game features, 
+monetization practices, or legal requirements. Any updates will be posted directly 
+to this document, inside the game’s Settings menu, and on our official privacy 
+page with an updated "Effective Date".
+
+
+10. CONTACT US
+--------------------------------------------------------------------------------
+If you have any questions, suggestions, or privacy inquiries regarding Grid Leap 
+or OLAI Digital Studios, please contact us directly:
+
+  Studio: OLAI Digital Studios
+  Lead Developer: Dhinesh
+  Location: Chennai, Tamil Nadu, India
+  Support Email: olaidigitalstudios@gmail.com
+  Official Privacy Page: https://sites.google.com/view/grid-leap-privacy-policy
+================================================================================

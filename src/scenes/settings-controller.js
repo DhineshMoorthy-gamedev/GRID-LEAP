@@ -7,6 +7,7 @@
 
 import { SceneRouter } from "./scene-router.js";
 import { TargetConfig } from "../platform/target-config.js";
+import { PlatformBridge } from "../platform/lifecycle.js";
 import { showToast } from "./game-renderer.js";
 import { AudioEngine } from "../audio/audio-engine.js";
 
@@ -18,14 +19,31 @@ export const SettingsController = {
     this.dom = {
       modal: document.getElementById("settingsModal"),
       closeBtn: document.getElementById("settingsCloseBtn"),
+      btnContactUs: document.getElementById("btnContactUs"),
+      btnFeedback: document.getElementById("btnFeedback"),
       btnOpenPrivacy: document.getElementById("btnOpenPrivacy"),
       btnOpenAbout: document.getElementById("btnOpenAbout"),
       privacyBackBtn: document.getElementById("privacyBackBtn"),
       aboutBackBtn: document.getElementById("aboutBackBtn"),
       btnRemoveAds: document.getElementById("btnRemoveAds"),
       sectionIAP: document.getElementById("settingsSectionIAP"),
-      sectionDev: document.getElementById("settingsSectionDev")
+      sectionDev: document.getElementById("settingsSectionDev"),
+      rowHaptics: document.getElementById("settingRowHaptics"),
+      hapticsUnavailablePill: document.getElementById("hapticsUnavailablePill"),
+      settingHaptics: document.getElementById("settingHaptics")
     };
+
+    // Strategic Dimming: If haptics is unsupported on this device/browser
+    const hapticsAvailable = PlatformBridge.isHapticsSupported();
+    if (!hapticsAvailable) {
+      if (this.dom.rowHaptics) this.dom.rowHaptics.classList.add("disabled");
+      if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "inline-block";
+      if (this.dom.settingHaptics) {
+        this.dom.settingHaptics.disabled = true;
+        this.dom.settingHaptics.checked = false;
+        this.dom.settingHaptics.tabIndex = -1;
+      }
+    }
 
     // Platform Gating: Remove Ads IAP visible ONLY on Play Store
     if (this.dom.sectionIAP) {
@@ -40,6 +58,20 @@ export const SettingsController = {
     // Subview Navigation Listeners
     if (this.dom.closeBtn) {
       this.dom.closeBtn.addEventListener("click", () => this.close());
+    }
+
+    if (this.dom.btnContactUs) {
+      this.dom.btnContactUs.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        PlatformBridge.openExternalUrl("mailto:olaidigitalstudios@gmail.com?subject=Grid%20Leap%20Inquiry%20%26%20Support");
+      });
+    }
+
+    if (this.dom.btnFeedback) {
+      this.dom.btnFeedback.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        PlatformBridge.openExternalUrl("https://forms.gle/olai-gridleap-feedback");
+      });
     }
 
     if (this.dom.btnOpenPrivacy) {
@@ -57,6 +89,15 @@ export const SettingsController = {
       });
     }
 
+    // Online Privacy Policy Button Action
+    const privacyOnlineBtn = document.getElementById("privacyOnlineBtn");
+    if (privacyOnlineBtn) {
+      privacyOnlineBtn.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        PlatformBridge.openExternalUrl("https://sites.google.com/view/grid-leap-privacy-policy");
+      });
+    }
+
     if (this.dom.aboutBackBtn) {
       this.dom.aboutBackBtn.addEventListener("click", () => {
         AudioEngine.playNavBack();
@@ -64,11 +105,49 @@ export const SettingsController = {
       });
     }
 
-    // In-App Purchase Action
+    // "More Games by Olai" Action
+    const moreGamesBtn = document.getElementById("aboutMoreGamesBtn");
+    if (moreGamesBtn) {
+      moreGamesBtn.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
+          PlatformBridge.openExternalUrl("https://play.google.com/store/apps/developer?id=Olai+Digital+Studios");
+        } else if (TargetConfig.isItch) {
+          PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
+        } else {
+          // Desktop / Editor
+          PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
+        }
+      });
+    }
+
+    // In-App Purchase Action & Status Sync
     if (this.dom.btnRemoveAds) {
-      this.dom.btnRemoveAds.addEventListener("click", () => {
-        // Google Play Billing hook
-        showToast("Google Play Billing: Remove Ads");
+      if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
+        PlatformBridge.checkRemoveAdsPurchased().then(isPurchased => {
+          if (isPurchased && this.dom.btnRemoveAds) {
+            this.dom.btnRemoveAds.disabled = true;
+            this.dom.btnRemoveAds.innerHTML = '<span class="iap-sparkle">✓</span> Purchased';
+            this.dom.btnRemoveAds.style.opacity = '0.6';
+          }
+        });
+      }
+
+      this.dom.btnRemoveAds.addEventListener("click", async () => {
+        AudioEngine.playNavBack();
+        if (TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) {
+          const res = await PlatformBridge.purchaseRemoveAds();
+          if (res?.success) {
+            showToast("✓ Ads Removed Permanently!");
+            this.dom.btnRemoveAds.disabled = true;
+            this.dom.btnRemoveAds.innerHTML = '<span class="iap-sparkle">✓</span> Purchased';
+            this.dom.btnRemoveAds.style.opacity = '0.6';
+          } else if (res?.error !== "USER_CANCELED") {
+            showToast("Google Play Purchase not completed");
+          }
+        } else {
+          showToast("Available on Google Play Store");
+        }
       });
     }
   },
@@ -99,6 +178,7 @@ export const SettingsController = {
 
   back() {
     if (this.currentView !== "main") {
+      AudioEngine.playNavBack();
       this.setView("main");
       return true;
     }

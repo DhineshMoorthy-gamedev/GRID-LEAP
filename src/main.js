@@ -812,6 +812,9 @@ export function handleResize() {
 }
 
 export function handleToggleTheme(targetTheme) {
+  if (targetTheme && GameState.getTheme() === targetTheme) {
+    return; // Already active, do not re-trigger feedback
+  }
   let nextTheme;
   if (targetTheme) {
     nextTheme = targetTheme;
@@ -821,8 +824,12 @@ export function handleToggleTheme(targetTheme) {
   }
   applyTheme(nextTheme);
   refreshTrail(GameState.settings.showTrail);
-  PlatformBridge.vibrateLight();
-  AudioEngine.playThemeSwitch();
+  if (GameState.settings.hapticsEnabled !== false) {
+    PlatformBridge.vibrateLight();
+  }
+  if (GameState.settings.soundEnabled !== false) {
+    AudioEngine.playThemeSwitch();
+  }
   showToast(`Theme: ${nextTheme === "vellum" ? "☀️ Vellum & Deboss" : "🌙 Obsidian & Ochre"}`);
 }
 
@@ -843,9 +850,12 @@ export function handleToggleTrail(explicitValue) {
 /**
  * Studio Intro Splash Screen Controller (OLAI DIGITAL STUDIOS)
  */
-export function runStudioIntro() {
+export function runStudioIntro(onComplete) {
   const overlay = document.getElementById("startupOverlay");
-  if (!overlay) return;
+  if (!overlay) {
+    if (typeof onComplete === "function") onComplete();
+    return;
+  }
 
   const slide = document.getElementById("studioScreen");
   if (slide) {
@@ -871,6 +881,9 @@ export function runStudioIntro() {
     setTimeout(() => {
       if (overlay.parentNode) {
         overlay.remove();
+      }
+      if (typeof onComplete === "function") {
+        onComplete();
       }
     }, 700);
   };
@@ -972,9 +985,6 @@ export function bootApp() {
   applyTheme(GameState.getTheme());
   updateTrailButton(GameState.settings.showTrail);
 
-  // Play Studio Intro Screen
-  runStudioIntro();
-
   // Theme & Trail toggle bindings
   if (DOM.trailToggleBtn) DOM.trailToggleBtn.addEventListener("click", () => handleToggleTrail());
   if (DOM.homeThemeToggleBtn) DOM.homeThemeToggleBtn.addEventListener("click", () => handleToggleTheme());
@@ -997,12 +1007,24 @@ export function bootApp() {
   });
 
   // Initialize Dedicated Interactive Tutorial
-  TutorialController.init();
+  TutorialController.init({
+    onStartCampaign: () => {
+      const nextIdx = GameState.getNextUncompletedLevelIndex();
+      startLevel(nextIdx);
+    }
+  });
   window.TutorialController = TutorialController;
 
   // Initialize Dedicated Full-Screen Settings
   SettingsController.init();
   window.SettingsController = SettingsController;
+
+  // Play Studio Intro Screen & Launch FTUE Tutorial for first-time players
+  runStudioIntro(() => {
+    if (!GameState.settings.hasSeenRules) {
+      TutorialController.open();
+    }
+  });
 
   if (DOM.homeHelpBtn) DOM.homeHelpBtn.addEventListener("click", () => TutorialController.open());
   if (DOM.homeSettingsBtn) DOM.homeSettingsBtn.addEventListener("click", () => SettingsController.open());
@@ -1130,8 +1152,11 @@ export function bootApp() {
     });
   }
   if (DOM.settingHaptics) {
-    DOM.settingHaptics.checked = GameState.settings.hapticsEnabled !== false;
+    const isSupported = PlatformBridge.isHapticsSupported();
+    DOM.settingHaptics.checked = isSupported && GameState.settings.hapticsEnabled !== false;
+    DOM.settingHaptics.disabled = !isSupported;
     DOM.settingHaptics.addEventListener("change", (e) => {
+      if (!isSupported) return;
       GameState.settings.hapticsEnabled = e.target.checked;
       GameState.save();
     });
@@ -1201,7 +1226,7 @@ export function bootApp() {
     DOM.homeSettingsBtn.style.display = "inline-flex";
   }
   if (DOM.homeThemeToggleBtn) {
-    DOM.homeThemeToggleBtn.style.display = TargetConfig.isPlayStore ? "none" : "inline-flex";
+    DOM.homeThemeToggleBtn.style.display = TargetConfig.features.homeDevControls ? "inline-flex" : "none";
   }
   if (DOM.devToggleBtn) {
     DOM.devToggleBtn.style.display = TargetConfig.features.devDiagnostics ? "block" : "none";
@@ -1291,6 +1316,7 @@ export function bootApp() {
     },
     onToggleTheme: () => handleToggleTheme(),
     onToggleTrail: () => handleToggleTrail(),
+    onToggleFullscreen: toggleFullscreen,
     onToggleDev: () => {
       if (TargetConfig.features.devDiagnostics) toggleDevMode();
     },
@@ -1305,6 +1331,16 @@ export function bootApp() {
     },
     onNextLevel: nextLevel,
     onCloseRules: () => SceneRouter.popModal(),
+    onHomePlay: () => {
+      if (GameState.hasActiveSessionFor(GameState.levelIndex)) {
+        resumeLevelSession();
+      } else {
+        startLevel(GameState.levelIndex);
+      }
+    },
+    onDailyPlay: () => startDailyLevel(),
+    onOpenSettings: () => SettingsController.open(),
+    onOpenHelp: () => TutorialController.open(),
     boardElement: DOM.board,
     swipeContainer: DOM.screenGame
   });
@@ -1370,6 +1406,9 @@ export function bootApp() {
       return false;
     }
   });
+
+  // Ensure no tooltips appear across any platform
+  document.querySelectorAll("[title]").forEach((el) => el.removeAttribute("title"));
 
   // Open Home Hub on boot
   openHome();

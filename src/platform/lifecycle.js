@@ -82,6 +82,7 @@ export const PlatformBridge = {
   },
 
   async vibrateLight() {
+    if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.impact({ style: ImpactStyle.Light });
@@ -92,6 +93,7 @@ export const PlatformBridge = {
   },
 
   async vibrateSuccess() {
+    if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.notification({ type: NotificationType.Success });
@@ -102,6 +104,7 @@ export const PlatformBridge = {
   },
 
   async vibrateWarning() {
+    if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.notification({ type: NotificationType.Warning });
@@ -112,5 +115,66 @@ export const PlatformBridge = {
   },
 
   isCapacitor: () => isCapacitor,
-  isAndroid: () => isAndroid
+  isAndroid: () => isAndroid,
+  isHapticsSupported: () => {
+    if (isCapacitor) return true;
+    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return false;
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    if (isIOS) return false;
+    const isAndroidMobile = /Android/i.test(ua);
+    return isAndroidMobile;
+  },
+
+  openExternalUrl(url) {
+    if (!url) return;
+    try {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      window.location.href = url;
+    }
+  },
+
+  // Google Play In-App Purchases (Remove Ads)
+  async checkRemoveAdsPurchased() {
+    if (!isCapacitor) return false;
+    try {
+      if (window.Capacitor?.Plugins?.BillingPlugin) {
+        const res = await window.Capacitor.Plugins.BillingPlugin.isPurchased({ productId: "remove_ads" });
+        return res?.isPurchased === true;
+      }
+    } catch (e) {
+      console.warn("[Platform] checkRemoveAdsPurchased error:", e);
+    }
+    return false;
+  },
+
+  async purchaseRemoveAds() {
+    if (!isCapacitor) {
+      return { success: false, message: "In-App Purchases are available on the Android Play Store edition." };
+    }
+    try {
+      if (window.Capacitor?.Plugins?.BillingPlugin) {
+        const res = await window.Capacitor.Plugins.BillingPlugin.purchase({ productId: "remove_ads" });
+        return { success: res?.isPurchased === true, data: res };
+      }
+    } catch (e) {
+      console.warn("[Platform] purchaseRemoveAds error:", e);
+      return { success: false, error: e };
+    }
+    return { success: false, message: "Billing service not initialized." };
+  },
+
+  async restorePurchases() {
+    if (!isCapacitor) return false;
+    try {
+      if (window.Capacitor?.Plugins?.BillingPlugin) {
+        const res = await window.Capacitor.Plugins.BillingPlugin.restorePurchases();
+        return res?.isPurchased === true;
+      }
+    } catch (e) {
+      console.warn("[Platform] restorePurchases error:", e);
+    }
+    return false;
+  }
 };

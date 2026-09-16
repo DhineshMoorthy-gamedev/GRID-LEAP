@@ -6,10 +6,7 @@
 <meta name="theme-color" content="#0B131A" />
 <link rel="manifest" href="/manifest.json" />
 <title>Grid Leap</title>
-<!-- Typography: Bodoni Moda (Studio Mark), JetBrains Mono (Coordinates & Subtitle), Space Grotesk (Game UI) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700;1,6..96,400&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Typography: 100% Offline Self-Hosted Fonts (Space Grotesk, JetBrains Mono, Bodoni Moda) -->
 <script>
   /* Instant flicker-free theme detection before first paint */
   try {
@@ -30,11 +27,6 @@
 <!-- Fullscreen Startup Overlay (Studio Intro Screen) -->
 <div id="startupOverlay" class="startup-overlay" aria-label="Studio Intro" role="dialog" aria-modal="true">
   <div class="startup-reticle-frame">
-    <span class="reticle-corner top-left"></span>
-    <span class="reticle-corner top-right"></span>
-    <span class="reticle-corner bottom-left"></span>
-    <span class="reticle-corner bottom-right"></span>
-
     <div id="studioScreen" class="startup-slide">
       <div class="startup-logo-box">
         <div class="logo-text-olai">OLAI</div>
@@ -55,15 +47,21 @@
     <!-- Top Bar -->
     <header class="home-topbar">
       <div class="brand-logo">
-        <span class="logo-text">GRID<span class="dot">.</span>LEAP</span>
+        <span class="logo-text">GRID LEAP</span>
       </div>
       <div class="topbar-right">
-        <button class="theme-toggle-btn" id="homeThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)">
+        <button class="theme-toggle-btn" id="homeThemeToggleBtn" aria-label="Switch Theme">
           <span class="theme-icon">🌙</span>
           <span class="theme-label">OBSIDIAN</span>
         </button>
-        <button class="nav-icon-btn" id="homeHelpBtn" title="How to Play / Tutorial" aria-label="How to Play">?</button>
-        <button class="nav-icon-btn" id="homeSettingsBtn" title="Settings" aria-label="Settings">⚙</button>
+        <button class="nav-icon-btn" id="homeHelpBtn" aria-label="How to Play">
+          <span>?</span>
+          <kbd class="kbd-badge">?</kbd>
+        </button>
+        <button class="nav-icon-btn" id="homeSettingsBtn" aria-label="Settings">
+          <span>⚙</span>
+          <kbd class="kbd-badge">S</kbd>
+        </button>
         <span class="target-mode-pill" id="targetModePill">MODE: EDITOR</span>
       </div>
     </header>
@@ -85,6 +83,7 @@
           <button class="daily-play-btn" id="dailyPlayBtn" aria-label="Play Daily Challenge">
             <span class="daily-play-icon" id="dailyPlayIcon">▶</span>
             <span class="daily-play-text" id="dailyPlayText">PLAY</span>
+            <kbd class="kbd-badge">D</kbd>
           </button>
         </div>
       </div>
@@ -92,16 +91,13 @@
       <!-- Consumer Launch Section (Visible on Play Store, Itch, Web) -->
       <div class="consumer-launch-section" id="consumerLaunchSection" style="display:none;">
         <div class="consumer-launch-card">
-          <div class="consumer-eyebrow-row">
-            <span class="consumer-badge" id="consumerBadge">UP NEXT</span>
-            <span class="consumer-cleared-count" id="consumerClearedCount">0 / 10 CLEARED</span>
-          </div>
           <h2 class="consumer-level-title" id="consumerTitle">Level 01</h2>
           <p class="consumer-level-sub" id="consumerSub">Tutorial • Learn Distance</p>
           
           <button class="consumer-play-btn" id="consumerPlayBtn" aria-label="Play Next Level">
             <span class="consumer-play-icon">▶</span>
             <span class="consumer-play-label">PLAY</span>
+            <kbd class="kbd-badge">Space</kbd>
           </button>
         </div>
       </div>
@@ -109,9 +105,6 @@
       <!-- Hero "Continue" Banner (Editor Mode) -->
       <div class="hero-banner" id="heroBanner">
         <div class="hero-info">
-          <div class="hero-badge-row">
-            <span class="hero-badge" id="heroBadge">RESUME</span>
-          </div>
           <h2 class="hero-title" id="heroTitle">Level 01</h2>
           <p class="hero-sub" id="heroSub">Tutorial • Learn Distance</p>
         </div>
@@ -218,6 +211,562 @@
         </div>
       </div>
 
+      <!-- Icon & Symbol Inventory Panel (Visible only in Editor Mode) -->
+      <div class="editor-icon-inventory-section" id="editorIconInventorySection">
+        <div class="section-title-wrap">
+          <h3 class="section-title">ICON &amp; SYMBOL INVENTORY (DEV)</h3>
+          <span class="completion-pill" id="iconInventoryPill">32 SYMBOLS</span>
+        </div>
+
+        <div class="icon-inventory-grid">
+          <!-- 1. Navigation, Shell & Modals -->
+          <div class="icon-inventory-group">
+            <span class="icon-group-title">Navigation &amp; Modal Controls</span>
+            <div class="icon-cards-list">
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="theme-segmented-control" style="padding:2px; gap:2px; transform:scale(0.85);">
+                    <span class="theme-segment-btn active" style="padding:2px 5px; font-size:9px;">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </span>
+                    <span class="theme-segment-btn" style="padding:2px 5px; font-size:9px;">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Theme Mode Control</span>
+                    <span class="icon-context-tag">Settings • Home</span>
+                  </div>
+                  <p class="icon-desc">Segmented pill with vector Moon/Sun icons toggling between Dark and Light mode.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-icon-btn" style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-num); font-weight:700; font-size:13px;">?</div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">How to Play</span>
+                    <span class="icon-context-tag">Home Topbar</span>
+                  </div>
+                  <p class="icon-desc">Opens the interactive rules modal and step-by-step tutorial sandbox.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-icon-btn" style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px;">⚙</div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Settings</span>
+                    <span class="icon-context-tag">Home Topbar</span>
+                  </div>
+                  <p class="icon-desc">Opens user preferences for audio, haptics, themes, privacy and IAP.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-back-btn" style="width:28px; height:28px; min-width:28px; min-height:28px; display:flex; align-items:center; justify-content:center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Universal Back Button</span>
+                    <span class="icon-context-tag">Game • Settings • Editor</span>
+                  </div>
+                  <p class="icon-desc">Unified vector polyline returning to previous view with smooth settle audio cue.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-icon-btn" style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; letter-spacing:-1px;">❚❚</div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Pause Button</span>
+                    <span class="icon-context-tag">Game Topbar</span>
+                  </div>
+                  <p class="icon-desc">Suspends active gameplay timer and displays the pause overlay modal.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="tutorial-close-x" style="width:24px; height:24px; font-size:11px; display:flex; align-items:center; justify-content:center;">✕</div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Dismiss Modal</span>
+                    <span class="icon-context-tag">Modals • Tutorial</span>
+                  </div>
+                  <p class="icon-desc">Closes active modal overlays and restores previous game view.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="btn btn-secondary" style="padding:2px 6px; font-size:11px; height:24px; display:inline-flex; align-items:center; gap:4px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Home Shortcut</span>
+                    <span class="icon-context-tag">Win • Campaign Finish</span>
+                  </div>
+                  <p class="icon-desc">Vector SVG home icon providing a direct route back to level selection hub.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-icon-btn" style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px;">⛶</div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Fullscreen Toggle</span>
+                    <span class="icon-context-tag">Desktop • Web</span>
+                  </div>
+                  <p class="icon-desc">Expands the puzzle stage to true fullscreen on desktop/itch platforms.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. In-Game HUD, Token & Compass -->
+          <div class="icon-inventory-group">
+            <span class="icon-group-title">In-Game HUD, Token &amp; Compass</span>
+            <div class="icon-cards-list">
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="tool-btn" style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center;">
+                    <span class="tool-icon" style="line-height:1;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Undo Move</span>
+                    <span class="icon-context-tag">Game Toolbar</span>
+                  </div>
+                  <p class="icon-desc">Rewinds the previous leap step with vector rewind SVG and 2-tone audio cue.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="tool-btn" style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center;">
+                    <span class="tool-icon" style="line-height:1;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Restart Level</span>
+                    <span class="icon-context-tag">Game Toolbar</span>
+                  </div>
+                  <p class="icon-desc">Vector reload SVG loop wiping visited tiles and resetting token back to start.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="tool-btn active" style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center; color:var(--amber);">
+                    <span class="tool-icon" style="line-height:1;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18h6"></path>
+                        <path d="M10 22h4"></path>
+                        <path d="M15.09 13.72A6 6 0 1 0 8.91 13.72 M12 2v2"></path>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Hint / Compass</span>
+                    <span class="icon-context-tag">Game Toolbar</span>
+                  </div>
+                  <p class="icon-desc">Vector lightbulb/compass SVG illuminating single-step target toward optimal path.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="nav-icon-btn trail-btn active" style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--accent-primary);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 19c4-4 2-8 7-8s3 4 7 4 2-8 2-8"/>
+                      <circle cx="4" cy="19" r="1.5" fill="currentColor"/>
+                      <circle cx="20" cy="7" r="1.5" fill="currentColor"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Breadcrumbs Trail</span>
+                    <span class="icon-context-tag">Game Topbar</span>
+                  </div>
+                  <p class="icon-desc">Toggles topological multi-lane overpass lines tracking visited paths.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box" style="gap:2px;">
+                  <span class="heart-slot active" style="display:inline-flex;">
+                    <svg class="heart-icon active" width="16" height="16" viewBox="0 0 24 24" fill="#10B981" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#10B981; filter:drop-shadow(0 0 3px rgba(16,185,129,0.5));">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </span>
+                  <span class="heart-slot lost" style="display:inline-flex;">
+                    <svg class="heart-icon lost" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(244,63,94,0.7)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </span>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Active &amp; Lost Hearts</span>
+                    <span class="icon-context-tag">Grid Stage Header</span>
+                  </div>
+                  <p class="icon-desc">Vector green hearts indicating remaining lives (lost = hollow red outline).</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box" style="color:#10B981; gap:2px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#10B981" stroke="#10B981" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span class="infinite-symbol" style="font-size:15px; font-weight:800; line-height:1;">∞</span>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Infinite Lives</span>
+                    <span class="icon-context-tag">Relax Mode HUD</span>
+                  </div>
+                  <p class="icon-desc">Indicates zen mode with zero life deduction or penalty pressure.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="stat-bubble path-bubble" style="padding:2px 6px; font-size:8px; display:inline-flex; align-items:center; gap:3px;">
+                    <span class="path-status-dot" style="color:var(--teal); font-size:7px;">●</span>
+                    <span style="font-weight:700; font-size:8px;">TRACK</span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Goal Distance Status</span>
+                    <span class="icon-context-tag">Game Topbar</span>
+                  </div>
+                  <p class="icon-desc">Live HUD indicator displaying proximity status (ON TRACK, TRAPPED, GOAL).</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div style="width:26px; height:26px; border-radius:50%; background:var(--ink-800); border:1.5px solid var(--accent-primary); display:flex; align-items:center; justify-content:center; position:relative; box-shadow:0 0 8px var(--accent-primary-glow);">
+                    <svg viewBox="0 0 12 12" width="9" height="9" style="position:absolute; top:1px; color:var(--accent-primary);"><path d="M2.5 7.5 L6 3.5 L9.5 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg viewBox="0 0 12 12" width="9" height="9" style="position:absolute; bottom:1px; color:var(--accent-primary);"><path d="M2.5 4.5 L6 8.5 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg viewBox="0 0 12 12" width="9" height="9" style="position:absolute; left:1px; color:var(--accent-primary);"><path d="M7.5 2.5 L3.5 6 L7.5 9.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg viewBox="0 0 12 12" width="9" height="9" style="position:absolute; right:1px; color:var(--accent-primary);"><path d="M4.5 2.5 L8.5 6 L4.5 9.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Token Exit Arrows</span>
+                    <span class="icon-context-tag">Player Token</span>
+                  </div>
+                  <p class="icon-desc">Cardinal arrowheads on the token showing all legal leap directions.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Progression, Ratings & Rewards -->
+          <div class="icon-inventory-group">
+            <span class="icon-group-title">Progression, Daily &amp; Victory Ratings</span>
+            <div class="icon-cards-list">
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="play-hero-btn" style="width:28px; height:28px; font-size:11px; box-shadow:0 2px 8px rgba(242,166,90,0.4);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-left:1px;">
+                      <polygon points="6 3 20 12 6 21 6 3"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Play / Resume Button</span>
+                    <span class="icon-context-tag">Hero Banner • Cards</span>
+                  </div>
+                  <p class="icon-desc">Primary amber action button to launch or resume puzzle levels.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="daily-streak-badge" style="padding:2px 6px; font-size:9px; font-weight:800; border-radius:999px; display:inline-flex; align-items:center; gap:2px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg> 5
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Daily Streak Flame</span>
+                    <span class="icon-context-tag">Daily Card • Win Modal</span>
+                  </div>
+                  <p class="icon-desc">Vector flame SVG tracking consecutive daily puzzle completion streak.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="win-stat-pill efficiency tier-flawless" style="padding:2px 6px; font-size:9px; display:inline-flex; align-items:center; gap:3px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#38BDF8" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span style="font-weight:800; font-size:9px;">100%</span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Flawless Star / Rating</span>
+                    <span class="icon-context-tag">Win • Settings IAP</span>
+                  </div>
+                  <p class="icon-desc">Vector star SVG denoting 100% optimal move efficiency tier and Remove Ads IAP.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box" style="gap:2px;">
+                  <span class="win-stat-pill efficiency tier-excellent" style="padding:2px 5px; font-size:8.5px; font-weight:800;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#60A5FA" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </span>
+                  <span class="win-stat-pill efficiency tier-good" style="padding:2px 5px; font-size:8.5px; font-weight:800;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                  </span>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Efficiency Rating Tiers</span>
+                    <span class="icon-context-tag">Win Modal</span>
+                  </div>
+                  <p class="icon-desc">Performance tiers: ⚡ Excellent (85–99%), 👍 Good (50–69%), 🏁 Solved (10–49%).</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="win-stat-pill moves" style="padding:2px 6px; font-size:9px; display:inline-flex; align-items:center; gap:3px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13 5.5C13 3.3 14.5 1.5 16.5 1.5S20 3.3 20 5.5c0 1.8-1 3.2-1.5 4.5h-4C14 8.7 13 7.3 13 5.5z M14.5 13c0-1.2 0.9-2 2-2s2 0.8 2 2-0.9 2-2 2-2-0.8-2-2z"/>
+                      <path d="M4 12.5C4 10.3 5.5 8.5 7.5 8.5S11 10.3 11 12.5c0 1.8-1 3.2-1.5 4.5h-4C5 15.7 4 14.3 4 12.5z M5.5 20c0-1.2 0.9-2 2-2s2 0.8 2 2-0.9 2-2 2-2-0.8-2-2z"/>
+                    </svg>
+                    <span style="font-weight:800; font-size:9px;">4/4</span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Moves Ratio</span>
+                    <span class="icon-context-tag">Win Stats Strip</span>
+                  </div>
+                  <p class="icon-desc">Vector footsteps SVG displaying player move count vs optimal BFS benchmark.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="final-trophy-badge" style="width:26px; height:26px; font-size:14px; display:flex; align-items:center; justify-content:center; background:var(--accent-primary-dim); border:1.5px solid var(--accent-primary); border-radius:50%; box-shadow:0 0 8px var(--accent-primary-glow);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-primary);">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Victory Trophy</span>
+                    <span class="icon-context-tag">Campaign • Tutorial Complete</span>
+                  </div>
+                  <p class="icon-desc">Vector trophy cup awarded upon clearing all 100 puzzles or mastering lessons.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div style="position:relative; width:24px; height:24px; border-radius:50%; background:var(--ink-800); border:1.5px solid var(--teal); display:flex; align-items:center; justify-content:center; font-family:var(--font-num); font-size:10px; font-weight:800;">
+                    <span style="color:var(--paper);">01</span>
+                    <span class="dot-check" style="position:absolute; top:-2px; right:-2px; width:12px; height:12px; display:flex; align-items:center; justify-content:center;">
+                      <svg width="7.5" height="7.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Checkmark Verified</span>
+                    <span class="icon-context-tag">Level Selector Dots</span>
+                  </div>
+                  <p class="icon-desc">Vector checkmark badge on level selector dots confirming level cleared.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="out-of-lives-icon" style="display:flex; align-items:center; justify-content:center;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger, #F43F5E); filter:drop-shadow(0 0 6px rgba(244,63,94,0.5));">
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                      <polyline points="12 4 10 10 14 13 11 18"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Out of Lives Warning</span>
+                    <span class="icon-context-tag">Out of Lives Modal</span>
+                  </div>
+                  <p class="icon-desc">Vector broken heart signaling 0 lives left on a dead end, prompting retry or ad.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="btn primary btn-watch-ad" style="padding:2px 6px; font-size:9px; height:22px; gap:2px; display:inline-flex; align-items:center;">
+                    <span class="ad-badge" style="font-size:7px; padding:1px 2px;">AD</span> +1
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#10B981" stroke="#10B981" stroke-width="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Life Reward</span>
+                    <span class="icon-context-tag">Watch Ad Button</span>
+                  </div>
+                  <p class="icon-desc">Vector green heart indicating +1 extra life granted after watching rewarded ad.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Level Designer & Dev Tools -->
+          <div class="icon-inventory-group">
+            <span class="icon-group-title">Level Designer &amp; Dev Diagnostics</span>
+            <div class="icon-cards-list">
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="size-stepper" style="padding:1px 3px; display:inline-flex; align-items:center; gap:2px;">
+                    <button class="stepper-btn" style="padding:1px 4px; font-size:9px;">−</button>
+                    <span style="font-family:var(--font-num); font-size:8px; font-weight:700;">4×4</span>
+                    <button class="stepper-btn" style="padding:1px 4px; font-size:9px;">+</button>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Grid Size Stepper</span>
+                    <span class="icon-context-tag">Editor Topbar</span>
+                  </div>
+                  <p class="icon-desc">Increments or decrements puzzle matrix size between 3×3 and 8×8.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div class="stepper-actions" style="display:inline-flex; gap:2px;">
+                    <button class="stepper-btn" style="padding:2px 4px; font-size:8.5px;">⏮</button>
+                    <button class="stepper-btn auto-play" style="padding:2px 4px; font-size:8.5px;">▶</button>
+                    <button class="stepper-btn" style="padding:2px 4px; font-size:8.5px;">⏭</button>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Solution Steppers</span>
+                    <span class="icon-context-tag">Editor • Playtest Bar</span>
+                  </div>
+                  <p class="icon-desc">Steps forward or backward through calculated BFS solution paths.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div style="display:inline-flex; gap:2px;">
+                    <button class="brush-btn active" style="width:16px; height:16px; font-size:9px; font-weight:800; border-radius:3px; padding:0; border:1px solid var(--accent-primary); background:var(--accent-primary); color:var(--accent-contrast);">3</button>
+                    <button class="brush-btn special start" style="font-size:7px; padding:1px 3px; font-weight:700;">S</button>
+                    <button class="brush-btn special goal" style="font-size:7px; padding:1px 3px; font-weight:700;">★</button>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Designer / Brush Palette</span>
+                    <span class="icon-context-tag">Editor Hub • Palette</span>
+                  </div>
+                  <p class="icon-desc">Visual level design canvas and tile number painting tools.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <button class="btn" style="padding:2px 5px; font-size:8.5px; height:20px; font-weight:700;">JSON 📋</button>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Export JSON</span>
+                    <span class="icon-context-tag">Editor Actions</span>
+                  </div>
+                  <p class="icon-desc">Exports puzzle matrix and optimal BFS solution metadata to clipboard.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div style="display:inline-flex; gap:2px;">
+                    <span class="diag-badge valid" style="font-size:7.5px; padding:1px 3px;">SOLVABLE</span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Solver Validation</span>
+                    <span class="icon-context-tag">Editor Diagnostics</span>
+                  </div>
+                  <p class="icon-desc">Real-time solver indicator verifying if grid layout is 100% solvable.</p>
+                </div>
+              </div>
+
+              <div class="icon-entry-card">
+                <div class="icon-preview-box">
+                  <div style="display:inline-flex; gap:2px;">
+                    <span class="dev-dir-badge" style="font-size:7.5px; padding:1px 3px; border:1px solid var(--teal); color:var(--teal); background:rgba(95,201,168,0.15);">↑ VALID</span>
+                  </div>
+                </div>
+                <div class="icon-details">
+                  <div class="icon-header-row">
+                    <span class="icon-label">Cardinal Exit Readout</span>
+                    <span class="icon-context-tag">Dev Diagnostics</span>
+                  </div>
+                  <p class="icon-desc">Shows live VALID / INVALID exit evaluations for current player cell.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Level Editor Hub Entry (Visible only in Editor Mode) -->
       <div class="editor-hub-card" id="editorHubCard" style="display:none;">
         <div class="editor-hub-info">
@@ -239,10 +788,11 @@
     <!-- Top In-Game App Bar -->
     <header class="game-topbar">
       <div class="game-topbar-left">
-        <button class="nav-back-btn" id="gameBackBtn" title="Back to Home Hub" aria-label="Home">
+        <button class="nav-back-btn" id="gameBackBtn" aria-label="Home">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
+          <kbd class="kbd-badge">Esc</kbd>
         </button>
       </div>
 
@@ -252,22 +802,25 @@
       </div>
 
       <div class="game-top-actions">
-        <button class="nav-icon-btn trail-btn" id="trailToggleBtn" title="Breadcrumbs: OFF (Press T to toggle)" aria-label="Toggle Breadcrumbs">
+        <button class="nav-icon-btn trail-btn" id="trailToggleBtn" aria-label="Toggle Breadcrumbs">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19c4-4 2-8 7-8s3 4 7 4 2-8 2-8"/>
             <circle cx="4" cy="19" r="1.5" fill="currentColor"/>
             <circle cx="20" cy="7" r="1.5" fill="currentColor"/>
           </svg>
         </button>
-        <button class="theme-toggle-btn icon-only" id="gameThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)" aria-label="Toggle Theme">
+        <button class="theme-toggle-btn icon-only" id="gameThemeToggleBtn" aria-label="Toggle Theme">
           <span class="theme-icon">🌙</span>
         </button>
-        <button class="nav-icon-btn" id="gameFullscreenBtn" title="Toggle Fullscreen" style="display:none;">⛶</button>
-        <button class="dev-tag-btn" id="devToggleBtn" title="Dev Diagnostics" style="display:none;">DEV</button>
-        <button class="nav-icon-btn" id="gamePauseBtn" title="Pause Game" aria-label="Pause">❚❚</button>
+        <button class="nav-icon-btn" id="gameFullscreenBtn" aria-label="Toggle Fullscreen" style="display:none;">
+          ⛶
+          <kbd class="kbd-badge">F</kbd>
+        </button>
+        <button class="dev-tag-btn" id="devToggleBtn" style="display:none;">DEV</button>
+        <button class="nav-icon-btn" id="gamePauseBtn" aria-label="Pause">❚❚</button>
 
         <!-- Top Right: Distance to Goal Counter -->
-        <div class="stat-bubble path-bubble" id="hudPathStatus" title="Distance to Goal">
+        <div class="stat-bubble path-bubble" id="hudPathStatus">
           <span class="path-status-dot" id="hudPathDot">●</span>
           <span class="path-status-text" id="hudPathText">ON TRACK</span>
         </div>
@@ -278,7 +831,7 @@
     <main class="grid-stage">
       <!-- Green Hearts Header (Positioned at top center of the grid) -->
       <div class="grid-lives-row">
-        <div class="stat-bubble lives-bubble" id="hudLives" title="Remaining Lives">
+        <div class="stat-bubble lives-bubble" id="hudLives">
           <!-- Rendered dynamically as vector green hearts -->
         </div>
       </div>
@@ -288,7 +841,7 @@
       </div>
     </main>
 
-    <!-- Desktop / Itch Key Legend -->
+    <!-- Desktop / Itch Key Legend (Disabled) -->
     <div class="desktop-key-legend" id="desktopKeyLegend" style="display:none;">
       <span>[Arrows / WASD] Move</span> • <span>[Z] Undo</span> • <span>[R] Restart</span> • <span>[T] Trail</span> • <span>[H] Hint</span>
     </div>
@@ -296,18 +849,34 @@
     <!-- Ergonomic In-Game Tool Bar (Elevated directly below grid, above bottom ads) -->
     <div class="game-tool-bar" id="gameToolBar">
       <button class="tool-btn" id="undoBtn" aria-label="Undo Move">
-        <span class="tool-icon">↺</span>
-        <span class="tool-label">UNDO</span>
+        <span class="tool-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+        </span>
+        <span class="tool-label">UNDO <kbd class="kbd-badge">Z</kbd></span>
       </button>
 
       <button class="tool-btn" id="restartBtn" aria-label="Restart Puzzle">
-        <span class="tool-icon">⟲</span>
-        <span class="tool-label">RESTART</span>
+        <span class="tool-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </span>
+        <span class="tool-label">RESTART <kbd class="kbd-badge">R</kbd></span>
       </button>
 
       <button class="tool-btn" id="hintBtn" aria-label="Show Solution Path">
-        <span class="tool-icon">💡</span>
-        <span class="tool-label">HINT</span>
+        <span class="tool-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M15.09 13.72A6 6 0 1 0 8.91 13.72 M12 2v2"></path>
+          </svg>
+        </span>
+        <span class="tool-label">HINT <kbd class="kbd-badge">H</kbd></span>
       </button>
     </div>
 
@@ -315,11 +884,11 @@
     <div class="dev-playtest-bar" id="devPlaytestBar" style="display:none;">
       <span class="dev-bar-tag">DEV STEPPER</span>
       <div class="dev-bar-controls">
-        <button class="dev-bar-btn" id="devStepBackBtn" title="Step Back (Left Arrow / [)">⏮</button>
-        <button class="dev-bar-btn auto-play" id="devAutoPlayBtn" title="Auto-Play / Pause (Space)">▶ AUTO</button>
-        <button class="dev-bar-btn" id="devStepForwardBtn" title="Step Forward (Right Arrow / ])">⏭</button>
-        <button class="dev-bar-btn" id="devStepResetBtn" title="Reset to Start">↺</button>
-        <button class="dev-bar-btn" id="devThemeToggleBtn" title="Switch Theme (Obsidian / Vellum)">🎨 THEME</button>
+        <button class="dev-bar-btn" id="devStepBackBtn">⏮</button>
+        <button class="dev-bar-btn auto-play" id="devAutoPlayBtn">▶ AUTO</button>
+        <button class="dev-bar-btn" id="devStepForwardBtn">⏭</button>
+        <button class="dev-bar-btn" id="devStepResetBtn">↺</button>
+        <button class="dev-bar-btn" id="devThemeToggleBtn">🎨 THEME</button>
       </div>
       <span class="dev-bar-info" id="devStepInfo">Step 0/0</span>
     </div>
@@ -336,7 +905,11 @@
     
     <!-- Editor Header -->
     <header class="editor-topbar">
-      <button class="nav-icon-btn" id="editorBackBtn" title="Back to Home">‹</button>
+      <button class="nav-back-btn" id="editorBackBtn" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
       <div class="editor-title-wrap">
         <span class="meta-title">LEVEL DESIGNER</span>
         <span class="meta-chapter" id="editorSolverStatus">SOLVER READY</span>
@@ -411,10 +984,10 @@
         <!-- Dev Auto-Play & Stepper Controls -->
         <div class="editor-stepper-bar" id="editorStepperBar">
           <div class="stepper-actions">
-            <button class="stepper-btn" id="editorStepBackBtn" title="Step Back (Left Arrow / [)">⏮</button>
-            <button class="stepper-btn auto-play" id="editorAutoPlayBtn" title="Auto-Play / Pause (Space)">▶ AUTO</button>
-            <button class="stepper-btn" id="editorStepForwardBtn" title="Step Forward (Right Arrow / ])">⏭</button>
-            <button class="stepper-btn" id="editorStepResetBtn" title="Reset to Start">↺</button>
+            <button class="stepper-btn" id="editorStepBackBtn">⏮</button>
+            <button class="stepper-btn auto-play" id="editorAutoPlayBtn">▶ AUTO</button>
+            <button class="stepper-btn" id="editorStepForwardBtn">⏭</button>
+            <button class="stepper-btn" id="editorStepResetBtn">↺</button>
           </div>
           <div class="stepper-indicator" id="editorStepIndicator">Step: 0 / 4</div>
         </div>
@@ -467,7 +1040,12 @@
           <span class="win-stat-tier" id="winEffTier">FLAWLESS</span>
         </div>
         <div class="win-stat-pill moves" id="winMovesPill">
-          <span class="win-stat-icon">👣</span>
+          <span class="win-stat-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 5.5C13 3.3 14.5 1.5 16.5 1.5S20 3.3 20 5.5c0 1.8-1 3.2-1.5 4.5h-4C14 8.7 13 7.3 13 5.5z M14.5 13c0-1.2 0.9-2 2-2s2 0.8 2 2-0.9 2-2 2-2-0.8-2-2z"/>
+              <path d="M4 12.5C4 10.3 5.5 8.5 7.5 8.5S11 10.3 11 12.5c0 1.8-1 3.2-1.5 4.5h-4C5 15.7 4 14.3 4 12.5z M5.5 20c0-1.2 0.9-2 2-2s2 0.8 2 2-0.9 2-2 2-2-0.8-2-2z"/>
+            </svg>
+          </span>
           <span class="win-stat-value" id="winMovesVal">4 / 4</span>
           <span class="win-stat-label">MOVES</span>
         </div>
@@ -485,6 +1063,7 @@
     <div class="win-actions-column">
       <button class="btn primary btn-win-next" id="winNextBtn">
         <span>Continue</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
@@ -492,10 +1071,20 @@
 
       <div class="win-actions-secondary">
         <button class="btn btn-secondary" id="winRestartBtn">
-          <span class="btn-icon">↺</span> Replay
+          <span class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+          </span> Replay <kbd class="kbd-badge">R</kbd>
         </button>
         <button class="btn btn-secondary" id="winHomeBtn">
-          <span class="btn-icon">⌂</span> Levels
+          <span class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </span> Levels <kbd class="kbd-badge">Esc</kbd>
         </button>
       </div>
     </div>
@@ -505,13 +1094,28 @@
 <!-- Out of Lives Modal Overlay -->
 <div class="overlay" id="outOfLivesModal">
   <div class="card out-of-lives-card">
-    <div class="out-of-lives-icon">💔</div>
+    <div class="out-of-lives-icon">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger, #F43F5E); filter:drop-shadow(0 0 8px rgba(244,63,94,0.5));">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        <polyline points="12 4 10 10 14 13 11 18"/>
+      </svg>
+    </div>
     <h2>Out of Lives</h2>
     <div class="card-actions out-of-lives-actions">
       <button class="btn primary btn-watch-ad" id="outOfLivesWatchAdBtn">
-        <span class="ad-badge">AD</span> Watch Ad (+1 ❤️)
+        <span class="ad-badge">AD</span> Watch Ad (+1
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#10B981" stroke="#10B981" stroke-width="2" style="vertical-align:middle; margin-left:2px;">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>)
       </button>
-      <button class="btn" id="outOfLivesRestartBtn">Restart Level</button>
+      <button class="btn" id="outOfLivesRestartBtn">
+        <span class="btn-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </span> Restart Level
+      </button>
     </div>
   </div>
 </div>
@@ -545,12 +1149,14 @@
   <div class="settings-subview" id="settingsMainView">
     <div class="settings-shell">
       <div class="settings-topbar">
-        <button class="settings-close-btn" id="settingsCloseBtn" title="Close Settings" aria-label="Close Settings">✕</button>
+        <div class="settings-topbar-spacer" aria-hidden="true"></div>
         <div class="settings-topbar-title-wrap">
-          <span class="settings-topbar-eyebrow">PREFERENCES</span>
           <h2 class="settings-topbar-title">SETTINGS</h2>
         </div>
-        <div class="settings-topbar-spacer" aria-hidden="true"></div>
+        <button class="settings-close-btn" id="settingsCloseBtn" aria-label="Close Settings">
+          ✕
+          <kbd class="kbd-badge">Esc</kbd>
+        </button>
       </div>
 
       <div class="settings-scroll-area">
@@ -558,10 +1164,28 @@
         <div class="settings-card-group">
           <div class="settings-group-header">PREFERENCES</div>
           <div class="settings-row">
-            <span class="settings-label-title">Visual Theme</span>
-            <div class="theme-pill-group">
-              <button class="theme-pill-btn active" id="pillThemeObsidian" data-theme="obsidian">🌙 Obsidian</button>
-              <button class="theme-pill-btn" id="pillThemeVellum" data-theme="vellum">☀️ Vellum</button>
+            <span class="settings-label-title">Theme</span>
+            <div class="theme-segmented-control" role="group" aria-label="Visual Theme">
+              <button class="theme-segment-btn active" id="pillThemeObsidian" data-theme="obsidian" aria-label="Dark Theme">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <span>Dark</span>
+              </button>
+              <button class="theme-segment-btn" id="pillThemeVellum" data-theme="vellum" aria-label="Light Theme">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4.5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <span>Light</span>
+              </button>
             </div>
           </div>
           <div class="settings-row">
@@ -571,8 +1195,11 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          <div class="settings-row">
-            <span class="settings-label-title">Haptic Feedback</span>
+          <div class="settings-row" id="settingRowHaptics">
+            <span class="settings-label-title">
+              Haptic Feedback
+              <span class="settings-unavailable-pill" id="hapticsUnavailablePill" style="display:none;">UNAVAILABLE</span>
+            </span>
             <label class="toggle-switch">
               <input type="checkbox" id="settingHaptics" checked />
               <span class="toggle-slider"></span>
@@ -587,15 +1214,31 @@
           </div>
         </div>
 
-        <!-- Information Group -->
+        <!-- Support & Information Group -->
         <div class="settings-card-group">
-          <div class="settings-group-header">INFORMATION</div>
+          <div class="settings-group-header">SUPPORT &amp; ABOUT</div>
+          <button class="settings-nav-row" id="btnContactUs">
+            <span class="settings-label-title">Contact</span>
+            <svg class="settings-nav-external" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button>
+          <button class="settings-nav-row" id="btnFeedback">
+            <span class="settings-label-title">Feedback</span>
+            <svg class="settings-nav-external" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button>
           <button class="settings-nav-row" id="btnOpenPrivacy">
             <span class="settings-label-title">Privacy Policy</span>
             <span class="settings-nav-arrow">›</span>
           </button>
           <button class="settings-nav-row" id="btnOpenAbout">
-            <span class="settings-label-title">About Grid Leap</span>
+            <span class="settings-label-title">About</span>
             <span class="settings-nav-arrow">›</span>
           </button>
         </div>
@@ -622,7 +1265,7 @@
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v1.0.0 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.3 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -632,11 +1275,13 @@
   <div class="settings-subview" id="settingsPrivacyView">
     <div class="settings-shell">
       <div class="settings-topbar">
-        <button class="settings-back-btn" id="privacyBackBtn" title="Back to Settings" aria-label="Back">
-          <span class="back-arrow">←</span> Back
+        <button class="nav-back-btn" id="privacyBackBtn" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <kbd class="kbd-badge">Esc</kbd>
         </button>
         <div class="settings-topbar-title-wrap">
-          <span class="settings-topbar-eyebrow">LEGAL</span>
           <h2 class="settings-topbar-title">PRIVACY POLICY</h2>
         </div>
         <div class="settings-topbar-spacer" aria-hidden="true"></div>
@@ -644,38 +1289,54 @@
 
       <div class="settings-scroll-area doc-scroll">
         <div class="doc-card">
-          <p class="doc-meta">Effective Date: September 2026 • Olai Digital Studios</p>
+          <div class="privacy-meta-row">
+            <p class="doc-meta">Effective Date: September 2026 • OLAI Digital Studios</p>
+            <button class="btn btn-secondary privacy-online-btn" id="privacyOnlineBtn" aria-label="Open Online Privacy Policy">
+              <span>View Online Version</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </button>
+          </div>
 
           <section class="doc-section">
-            <h3>1. Overview &amp; Offline Commitment</h3>
-            <p><strong>Grid Leap</strong> is developed and published by <strong>Olai Digital Studios</strong>. We are committed to protecting player privacy. Grid Leap is fundamentally architected as an offline-first logic puzzle game. You can play all levels offline without creating an account or logging into any external service.</p>
+            <h3>1. Overview &amp; Scope</h3>
+            <p><strong>Grid Leap</strong> is developed and published by <strong>OLAI Digital Studios</strong> (Lead Developer: Dhinesh, Chennai, Tamil Nadu, India). We are committed to protecting player privacy across all platforms (Google Play, Web, and Desktop). Grid Leap is architected with an offline-first foundation and does not collect or sell personally identifiable information (PII).</p>
           </section>
 
           <section class="doc-section">
             <h3>2. Information We Do Not Collect</h3>
-            <p>Grid Leap does <strong>not</strong> collect, harvest, store, or sell any personally identifiable information (PII). We do not collect names, physical addresses, email addresses, phone numbers, contacts, precise location/GPS data, or biometric information.</p>
+            <p>Grid Leap does not require an account or registration. We do not collect names, physical addresses, email addresses, contacts, precise GPS location, or financial account details.</p>
           </section>
 
           <section class="doc-section">
             <h3>3. Local Device Storage</h3>
-            <p>Your puzzle progress (unlocked levels, star ratings, move counts) and player preferences (visual theme, sound effects, and haptic feedback) are stored exclusively on your device using standard local web storage (<code>localStorage</code>). This data is never transmitted to external servers. You can reset or erase your data at any time by clearing application data or cache in your device settings.</p>
+            <p>Your puzzle progress (cleared levels, star ratings, move counts), Daily Challenge streaks, custom levels, and player preferences (themes, audio volume, haptics) are stored exclusively on your device via standard local storage (<code>localStorage</code>). This data is never transmitted to external servers.</p>
           </section>
 
           <section class="doc-section">
-            <h3>4. Third-Party Services &amp; Advertising</h3>
-            <p>In mobile distributions via the <strong>Google Play Store</strong>, contextual or non-personalized banner advertisements may be served through Google AdMob to support ongoing development. Google AdMob may process pseudonymous device identifiers in accordance with Google's Privacy Policy at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.</p>
-            <p>Players may permanently remove all banner advertisements via the <strong>Remove Ads</strong> in-app purchase available within Settings.</p>
+            <h3>4. Platform Monetization &amp; Advertising</h3>
+            <p><strong>Mobile (Google Play):</strong> May display banner, interstitial, or rewarded video ads via Google AdMob (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>). Players can permanently disable ads via the "Remove Ads" in-app purchase processed securely by Google Play Billing.</p>
+            <p><strong>Web (Netlify):</strong> May serve display banner ads via Google AdSense. Users can opt out of personalized web ads at <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a> or <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener">aboutads.info</a>.</p>
+            <p><strong>Desktop (Itch.io / Standalone):</strong> 100% offline, self-contained, and completely ad-free with zero third-party tracking.</p>
           </section>
 
           <section class="doc-section">
             <h3>5. Children’s Privacy</h3>
-            <p>Grid Leap is a family-friendly mathematical puzzle intended for general audiences and logic enthusiasts of all ages. We do not knowingly collect any personal information from children under 13 (or under 16 in the European Union), in compliance with COPPA and GDPR regulations.</p>
+            <p>Grid Leap is a family-friendly mathematical puzzle intended for general audiences. We do not knowingly collect personal data from children under 13 (or under 16 in the EU), complying with COPPA and GDPR regulations.</p>
           </section>
 
           <section class="doc-section">
             <h3>6. Developer Inquiries &amp; Support</h3>
             <p>For questions, support, or privacy requests, please reach out directly to:</p>
-            <p class="doc-contact"><strong>Email:</strong> <a href="mailto:support@olaidigitalstudios.com">support@olaidigitalstudios.com</a><br><strong>Studio:</strong> Olai Digital Studios</p>
+            <p class="doc-contact">
+              <strong>Studio:</strong> OLAI Digital Studios<br>
+              <strong>Lead Developer:</strong> Dhinesh (Chennai, Tamil Nadu, India)<br>
+              <strong>Email:</strong> <a href="mailto:olaidigitalstudios@gmail.com">olaidigitalstudios@gmail.com</a><br>
+              <strong>Official Privacy Page:</strong> <a href="https://sites.google.com/view/grid-leap-privacy-policy" target="_blank" rel="noopener">sites.google.com/view/grid-leap-privacy-policy</a>
+            </p>
           </section>
         </div>
       </div>
@@ -686,50 +1347,75 @@
   <div class="settings-subview" id="settingsAboutView">
     <div class="settings-shell">
       <div class="settings-topbar">
-        <button class="settings-back-btn" id="aboutBackBtn" title="Back to Settings" aria-label="Back">
-          <span class="back-arrow">←</span> Back
+        <button class="nav-back-btn" id="aboutBackBtn" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <kbd class="kbd-badge">Esc</kbd>
         </button>
         <div class="settings-topbar-title-wrap">
-          <span class="settings-topbar-eyebrow">ABOUT</span>
-          <h2 class="settings-topbar-title">GRID LEAP</h2>
+          <h2 class="settings-topbar-title">ABOUT</h2>
         </div>
         <div class="settings-topbar-spacer" aria-hidden="true"></div>
       </div>
 
-      <div class="settings-scroll-area doc-scroll">
-        <div class="doc-card about-card">
-          <div class="about-hero">
-            <div class="about-studio-brand">OLAI DIGITAL STUDIOS</div>
-            <h1 class="about-game-brand">GRID LEAP</h1>
-            <div class="about-badge">VERSION 1.0.0</div>
+      <div class="settings-scroll-area about-scroll-area">
+        <div class="about-container">
+          <!-- App Icon Placeholder -->
+          <div class="about-app-icon-wrap">
+            <div class="about-app-icon" id="aboutAppIcon">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="40" height="40" rx="9" fill="var(--bg-card)" stroke="var(--accent-primary)" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3.5" fill="var(--accent-primary)" />
+                <circle cx="32" cy="12" r="3" fill="var(--text-muted)" opacity="0.4" />
+                <circle cx="12" cy="32" r="3" fill="var(--text-muted)" opacity="0.4" />
+                <circle cx="32" cy="32" r="4.5" fill="var(--goal-color)" />
+                <path d="M 12 12 Q 22 2 32 12 T 32 32" fill="none" stroke="var(--accent-primary)" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/>
+                <path d="M 32 29.5 L 32.8 31.2 L 34.5 32 L 32.8 32.8 L 32 34.5 L 31.2 32.8 L 29.5 32 L 31.2 31.2 Z" fill="#FFFFFF"/>
+              </svg>
+            </div>
           </div>
 
-          <section class="doc-section">
-            <h3>Developer &amp; Creator</h3>
-            <p><strong>Lead Developer:</strong> Dhinesh</p>
-            <p><strong>Studio:</strong> Olai Digital Studios</p>
-            <p>Crafted with a commitment to pure procedural mathematics, tactile responsiveness, and elegant minimalism.</p>
-          </section>
+          <!-- Title & Version -->
+          <h1 class="about-game-title">GRID LEAP</h1>
+          <div class="about-version-pill">v0.0.3</div>
 
-          <section class="doc-section">
-            <h3>Design Philosophy</h3>
-            <p>Grid Leap was created to provide a mindful, distraction-free spatial puzzle experience. By converting every number into a dynamic leap distance, simple grids transform into intricate topological mazes. There are no pay-to-win timers or forced lives penalties in zen play—only pure geometric calculation.</p>
-          </section>
+          <!-- Developer Credits -->
+          <div class="about-dev-section">
+            <div class="about-credit-block">
+              <span class="about-credit-label">Developed by</span>
+              <span class="about-credit-val studio-name">OLAI Digital Studios</span>
+            </div>
+            <div class="about-credit-block">
+              <span class="about-credit-label">Lead Developer</span>
+              <span class="about-credit-val dev-name">Dhinesh</span>
+            </div>
+            <div class="about-credit-block location-block">
+              <span class="about-credit-loc">Chennai, Tamil Nadu, India</span>
+            </div>
+          </div>
 
-          <section class="doc-section">
-            <h3>Procedural Engine &amp; Audio</h3>
-            <p>Built with modern web standards, HTML5 Canvas/SVG, and a custom procedural Web Audio synthesizer. All chime chords, bounce sounds, and leap harmonics are generated mathematically in real-time without external audio files.</p>
-          </section>
+          <!-- Platform-Adaptive "More Games by Olai" Button -->
+          <div class="about-actions-row">
+            <button class="btn btn-secondary about-more-btn" id="aboutMoreGamesBtn">
+              <span class="btn-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                </svg>
+              </span>
+              <span>More Games by Olai</span>
+              <svg class="about-external-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </button>
+          </div>
 
-          <section class="doc-section">
-            <h3>Typography &amp; Acknowledgments</h3>
-            <p>Brandmark typography set in <em>Bodoni Moda</em>. Number grid and technical indicators set in <em>JetBrains Mono</em> (SIL Open Font License).</p>
-          </section>
-
-          <div class="about-footer-box">
-            <p>© 2026 Olai Digital Studios</p>
-            <p>All rights reserved.</p>
-            <p><a href="mailto:support@olaidigitalstudios.com" class="about-mail-link">support@olaidigitalstudios.com</a></p>
+          <!-- Copyright & Rights Section -->
+          <div class="about-copyright-section">
+            <p class="about-copyright-text">© 2026 Olai Digital Studios</p>
+            <p class="about-rights-text">All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -742,10 +1428,10 @@
   <!-- 1. SIMPLE WELCOME MODAL VIEW -->
   <div class="tutorial-subview" id="tutorialWelcomeView">
     <div class="tutorial-simple-card">
-      <button class="tutorial-close-x corner" id="welcomeCloseX" title="Close" aria-label="Close">✕</button>
+      <button class="tutorial-close-x corner" id="welcomeCloseX" aria-label="Close">✕</button>
       <h2 class="tutorial-modal-title">HOW TO PLAY</h2>
       <button class="btn btn-primary tutorial-modal-btn" id="welcomeStartBtn">
-        START ▶
+        START ▶ <kbd class="kbd-badge">Enter ↵</kbd>
       </button>
     </div>
   </div>
@@ -753,19 +1439,21 @@
   <!-- 2. INTERACTIVE LESSONS VIEW (GAMEPLAY ARENA) -->
   <div class="tutorial-subview" id="tutorialGameView">
     <div class="tutorial-card" id="tutorialCard">
+      <!-- TOP ZONE: Lesson Header Badge, Close Button & Instruction Box -->
       <div class="tutorial-header">
         <div class="tutorial-top-row">
           <span class="tutorial-badge" id="tutorialEyebrow">LESSON 1</span>
-          <div class="tutorial-dots" id="tutorialDots"></div>
-          <button class="tutorial-close-x" id="tutorialCloseX" title="Close Tutorial" aria-label="Close">✕</button>
+          <button class="tutorial-close-x" id="tutorialCloseX" aria-label="Close">
+            ✕
+            <kbd class="kbd-badge">Esc</kbd>
+          </button>
         </div>
-        <h2 class="tutorial-title" id="tutorialTitle">Number = Leap Distance</h2>
         <div class="tutorial-prompt-box">
           <p class="tutorial-prompt" id="tutorialPrompt">Swipe RIGHT to leap 1 tile into the Goal.</p>
         </div>
       </div>
 
-      <!-- Centered Micro-Board Arena -->
+      <!-- CENTER ZONE: Interactive Micro-Board Arena -->
       <div class="tutorial-board-container" id="tutorialBoardContainer">
         <div class="tutorial-board" id="tutorialBoard"></div>
         <!-- Curved Leap Trajectory Guide (replaces hand icon) -->
@@ -779,17 +1467,27 @@
           <polygon id="tutArcArrowActive" class="tutorial-arc-arrow active" points="" />
         </svg>
       </div>
+
+      <!-- BOTTOM ZONE: Control Hint & Progress Capsule Dots -->
+      <div class="tutorial-footer">
+        <p class="tutorial-control-hint">Swipe or use Arrow Keys / WASD to move</p>
+        <div class="tutorial-dots" id="tutorialDots"></div>
+      </div>
     </div>
   </div>
 
   <!-- 3. SIMPLE TUTORIAL COMPLETE MODAL VIEW -->
   <div class="tutorial-subview" id="tutorialCompleteView">
     <div class="tutorial-simple-card">
-      <button class="tutorial-close-x corner" id="completeCloseX" title="Close" aria-label="Close">✕</button>
-      <div class="complete-check-icon">✓</div>
+      <button class="tutorial-close-x corner" id="completeCloseX" aria-label="Close">✕</button>
+      <div class="complete-check-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
       <h2 class="tutorial-modal-title">TUTORIAL COMPLETE</h2>
       <button class="btn btn-primary tutorial-modal-btn" id="completeCampaignBtn">
-        PLAY ▶
+        PLAY ▶ <kbd class="kbd-badge">Enter ↵</kbd>
       </button>
     </div>
   </div>
@@ -824,7 +1522,11 @@
 <!-- Campaign Complete Modal Sheet -->
 <div class="overlay" id="finalOverlay">
   <div class="card final-card">
-    <div class="final-trophy-badge">🏆</div>
+    <div class="final-trophy-badge">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-primary);">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+      </svg>
+    </div>
     <div class="eyebrow">GRAND MASTERY</div>
     <h2 id="finalTitle">Campaign Complete!</h2>
     <p class="final-sub" id="finalSub">
@@ -832,16 +1534,28 @@
     </p>
 
     <div class="final-stats-pill" id="finalProgressPill">
-      <span class="check-green">✓</span> <span id="finalTotalSolved">100</span> / <span id="finalTotalLevels">100</span> PUZZLES SOLVED
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span id="finalTotalSolved">100</span> / <span id="finalTotalLevels">100</span> PUZZLES SOLVED
     </div>
 
     <div class="win-actions-column" style="margin-top: 20px;">
-      <button class="btn primary" id="finalHomeBtn">
+      <button class="btn primary btn-win-next" id="finalHomeBtn">
         <span>Return to Home Hub</span>
-        <span style="font-size: 16px;">⌂</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
       </button>
       <button class="btn btn-secondary" id="finalRestartBtn">
-        <span class="btn-icon">↺</span> Replay Campaign
+        <span class="btn-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </span> Replay Campaign <kbd class="kbd-badge">R</kbd>
       </button>
     </div>
   </div>

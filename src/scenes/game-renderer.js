@@ -3,6 +3,19 @@ import { TargetConfig } from "../platform/target-config.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { AudioEngine } from "../audio/audio-engine.js";
 
+export const SVG_ICONS = {
+  flame: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block; vertical-align:middle; margin-right:3px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>`,
+  check: `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  play: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"/></svg>`,
+  star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  zap: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  thumb: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`,
+  flag: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7"/></svg>`,
+  home: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+  pencil: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`,
+  trophy: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`
+};
+
 /**
  * UI Renderer & DOM Bindings
  */
@@ -34,6 +47,7 @@ export const DOM = {
 
   editorLevelSelectSection: document.getElementById("editorLevelSelectSection"),
   editorAudioLabSection: document.getElementById("editorAudioLabSection"),
+  editorIconInventorySection: document.getElementById("editorIconInventorySection"),
   completionPill: document.getElementById("completionPill"),
   levelStrip: document.getElementById("levelStrip"),
   consumerLaunchSection: document.getElementById("consumerLaunchSection"),
@@ -205,7 +219,6 @@ export function applyTheme(themeName) {
   if (DOM.gameThemeToggleBtn) {
     const iconEl = DOM.gameThemeToggleBtn.querySelector(".theme-icon");
     if (iconEl) iconEl.textContent = icon;
-    DOM.gameThemeToggleBtn.setAttribute("title", `Theme: ${label} (Tap to switch)`);
   }
 
   if (DOM.devThemeToggleBtn) {
@@ -228,8 +241,8 @@ export function applyTheme(themeName) {
         shadow.setAttribute("flood-color", "#1D4E6D");
         shadow.setAttribute("flood-opacity", "0.45");
       } else {
-        shadow.setAttribute("flood-color", "#FFB800");
-        shadow.setAttribute("flood-opacity", "0.85");
+        shadow.setAttribute("flood-color", "#38BDF8");
+        shadow.setAttribute("flood-opacity", "0.70");
       }
     }
   }
@@ -248,6 +261,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
     // ----------------------------------------------------
     if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "block";
     if (DOM.editorAudioLabSection) DOM.editorAudioLabSection.style.display = "block";
+    if (DOM.editorIconInventorySection) DOM.editorIconInventorySection.style.display = "block";
     if (DOM.heroBanner) DOM.heroBanner.style.display = "flex";
     if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "none";
 
@@ -292,7 +306,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
         dot.innerHTML = `
           <span class="dot-num ${numStr.length >= 3 ? "three-digit" : ""}">${numStr}</span>
           <span class="dot-score">${diff.score.toFixed(1)}</span>
-          ${isDone ? '<span class="dot-check">✓</span>' : ""}
+          ${isDone ? `<span class="dot-check">${SVG_ICONS.check}</span>` : ""}
         `;
 
         dot.addEventListener("click", () => onLevelSelect(i));
@@ -306,6 +320,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
     // ----------------------------------------------------
     if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "none";
     if (DOM.editorAudioLabSection) DOM.editorAudioLabSection.style.display = "none";
+    if (DOM.editorIconInventorySection) DOM.editorIconInventorySection.style.display = "none";
     if (DOM.heroBanner) DOM.heroBanner.style.display = "none";
     if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "flex";
 
@@ -362,8 +377,8 @@ export function renderDailyChallengeCard({ isCompleted, streak, dateKey, display
   }
 
   if (DOM.dailyStreakBadge) {
-    DOM.dailyStreakBadge.textContent = `🔥 ${streak} STREAK`;
-    DOM.dailyStreakBadge.style.display = streak > 0 ? "inline-block" : "none";
+    DOM.dailyStreakBadge.innerHTML = `${SVG_ICONS.flame} ${streak} STREAK`;
+    DOM.dailyStreakBadge.style.display = streak > 0 ? "inline-flex" : "none";
   }
 
   if (DOM.dailyCardSub) {
@@ -375,7 +390,7 @@ export function renderDailyChallengeCard({ isCompleted, streak, dateKey, display
   DOM.dailyChallengeCard.classList.toggle("completed", Boolean(isCompleted));
 
   if (DOM.dailyPlayIcon) {
-    DOM.dailyPlayIcon.textContent = isCompleted ? "✓" : "▶";
+    DOM.dailyPlayIcon.innerHTML = isCompleted ? SVG_ICONS.check : SVG_ICONS.play;
   }
 
   if (DOM.dailyPlayText) {
@@ -555,9 +570,9 @@ export function renderBoard(level, onCellClick, { animate = true, onReadySound =
 
     // Breadcrumb Trail SVG layer (Multi-lane Overpass Architecture)
     const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
-    const glowColor = isVellum ? "#1D4E6D" : "#FFB800";
-    const glowOpacity = isVellum ? "0.45" : "0.85";
-    const dangerColor = isVellum ? "#505A64" : "#F43F5E";
+    const glowColor = isVellum ? "#1D4E6D" : "#38BDF8";
+    const glowOpacity = isVellum ? "0.45" : "0.70";
+    const dangerColor = isVellum ? "#505A64" : "#FB7185";
 
     trailSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     trailSvgEl.setAttribute("class", "trail-svg");
@@ -638,9 +653,9 @@ export function renderBoard(level, onCellClick, { animate = true, onReadySound =
   } else {
     // Non-animated board build (e.g. editor or reduced motion)
     const isVellum = document.documentElement.getAttribute("data-theme") === "vellum";
-    const glowColor = isVellum ? "#1D4E6D" : "#FFB800";
-    const glowOpacity = isVellum ? "0.45" : "0.85";
-    const dangerColor = isVellum ? "#505A64" : "#F43F5E";
+    const glowColor = isVellum ? "#1D4E6D" : "#38BDF8";
+    const glowOpacity = isVellum ? "0.45" : "0.70";
+    const dangerColor = isVellum ? "#505A64" : "#FB7185";
 
     trailSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     trailSvgEl.setAttribute("class", "trail-svg");
@@ -976,10 +991,6 @@ export function refreshTrail(showTrail = lastRenderedShowTrail) {
 export function updateTrailButton(showTrail = false) {
   if (DOM.trailToggleBtn) {
     DOM.trailToggleBtn.classList.toggle("active", Boolean(showTrail));
-    DOM.trailToggleBtn.setAttribute(
-      "title",
-      showTrail ? "Breadcrumbs: ON (Press T to turn off)" : "Breadcrumbs: OFF (Press T to turn on)"
-    );
   }
   if (DOM.settingTrail) {
     DOM.settingTrail.checked = Boolean(showTrail);
@@ -1258,7 +1269,7 @@ export function renderWinModal({
     void DOM.winSubtitle.offsetWidth; // force reflow
     DOM.winSubtitle.style.animation = "";
     if (isDailyLevel) {
-      DOM.winSubtitle.textContent = dailyStreak > 0 ? `🔥 ${dailyStreak} Day Streak!` : "Daily Solved!";
+      DOM.winSubtitle.innerHTML = dailyStreak > 0 ? `${SVG_ICONS.flame} ${dailyStreak} Day Streak!` : "Daily Solved!";
     } else if (isCustomLevel) {
       DOM.winSubtitle.textContent = "Playtest Complete";
     } else {
@@ -1293,24 +1304,24 @@ export function renderWinModal({
   // Consumer Dual-Stat Strip (Efficiency + Move Count)
   if (DOM.winStatsStrip) {
     let tierLabel = "SOLVED";
-    let tierIcon = "🏁";
+    let tierIcon = SVG_ICONS.flag;
     let tierClass = "tier-solved";
 
     if (eff >= 100) {
       tierLabel = "FLAWLESS";
-      tierIcon = "★";
+      tierIcon = SVG_ICONS.star;
       tierClass = "tier-flawless";
     } else if (eff >= 85) {
       tierLabel = "EXCELLENT";
-      tierIcon = "⚡";
+      tierIcon = SVG_ICONS.zap;
       tierClass = "tier-excellent";
     } else if (eff >= 70) {
       tierLabel = "GREAT";
-      tierIcon = "⚡";
+      tierIcon = SVG_ICONS.zap;
       tierClass = "tier-great";
     } else if (eff >= 50) {
       tierLabel = "GOOD";
-      tierIcon = "👍";
+      tierIcon = SVG_ICONS.thumb;
       tierClass = "tier-good";
     }
 
@@ -1320,7 +1331,7 @@ export function renderWinModal({
       void DOM.winEffPill.offsetWidth;
       DOM.winEffPill.classList.add("pop");
     }
-    if (DOM.winEffIcon) DOM.winEffIcon.textContent = tierIcon;
+    if (DOM.winEffIcon) DOM.winEffIcon.innerHTML = tierIcon;
     if (DOM.winEffTier) DOM.winEffTier.textContent = tierLabel;
     if (DOM.winMovesVal) DOM.winMovesVal.textContent = `${actualMoves}\u00A0/\u00A0${optimalMoves}`;
 
@@ -1328,24 +1339,46 @@ export function renderWinModal({
     animateEfficiencyCounter(DOM.winEffVal, eff);
   }
 
-  // 4. Next / Editor / Final Button text
+  // 4. Next / Editor / Final Button text & Secondary Button Visibility
   if (DOM.winNextBtn) {
     if (isDailyLevel) {
-      DOM.winNextBtn.innerHTML = `<span>Back to Hub</span><span style="font-size:15px;">⌂</span>`;
+      DOM.winNextBtn.innerHTML = `
+        <span>Back to Hub</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
+        ${SVG_ICONS.home}
+      `;
       DOM.winNextBtn.style.display = "flex";
+      if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "none";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     } else if (isCustomLevel) {
-      DOM.winNextBtn.innerHTML = `<span>Back to Editor</span><span style="font-size:15px;">✎</span>`;
+      DOM.winNextBtn.innerHTML = `
+        <span>Back to Editor</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
+        ${SVG_ICONS.pencil}
+      `;
       DOM.winNextBtn.style.display = "flex";
+      if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "none";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     } else if (isLastLevel) {
-      DOM.winNextBtn.innerHTML = `<span>Campaign Complete</span><span style="font-size:15px;">🏆</span>`;
+      DOM.winNextBtn.innerHTML = `
+        <span>Campaign Complete</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
+        ${SVG_ICONS.trophy}
+      `;
       DOM.winNextBtn.style.display = "flex";
+      if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "flex";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     } else {
       DOM.winNextBtn.innerHTML = `
         <span>Continue</span>
+        <kbd class="kbd-badge">Enter ↵</kbd>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>`;
+        </svg>
+      `;
       DOM.winNextBtn.style.display = "flex";
+      if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "flex";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     }
   }
 }
