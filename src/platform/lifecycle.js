@@ -195,7 +195,7 @@ export const PlatformBridge = {
         if (res?.versionName) {
           return {
             versionName: res.versionName,
-            versionCode: res.versionCode || 10
+            versionCode: res.versionCode || 11
           };
         }
       } catch (e) {
@@ -203,8 +203,8 @@ export const PlatformBridge = {
       }
     }
     return {
-      versionName: TargetConfig.version || "0.0.10",
-      versionCode: TargetConfig.versionCode || 10
+      versionName: TargetConfig.version || "0.0.11",
+      versionCode: TargetConfig.versionCode || 11
     };
   },
 
@@ -317,5 +317,170 @@ export const PlatformBridge = {
         console.warn("[Platform] onPlayStoreUpdateFailed listener error:", e);
       }
     }
+  },
+
+  // ── AdMob Native Bridge (Play Store) ──────────────────────────────────────
+  async initAds() {
+    if (!isCapacitor) return { success: false };
+    try {
+      if (window.Capacitor?.Plugins?.AdMobPlugin) {
+        return await window.Capacitor.Plugins.AdMobPlugin.initialize();
+      }
+    } catch (e) {
+      console.warn("[Platform] initAds error:", e);
+    }
+    return { success: false };
+  },
+
+  async showBanner(adUnitId) {
+    if (!isCapacitor) return { success: false };
+    try {
+      if (window.Capacitor?.Plugins?.AdMobPlugin) {
+        return await window.Capacitor.Plugins.AdMobPlugin.showBanner({ adUnitId });
+      }
+    } catch (e) {
+      console.warn("[Platform] showBanner error:", e);
+    }
+    return { success: false };
+  },
+
+  async hideBanner() {
+    if (!isCapacitor) return { success: false };
+    try {
+      if (window.Capacitor?.Plugins?.AdMobPlugin) {
+        return await window.Capacitor.Plugins.AdMobPlugin.hideBanner();
+      }
+    } catch (e) {
+      console.warn("[Platform] hideBanner error:", e);
+    }
+    return { success: false };
+  },
+
+  async loadRewardedAd(adUnitId) {
+    if (!isCapacitor) return { success: false };
+    try {
+      if (window.Capacitor?.Plugins?.AdMobPlugin) {
+        return await window.Capacitor.Plugins.AdMobPlugin.loadRewardedAd({ adUnitId });
+      }
+    } catch (e) {
+      console.warn("[Platform] loadRewardedAd error:", e);
+    }
+    return { success: false };
+  },
+
+  showRewardedAd() {
+    return new Promise(async (resolve) => {
+      if (!isCapacitor || !window.Capacitor?.Plugins?.AdMobPlugin) {
+        resolve(false);
+        return;
+      }
+      try {
+        const plugin = window.Capacitor.Plugins.AdMobPlugin;
+        let resolved = false;
+        let rewardListener = null;
+        let dismissListener = null;
+
+        const cleanup = () => {
+          if (rewardListener && typeof rewardListener.remove === "function") rewardListener.remove();
+          if (dismissListener && typeof dismissListener.remove === "function") dismissListener.remove();
+        };
+
+        try {
+          rewardListener = await plugin.addListener("onRewardEarned", () => {
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              resolve(true);
+            }
+          });
+        } catch (_) {}
+
+        try {
+          dismissListener = await plugin.addListener("onRewardDismissed", (res) => {
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              resolve(res?.rewardEarned === true);
+            }
+          });
+        } catch (_) {}
+
+        plugin.showRewardedAd().catch((e) => {
+          console.warn("[Platform] showRewardedAd call failed:", e);
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve(false);
+          }
+        });
+      } catch (e) {
+        console.warn("[Platform] showRewardedAd exception:", e);
+        resolve(false);
+      }
+    });
+  },
+
+  async loadInterstitial(adUnitId) {
+    if (!isCapacitor) return { success: false };
+    try {
+      if (window.Capacitor?.Plugins?.AdMobPlugin) {
+        return await window.Capacitor.Plugins.AdMobPlugin.loadInterstitial({ adUnitId });
+      }
+    } catch (e) {
+      console.warn("[Platform] loadInterstitial error:", e);
+    }
+    return { success: false };
+  },
+
+  showInterstitial() {
+    return new Promise(async (resolve) => {
+      if (!isCapacitor || !window.Capacitor?.Plugins?.AdMobPlugin) {
+        resolve(false);
+        return;
+      }
+      try {
+        const plugin = window.Capacitor.Plugins.AdMobPlugin;
+        let resolved = false;
+        let dismissListener = null;
+        let failListener = null;
+
+        const cleanup = () => {
+          if (dismissListener && typeof dismissListener.remove === "function") dismissListener.remove();
+          if (failListener && typeof failListener.remove === "function") failListener.remove();
+        };
+
+        try {
+          dismissListener = await plugin.addListener("onInterstitialDismissed", () => {
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              resolve(true);
+            }
+          });
+        } catch (_) {}
+
+        try {
+          failListener = await plugin.addListener("onInterstitialFailed", () => {
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              resolve(false);
+            }
+          });
+        } catch (_) {}
+
+        plugin.showInterstitial().catch((e) => {
+          console.warn("[Platform] showInterstitial call failed:", e);
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve(false);
+          }
+        });
+      } catch (e) {
+        console.warn("[Platform] showInterstitial exception:", e);
+        resolve(false);
+      }
+    });
   }
 };

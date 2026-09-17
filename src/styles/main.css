@@ -7665,3 +7665,110 @@ body[data-target-mode="playstore"] .tutorial-card {
   padding: 11px;
   font-size: 12px;
 }
+
+/* ── Floating Circular Hint Badge (Top-Right) ──────────────── */
+.tool-btn#hintBtn {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.hint-badge-circle {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-family: var(--font-num, sans-serif);
+  font-size: 12.5px;
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 15;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+  border: 2px solid var(--bg-card, #121316);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+[data-theme="vellum"] .hint-badge-circle {
+  border-color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.hint-badge-circle.available {
+  background: #10B981;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.hint-badge-circle.watch-ad {
+  background: #F59E0B;
+  color: #000000;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+}
+
+.hint-badge-circle.premium {
+  background: #06B6D4;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+/* ── Reward Success Modal ──────────────────────────────────── */
+#rewardModal {
+  z-index: 999;
+}
+
+#rewardModal.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: flex !important;
+}
+
+.reward-modal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 340px;
+  width: 90%;
+  padding: 26px 22px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+  animation: rewardModalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes rewardModalPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.reward-icon-disc {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.reward-desc {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin: 8px 0 0;
+}

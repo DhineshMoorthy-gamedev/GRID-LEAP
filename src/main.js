@@ -36,7 +36,8 @@ import {
   renderFinalModal,
   calculateBoardSize,
   applyTheme,
-  shakeActiveCell
+  shakeActiveCell,
+  updateHintBadge
 } from "./scenes/game-renderer.js";
 import { TutorialController } from "./scenes/tutorial-controller.js";
 import { SettingsController } from "./scenes/settings-controller.js";
@@ -44,6 +45,8 @@ import { UpdateController } from "./scenes/update-controller.js";
 import { DailyCalendarController } from "./scenes/daily-calendar-controller.js";
 import { AchievementsController } from "./scenes/achievements-controller.js";
 import { AchievementManager } from "./state/achievement-manager.js";
+import { AdController } from "./scenes/ad-controller.js";
+import { RewardModalController } from "./scenes/reward-modal-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 
 // Validate all shipped levels on load
@@ -80,6 +83,7 @@ export function openHome() {
   });
 
   SceneRouter.navigateTo("screenHome");
+  AdController.ensureBanner();
 }
 
 export function startDailyLevel(targetDateKey = null) {
@@ -100,6 +104,7 @@ export function startDailyLevel(targetDateKey = null) {
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.solutionPathVisible = false;
+  GameState.hintUsedThisLevel = false;
   GameState.hadDeadEndBeforeRestart = false;
   GameState.resetLives();
 
@@ -117,13 +122,15 @@ export function startDailyLevel(targetDateKey = null) {
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(888, dailyLv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  AdController.ensureBanner();
   tick();
 }
 
-export function startLevel(i) {
+export async function startLevel(i) {
   clearAutoUndo();
   hideToast();
   devStopAutoPlay();
+  await AdController.showPendingInterstitialIfNeeded();
   GameState.customLevel = null;
   GameState.levelIndex = i;
   GameState.clearSession();
@@ -134,6 +141,7 @@ export function startLevel(i) {
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.solutionPathVisible = false;
+  GameState.hintUsedThisLevel = false;
   GameState.hadDeadEndBeforeRestart = false;
   GameState.resetLives();
 
@@ -155,6 +163,8 @@ export function startLevel(i) {
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
+  AdController.ensureBanner();
   tick();
 }
 
@@ -173,6 +183,7 @@ export function resumeLevelSession() {
   GameState.history = Array.isArray(session.history) ? JSON.parse(JSON.stringify(session.history)) : [];
   GameState.lives = typeof session.lives === "number" ? session.lives : GameState.maxLives;
   GameState.solutionPathVisible = false;
+  GameState.hintUsedThisLevel = false;
 
   const lv = GameState.currentLevel();
   clearDeadEndFeedback();
@@ -198,6 +209,7 @@ export function resumeLevelSession() {
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(GameState.levelIndex, lv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
   refreshTrail();
   tick();
 }
@@ -210,6 +222,7 @@ export function playtestCustomLevel(customLv) {
   GameState.moveCount = 0;
   GameState.history = [];
   GameState.solutionPathVisible = false;
+  GameState.hintUsedThisLevel = false;
   GameState.resetLives();
 
   if (DOM.devShowSolutionBtn) {
@@ -226,6 +239,7 @@ export function playtestCustomLevel(customLv) {
   requestAnimationFrame(() => placeToken(GameState.player, true));
   updateGameHeader(999, customLv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
+  updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
   if (DOM.gameTitle) DOM.gameTitle.textContent = "PLAYTEST";
   if (DOM.gameChapter) DOM.gameChapter.textContent = `${customLv.phase || "Custom"} • ${customLv.name || "Maze"}`;
   tick();
@@ -479,6 +493,7 @@ export function restart() {
   GameState.history = [];
   GameState.resetLives();
   GameState.solutionPathVisible = false;
+  GameState.hintUsedThisLevel = false;
   if (DOM.hintBtn) DOM.hintBtn.classList.remove("active");
   if (DOM.devShowSolutionBtn) {
     DOM.devShowSolutionBtn.classList.remove("active");
@@ -551,6 +566,8 @@ export function showWin() {
     devDiagnosticsEnabled: (GameState.devModeEnabled && TargetConfig.features.devDiagnostics)
   });
 
+  AdController.recordLevelVictory(isCustom || isDaily);
+
   PlatformBridge.vibrateSuccess();
   SceneRouter.pushModal("WIN");
 }
@@ -561,7 +578,7 @@ export function showPause() {
   SceneRouter.pushModal("PAUSE");
 }
 
-export function nextLevel() {
+export async function nextLevel() {
   SceneRouter.popModal();
   if (GameState.customLevel?.isDaily) {
     openHome();
@@ -580,6 +597,7 @@ export function nextLevel() {
     SceneRouter.pushModal("FINAL");
     return;
   }
+  await AdController.showPendingInterstitialIfNeeded();
   AudioEngine.playNextLevel();
   startLevel(GameState.levelIndex + 1);
 }
@@ -602,7 +620,7 @@ export function toggleDevMode() {
   }
 }
 
-export function toggleSolutionPath() {
+export async function toggleSolutionPath() {
   // If already active, toggle OFF
   if (GameState.solutionPathVisible) {
     GameState.solutionPathVisible = false;
@@ -621,6 +639,38 @@ export function toggleSolutionPath() {
     renderViability(viability, isGoal, isDeadEnd, GameState.player, false);
     const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
     renderTrail(visitedPath, viability.solvable, GameState.settings.showTrail, false);
+    return;
+  }
+
+  // ── Hint Currency & Rewarded Ad Gate ──────────────────────────────────────
+  const isPremium = AdController.isPremiumUser();
+  if (isPremium) {
+    // Premium players get unlimited free hints
+    updateHintBadge(Infinity, true);
+    GameState.hintUsedThisLevel = true;
+  } else if (GameState.hintUsedThisLevel) {
+    // Already unlocked for this level attempt: re-illuminate for free without decrementing!
+  } else if (GameState.getHintsCount() > 0) {
+    // Consume 1 stored hint for this level attempt
+    GameState.useHint();
+    GameState.hintUsedThisLevel = true;
+    const rem = GameState.getHintsCount();
+    updateHintBadge(rem, false);
+    showToast(`Hint used (${rem === 1 ? "1 hint remaining" : `${rem} hints remaining`})`, 1800);
+  } else if (TargetConfig.isPlayStore) {
+    // 0 free hints remaining: watch rewarded ad to earn +1 hint
+    const earned = await AdController.requestHintReward();
+    if (!earned) {
+      return;
+    }
+    GameState.addHints(1);
+    const rem = GameState.getHintsCount();
+    updateHintBadge(rem, false);
+    RewardModalController.open({
+      type: "hint",
+      title: "+1 Hint Added!",
+      desc: "Added to your hint inventory."
+    });
     return;
   }
 
@@ -1103,6 +1153,15 @@ export function bootApp() {
   UpdateController.init();
   window.UpdateController = UpdateController;
 
+  // Initialize Native AdMob / AdController (Play Store)
+  AdController.init();
+  window.AdController = AdController;
+
+  // Initialize Reward Success Modal Controller & Hint Badge HUD
+  RewardModalController.init();
+  window.RewardModalController = RewardModalController;
+  updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
+
   // Sync existing historical progress into AchievementManager
   const initCompletedCampaign = (GameState.completed || []).filter(Boolean).length;
   const initTotalDaily = DailyManager.getTotalCompletedCount?.() || 0;
@@ -1190,23 +1249,30 @@ export function bootApp() {
   }
   if (DOM.winNextBtn) DOM.winNextBtn.addEventListener("click", nextLevel);
   if (DOM.winHomeBtn) {
-    DOM.winHomeBtn.addEventListener("click", () => {
+    DOM.winHomeBtn.addEventListener("click", async () => {
       AudioEngine.playNavBack();
       SceneRouter.popModal();
+      await AdController.showPendingInterstitialIfNeeded();
       openHome();
     });
   }
 
   if (DOM.outOfLivesWatchAdBtn) {
-    DOM.outOfLivesWatchAdBtn.addEventListener("click", () => {
-      // 1. Grant 1 life
+    DOM.outOfLivesWatchAdBtn.addEventListener("click", async () => {
+      // 1. Request rewarded ad for life
+      if (TargetConfig.isPlayStore && !AdController.isPremiumUser()) {
+        const earned = await AdController.requestLifeReward();
+        if (!earned) return;
+      }
+
+      // 2. Grant 1 life
       GameState.addLife(1);
       renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
 
-      // 2. Dismiss modal
+      // 3. Dismiss out-of-lives modal
       SceneRouter.popModal();
 
-      // 3. Safety check: if player is still on a dead-end cell, auto-undo back to safety
+      // 4. Safety check: if player is still on a dead-end cell, auto-undo back to safety
       const lv = GameState.currentLevel();
       const isGoal = isGoalCell(lv, GameState.player);
       const isDeadEnd = isDeadEndState(GameState.legalDests, isGoal);
@@ -1214,10 +1280,12 @@ export function bootApp() {
         undo(true);
       }
 
-      // 4. Tactile and visual feedback
-      PlatformBridge.vibrateSuccess();
-      AudioEngine.playLifeGranted();
-      showToast("+1 Life added! Keep going", 1800);
+      // 5. Open Reward Success Modal
+      RewardModalController.open({
+        type: "life",
+        title: "+1 Life Added!",
+        desc: "Added to your level."
+      });
     });
   }
 
@@ -1447,10 +1515,12 @@ export function bootApp() {
       GameState.save();
       AudioEngine.suspend();
       AchievementManager.stopPlayTimeTicker();
+      AdController.onPause();
     },
     onResume: () => {
       AudioEngine.resume();
       AchievementManager.startPlayTimeTicker();
+      AdController.onResume();
       handleResize();
       if (GameState.animating) {
         GameState.animating = false;
@@ -1472,6 +1542,10 @@ export function bootApp() {
         }
         if (activeModal.name === "UPDATE") {
           UpdateController.close();
+          return true;
+        }
+        if (activeModal.name === "REWARD") {
+          RewardModalController.close();
           return true;
         }
         if (activeModal.name === "OUT_OF_LIVES") {

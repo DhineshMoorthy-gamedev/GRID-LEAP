@@ -890,6 +890,7 @@
       </button>
 
       <button class="tool-btn" id="hintBtn" aria-label="Show Solution Path">
+        <span class="hint-badge-circle" id="hintCountBadge">3</span>
         <span class="tool-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18h6"></path>
@@ -1141,6 +1142,26 @@
   </div>
 </div>
 
+<!-- Reward Granted Success Modal Overlay -->
+<div class="overlay" id="rewardModal">
+  <div class="card reward-modal-card">
+    <div class="reward-icon-disc" id="rewardIconDisc">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" id="rewardIconSvg">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+      </svg>
+    </div>
+    <div class="eyebrow" id="rewardEyebrow">REWARD UNLOCKED</div>
+    <h2 id="rewardTitle">Hint Ready!</h2>
+    <p class="reward-desc" id="rewardDesc">A guide step has been revealed on your puzzle grid.</p>
+    <div class="card-actions" style="margin-top: 20px;">
+      <button class="btn primary" id="rewardContinueBtn" style="width: 100%; justify-content: center;">
+        Continue
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Pause Modal -->
 <div class="overlay" id="pauseModal">
   <div class="card">
@@ -1286,7 +1307,7 @@
           <div class="settings-row" id="settingRowUpdateSim">
             <span class="settings-label-title">Simulate In-App Update</span>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.1)</button>
+              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.2)</button>
               <button class="btn btn-secondary" id="devSimUpdateDownloadedBtn" style="padding: 3px 8px; font-size: 10px;">Downloaded</button>
               <button class="btn btn-secondary" id="devSimUpdateResetBtn" style="padding: 3px 8px; font-size: 10px;">Reset</button>
             </div>
@@ -1294,7 +1315,7 @@
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v0.0.10 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.11 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -1399,7 +1420,7 @@
 
           <!-- Title & Version -->
           <h1 class="about-game-title">GRID LEAP</h1>
-          <div class="about-version-pill">v0.0.10</div>
+          <div class="about-version-pill">v0.0.11</div>
 
           <!-- Developer Credits -->
           <div class="about-dev-section">

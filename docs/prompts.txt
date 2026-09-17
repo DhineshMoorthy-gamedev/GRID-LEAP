@@ -1,0 +1,118 @@
+/////////////////////////////////////////////////////////
+Go through the entire project and its Git history.
+
+The goal is to create a **simple, non-technical history of how this project evolved**, based on the actual commits in the repository.
+
+## What to do
+
+1. Inspect the current project so you understand what the application is and what it currently does.
+2. Inspect the Git repository history.
+3. Go through **every commit in chronological order**, from the earliest relevant commit to the current/latest commit.
+4. For each commit, compare it with the previous state and understand what was actually added, changed, removed, fixed, or improved.
+5. Do not rely only on commit messages. Use the actual commit changes to understand what happened.
+
+GitHub/Git history should be treated as the source of truth.
+
+## Keep the explanation non-technical
+
+I do **not** want a code-level explanation.
+
+Do not explain:
+
+* Individual functions
+* Variable changes
+* Internal implementation details
+* Code syntax
+* Detailed diffs
+* Every changed file
+
+Instead, explain each commit in terms of the **project/product evolution**.
+
+For example:
+
+> **Commit: Add aircraft spawning**
+>
+> Added the ability to introduce aircraft into the simulation. This established the initial traffic-generation functionality and allowed the player to begin interacting with multiple aircraft.
+
+Rather than:
+
+> Added `spawnAircraft()` to `TrafficManager.js` and changed the aircraft array initialization.
+
+## For every commit document
+
+Use this structure:
+
+### Commit N — `<commit message>`
+
+* **Date:** `<date>`
+* **Commit:** `<short SHA>`
+* **What was done:** Simple explanation of the change.
+* **Why it matters:** What this changed or enabled in the project.
+* **Project state after this commit:** Brief description of what the project could do at this point.
+
+Only include sections that are meaningful for that commit.
+
+## Important
+
+If multiple commits are effectively part of the same feature, still document every commit individually, but make the relationship clear.
+
+Distinguish between:
+
+* New feature
+* Feature improvement
+* Bug fix
+* Visual/UI change
+* Content addition
+* Performance improvement
+* Refactoring
+* Configuration/build change
+* Documentation
+* Cleanup
+* Experimental/prototype work
+
+Do not invent reasons that cannot be established from the repository history.
+
+If the reason is unclear, say:
+
+> **Reason:** Not clear from the commit/history.
+
+## Final Summary
+
+After documenting all commits, add:
+
+### Project Evolution Summary
+
+Explain the overall progression of the project in simple language:
+
+* Where the project started
+* Major milestones
+* Major features introduced
+* Important changes in direction
+* Major systems/features that were later replaced or removed
+* Current state of the project
+* How the project reached its current form
+
+Also provide:
+
+### Major Milestones
+
+A concise chronological list of the most important project milestones.
+
+### Current Project State
+
+Explain what the project currently contains and how it reached that state.
+
+## Output
+
+Create:
+
+`docs/PROJECT_HISTORY.md`
+
+Do not modify application code.
+
+Only create/update the documentation file.
+
+The final document should allow someone who has never seen the project to read the commit history and understand **how the project evolved over time without needing to understand the codebase**.
+
+Keep the writing clear, concise, chronological, and non-technical.
+/////////////////////////////////////////////////////////

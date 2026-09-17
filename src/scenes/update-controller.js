@@ -181,7 +181,7 @@ export const UpdateController = {
   },
 
   render() {
-    const curVer = TargetConfig.version || "0.0.10";
+    const curVer = TargetConfig.version || "0.0.11";
     const newVer = this.updateInfo?.availableVersionCode
       ? `v${curVer} → Build ${this.updateInfo.availableVersionCode}`
       : `v${curVer} Update`;

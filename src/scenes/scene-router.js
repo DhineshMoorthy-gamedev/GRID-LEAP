@@ -17,7 +17,8 @@ const MODAL_ELEMENTS = {
   OUT_OF_LIVES: "outOfLivesModal",
   DAILY_CALENDAR: "dailyCalendarModal",
   ACHIEVEMENTS: "achievementsModal",
-  UPDATE: "updateModal"
+  UPDATE: "updateModal",
+  REWARD: "rewardModal"
 };
 
 let currentScreen = "screenHome"; // "screenHome" | "screenGame"

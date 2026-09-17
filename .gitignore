@@ -3,3 +3,12 @@ dist/
 .DS_Store
 *.log
 scratch/
+
+# Store Asset Images
+docs/store-assets/raw-screenshots/
+docs/store-assets/screenshots/
+
+# Android Keystores & Signing Keys
+*.jks
+*.keystore
+

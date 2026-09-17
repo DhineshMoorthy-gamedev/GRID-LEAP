@@ -18,6 +18,8 @@ export const GameState = {
   lives: 3,
   maxLives: 3,
   deadEndsEncountered: 0,
+  hintsAvailable: 3,
+  hintUsedThisLevel: false,
 
   // Developer state
   devModeEnabled: false,
@@ -45,6 +47,7 @@ export const GameState = {
     this.completed = saved.completed || new Array(LEVELS.length).fill(false);
     this.stars = saved.stars || new Array(LEVELS.length).fill(0);
     this.bestMoves = saved.bestMoves || new Array(LEVELS.length).fill(null);
+    this.hintsAvailable = typeof saved.hintsAvailable === "number" ? Math.max(0, saved.hintsAvailable) : 3;
     this.activeSession = saved.activeSession || null;
     this.levelIndex = Math.min(Math.max(0, saved.lastPlayedLevel || 0), LEVELS.length - 1);
     this.settings = { ...this.settings, ...(saved.settings || {}) };
@@ -61,6 +64,7 @@ export const GameState = {
     this.legalDests = [];
     this.lives = 3;
     this.maxLives = 3;
+    this.hintsAvailable = 3;
     this.deadEndsEncountered = 0;
     this.completed = new Array(LEVELS.length).fill(false);
     this.stars = new Array(LEVELS.length).fill(0);
@@ -86,6 +90,7 @@ export const GameState = {
       completed: this.completed,
       stars: this.stars,
       bestMoves: this.bestMoves,
+      hintsAvailable: this.hintsAvailable,
       activeSession: this.activeSession,
       settings: {
         ...this.settings,
@@ -158,6 +163,25 @@ export const GameState = {
   addLife(count = 1) {
     this.lives = Math.min(this.maxLives, Math.max(1, this.lives + count));
     return this.lives;
+  },
+
+  getHintsCount() {
+    return this.hintsAvailable;
+  },
+
+  useHint() {
+    if (this.hintsAvailable > 0) {
+      this.hintsAvailable--;
+      this.save();
+      return true;
+    }
+    return false;
+  },
+
+  addHints(count = 1) {
+    this.hintsAvailable = Math.max(0, this.hintsAvailable + count);
+    this.save();
+    return this.hintsAvailable;
   },
 
   calculateStarsEarned(levelIndex, moveCount, livesRemaining = this.lives) {

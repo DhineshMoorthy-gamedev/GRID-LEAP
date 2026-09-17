@@ -60,6 +60,7 @@ export class StorageService {
         relaxMode: false,
         showTrail: false
       },
+      hintsAvailable: 3,
       activeSession: null
     };
   }
@@ -103,6 +104,10 @@ export class StorageService {
       }
     }
 
+    const hintsAvailable = typeof data.hintsAvailable === "number"
+      ? Math.max(0, parseInt(data.hintsAvailable, 10))
+      : 3;
+
     return {
       schemaVersion: 2,
       lastUpdated: data.lastUpdated || Date.now(),
@@ -110,6 +115,7 @@ export class StorageService {
       completed,
       stars,
       bestMoves,
+      hintsAvailable,
       activeSession,
       settings: {
         theme: data.settings?.theme === "obsidian" ? "obsidian" : "vellum",

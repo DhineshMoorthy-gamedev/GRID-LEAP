@@ -249,8 +249,8 @@ public class AppUpdatePlugin extends Plugin implements InstallStateUpdatedListen
             Log.w(TAG, "Failed to get app version: " + e.getMessage());
         }
         JSObject fallback = new JSObject();
-        fallback.put("versionName", "0.0.10");
-        fallback.put("versionCode", 10);
+        fallback.put("versionName", "0.0.11");
+        fallback.put("versionCode", 11);
         call.resolve(fallback);
     }
 

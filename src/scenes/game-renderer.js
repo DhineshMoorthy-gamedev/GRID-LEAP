@@ -80,6 +80,7 @@ export const DOM = {
   adBannerSlot: document.getElementById("adBannerSlot"),
   undoBtn: document.getElementById("undoBtn"),
   hintBtn: document.getElementById("hintBtn"),
+  hintCountBadge: document.getElementById("hintCountBadge"),
   restartBtn: document.getElementById("restartBtn"),
 
   // Dev Playtest Stepper Bar
@@ -1448,3 +1449,19 @@ export function renderFinalModal({ totalSolved, totalLevels }) {
   if (DOM.finalTotalSolved) DOM.finalTotalSolved.textContent = totalSolved;
   if (DOM.finalTotalLevels) DOM.finalTotalLevels.textContent = totalLevels;
 }
+
+export function updateHintBadge(hintsCount, isPremium = false) {
+  const el = DOM.hintCountBadge || document.getElementById("hintCountBadge");
+  if (!el) return;
+  if (isPremium) {
+    el.textContent = "∞";
+    el.className = "hint-badge-circle premium";
+  } else if (typeof hintsCount === "number" && hintsCount > 0) {
+    el.textContent = String(hintsCount);
+    el.className = "hint-badge-circle available";
+  } else {
+    el.textContent = "AD";
+    el.className = "hint-badge-circle watch-ad";
+  }
+}
+
