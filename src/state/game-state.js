@@ -37,6 +37,8 @@ export const GameState = {
     hapticsEnabled: true,
     dailyReminders: false,
     hasPromptedDailyReminders: false,
+    hasRequestedReview: false,
+    lastReviewTimestamp: 0,
     relaxMode: false,
     showTrail: false
   },

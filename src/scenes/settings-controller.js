@@ -13,6 +13,7 @@ import { AudioEngine } from "../audio/audio-engine.js";
 import { UpdateController } from "./update-controller.js";
 import { AdController } from "./ad-controller.js";
 import { NotificationManager } from "../platform/notification-manager.js";
+import { ReviewManager } from "../platform/review-manager.js";
 import { GameState } from "../state/game-state.js";
 
 export const SettingsController = {
@@ -24,6 +25,7 @@ export const SettingsController = {
     this.dom = {
       modal: document.getElementById("settingsModal"),
       closeBtn: document.getElementById("settingsCloseBtn"),
+      btnRateApp: document.getElementById("btnRateApp"),
       btnContactUs: document.getElementById("btnContactUs"),
       btnFeedback: document.getElementById("btnFeedback"),
       btnOpenPrivacy: document.getElementById("btnOpenPrivacy"),
@@ -73,6 +75,13 @@ export const SettingsController = {
     // Subview Navigation Listeners
     if (this.dom.closeBtn) {
       this.dom.closeBtn.addEventListener("click", () => this.close());
+    }
+
+    if (this.dom.btnRateApp) {
+      this.dom.btnRateApp.addEventListener("click", () => {
+        AudioEngine.playNavBack();
+        ReviewManager.requestManualReview();
+      });
     }
 
     if (this.dom.btnContactUs) {

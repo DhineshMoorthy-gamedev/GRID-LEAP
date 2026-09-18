@@ -49,6 +49,7 @@ import { AdController } from "./scenes/ad-controller.js";
 import { RewardModalController } from "./scenes/reward-modal-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 import { NotificationManager } from "./platform/notification-manager.js";
+import { ReviewManager } from "./platform/review-manager.js";
 
 // Validate all shipped levels on load
 validateAll(LEVELS);
@@ -582,6 +583,7 @@ export function showPause() {
 
 export async function nextLevel() {
   const wasDaily = Boolean(GameState.customLevel?.isDaily);
+  const completedLevelIdx = GameState.levelIndex;
   SceneRouter.popModal();
   if (GameState.customLevel?.isDaily) {
     openHome();
@@ -606,6 +608,7 @@ export async function nextLevel() {
     return;
   }
   await AdController.showPendingInterstitialIfNeeded();
+  ReviewManager.checkLevelMilestone(completedLevelIdx);
   AudioEngine.playNextLevel();
   startLevel(GameState.levelIndex + 1);
 }
@@ -1180,9 +1183,11 @@ export function bootApp() {
   DailyCalendarController.init({
     onPlayDate: (dateKey) => startDailyLevel(dateKey)
   });
+  ReviewManager.init();
   window.DailyCalendarController = DailyCalendarController;
   window.UpdateController = UpdateController;
   window.AdController = AdController;
+  window.ReviewManager = ReviewManager;
 
   // Initialize Reward Success Modal Controller & Hint Badge HUD
   RewardModalController.init();
@@ -1279,8 +1284,13 @@ export function bootApp() {
     DOM.winHomeBtn.addEventListener("click", async () => {
       AudioEngine.playNavBack();
       const wasDaily = Boolean(GameState.customLevel?.isDaily);
+      const isCustom = Boolean(GameState.customLevel) && !wasDaily;
+      const completedLevelIdx = GameState.levelIndex;
       SceneRouter.popModal();
       await AdController.showPendingInterstitialIfNeeded();
+      if (!wasDaily && !isCustom) {
+        ReviewManager.checkLevelMilestone(completedLevelIdx);
+      }
       openHome();
       if (wasDaily && !GameState.settings.dailyReminders && !GameState.settings.hasPromptedDailyReminders) {
         setTimeout(() => {

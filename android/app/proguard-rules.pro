@@ -39,5 +39,10 @@
 -keep class com.capacitorjs.plugins.localnotifications.** { *; }
 -dontwarn com.capacitorjs.plugins.localnotifications.**
 
-# 7. Preserve Line Numbers and Annotations for stack traces
+# 7. Google Play In-App Review Plugin
+-keep class com.google.android.play.core.review.** { *; }
+-keep class com.community.inappreview.** { *; }
+-dontwarn com.community.inappreview.**
+
+# 8. Preserve Line Numbers and Annotations for stack traces
 -keepattributes SourceFile,LineNumberTable,InnerClasses,EnclosingMethod,Signature,*Annotation*

@@ -59,6 +59,8 @@ export class StorageService {
         hapticsEnabled: true,
         dailyReminders: false,
         hasPromptedDailyReminders: false,
+        hasRequestedReview: false,
+        lastReviewTimestamp: 0,
         relaxMode: false,
         showTrail: false
       },
@@ -127,6 +129,8 @@ export class StorageService {
         hapticsEnabled: data.settings?.hapticsEnabled !== false,
         dailyReminders: Boolean(data.settings?.dailyReminders),
         hasPromptedDailyReminders: Boolean(data.settings?.hasPromptedDailyReminders),
+        hasRequestedReview: Boolean(data.settings?.hasRequestedReview),
+        lastReviewTimestamp: typeof data.settings?.lastReviewTimestamp === "number" ? data.settings.lastReviewTimestamp : 0,
         relaxMode: Boolean(data.settings?.relaxMode),
         showTrail: Boolean(data.settings?.showTrail)
       }
