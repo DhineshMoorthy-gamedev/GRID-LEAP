@@ -7734,4 +7734,69 @@ body[data-target-mode="playstore"] .tutorial-card {
   color: var(--text-dim);
   line-height: 1.45;
   margin: 8px 0 0;
-}
+}
+
+/* Victory Confetti Canvas Overlay */
+.win-confetti-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Win Modal Top-Right Circular Share Button */
+.win-card {
+  position: relative;
+}
+
+.win-share-circle-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.14));
+  color: var(--text-primary, #F8FAFC);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 25;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, color 140ms ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.win-share-circle-btn:hover {
+  transform: scale(1.08);
+  border-color: var(--accent-primary, #10B981);
+  color: var(--accent-primary, #10B981);
+  background: rgba(16, 185, 129, 0.14);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.win-share-circle-btn:active {
+  transform: scale(0.92);
+}
+
+[data-theme="vellum"] .win-share-circle-btn {
+  background: #F4F1EA;
+  border: 1px solid rgba(30, 28, 26, 0.16);
+  color: #1E1C1A;
+  box-shadow: 0 2px 6px rgba(30, 28, 26, 0.08);
+}
+
+[data-theme="vellum"] .win-share-circle-btn:hover {
+  border-color: var(--accent-primary, #1D4E6D);
+  color: var(--accent-primary, #1D4E6D);
+  background: rgba(43, 93, 125, 0.12);
+  box-shadow: 0 4px 12px rgba(43, 93, 125, 0.18);
+}
+
+

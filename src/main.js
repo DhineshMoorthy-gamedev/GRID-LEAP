@@ -50,6 +50,10 @@ import { RewardModalController } from "./scenes/reward-modal-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
 import { NotificationManager } from "./platform/notification-manager.js";
 import { ReviewManager } from "./platform/review-manager.js";
+import { ConfettiFX } from "./scenes/confetti-fx.js";
+import { Share } from "@capacitor/share";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { generateVictoryCard } from "./scenes/share-card-generator.js";
 
 // Validate all shipped levels on load
 validateAll(LEVELS);
@@ -66,6 +70,7 @@ function clearAutoUndo() {
 export function openHome() {
   clearAutoUndo();
   hideToast();
+  ConfettiFX.stop();
   if (SceneRouter.getCurrentScreen() === "screenGame") {
     GameState.saveCurrentSession();
   }
@@ -343,10 +348,10 @@ export function attemptMoveTo(r, c) {
     shakeActiveCell(GameState.player, r, c);
     return;
   }
-  doMove(r, c);
+  doMove(r, c, match);
 }
 
-export function doMove(r, c) {
+export function doMove(r, c, destMeta = null) {
   if (GameState.animating || SceneRouter.isInputBlocked()) return;
 
   GameState.history.push({
@@ -483,6 +488,7 @@ export function undo(isAuto = false) {
 export function restart() {
   clearAutoUndo();
   hideToast();
+  ConfettiFX.stop();
   flushLevelCreationAnimation();
   devStopAutoPlay();
   if (GameState.animating) return;
@@ -551,6 +557,10 @@ export function showWin() {
 
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player]);
 
+  const optimalMoves = Math.max(1, lv.optimal || 1);
+  const actualMoves = Math.max(1, GameState.moveCount || 1);
+  const eff = Math.min(100, Math.max(10, Math.round((optimalMoves / actualMoves) * 100)));
+
   renderWinModal({
     levelIndex: GameState.levelIndex,
     level: lv,
@@ -572,6 +582,7 @@ export function showWin() {
   AdController.recordLevelVictory(isCustom || isDaily);
 
   PlatformBridge.vibrateSuccess();
+  ConfettiFX.burst({ isFlawless: eff >= 100 });
   SceneRouter.pushModal("WIN");
 }
 
@@ -583,7 +594,7 @@ export function showPause() {
 
 export async function nextLevel() {
   const wasDaily = Boolean(GameState.customLevel?.isDaily);
-  const completedLevelIdx = GameState.levelIndex;
+  ConfettiFX.stop();
   SceneRouter.popModal();
   if (GameState.customLevel?.isDaily) {
     openHome();
@@ -608,9 +619,178 @@ export async function nextLevel() {
     return;
   }
   await AdController.showPendingInterstitialIfNeeded();
-  ReviewManager.checkLevelMilestone(completedLevelIdx);
   AudioEngine.playNextLevel();
   startLevel(GameState.levelIndex + 1);
+}
+
+export async function shareVictoryResult() {
+  const lv = GameState.currentLevel();
+  const isDaily = Boolean(lv?.isDaily);
+  const isCustom = Boolean(GameState.customLevel) && !isDaily;
+  const padIdx = String(GameState.levelIndex + 1).padStart(GameState.levelIndex + 1 >= 100 ? 3 : 2, "0");
+  const optimalMoves = Math.max(1, lv?.optimal || 1);
+  const actualMoves = Math.max(1, GameState.moveCount || 1);
+  const eff = Math.min(100, Math.max(10, Math.round((optimalMoves / actualMoves) * 100)));
+  const visitedPath = GameState.history.map(h => h.player).concat([GameState.player || lv?.goal || [0, 0]]);
+
+  let storeUrl = "https://play.google.com/store/apps/details?id=com.olaidigitalstudios.gridleap";
+  if (TargetConfig.isItch) {
+    storeUrl = "https://olaidigitalstudios.itch.io/grid-leap";
+  } else if (TargetConfig.isWeb) {
+    storeUrl = "https://gridleap.netlify.app";
+  }
+
+  let shareTitle = "Grid Leap";
+  let shareText = "";
+
+  const moveSuffix = actualMoves === 1 ? "move" : "moves";
+  const optSuffix = optimalMoves === 1 ? "move" : "moves";
+
+  if (isDaily) {
+    const displayDate = formatDisplayDate(lv?.dateKey || getTodayDateKey());
+    const streak = DailyManager.data?.currentStreak || 1;
+    const streakSuffix = streak === 1 ? "day" : "days";
+
+    shareTitle = `Grid Leap — Daily Challenge | ${displayDate}`;
+    shareText = `Grid Leap — Daily Challenge | ${displayDate}\n\nToday's challenge is solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\nStreak: ${streak} ${streakSuffix}\n\nCan you match the optimal solution?\n\nPlay today's challenge:\n${storeUrl}`;
+  } else if (isCustom) {
+    shareTitle = "Grid Leap — Custom Maze";
+    shareText = `Grid Leap — Custom Maze\n\nCustom maze solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\n\nCan you match the optimal solution?\n\nPlay Grid Leap:\n${storeUrl}`;
+  } else {
+    shareTitle = `Grid Leap — Level ${padIdx}`;
+    shareText = `Grid Leap — Level ${padIdx}\n\nLevel ${padIdx} solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\n\nCan you match the optimal solution?\n\nPlay Grid Leap:\n${storeUrl}`;
+  }
+
+  AudioEngine.playNavBack();
+
+  // Generate zero-lag, pixel-perfect Win Modal Card snapshot matching active theme
+  let card = null;
+  try {
+    card = await generateVictoryCard({
+      level: lv,
+      path: visitedPath,
+      moveCount: actualMoves,
+      optimal: optimalMoves,
+      eff,
+      isDaily,
+      dateKey: lv?.dateKey || getTodayDateKey(),
+      streak: DailyManager.data?.currentStreak || 1,
+      isCustom,
+      levelIndex: GameState.levelIndex,
+      theme: GameState.getTheme()
+    });
+  } catch (cardErr) {
+    console.warn("[Share] Victory Card generation failed, continuing with text only:", cardErr);
+  }
+
+  // 1. Android / iOS Native Capacitor Share (with clean Base64 file writing to cache)
+  if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
+    try {
+      let fileUri = null;
+      if (card?.rawBase64) {
+        try {
+          const fileName = `grid_leap_victory_${Date.now()}.png`;
+          const writeRes = await Filesystem.writeFile({
+            path: fileName,
+            data: card.rawBase64,
+            directory: Directory.Cache,
+            recursive: true
+          });
+          fileUri = writeRes?.uri;
+          if (!fileUri) {
+            const uriRes = await Filesystem.getUri({
+              path: fileName,
+              directory: Directory.Cache
+            });
+            fileUri = uriRes?.uri;
+          }
+          if (fileUri && !fileUri.startsWith("file://") && fileUri.startsWith("/")) {
+            fileUri = `file://${fileUri}`;
+          }
+        } catch (fsErr) {
+          console.error("[Share] Filesystem write failed:", fsErr);
+        }
+      }
+
+      const sharePayload = {
+        title: shareTitle,
+        text: shareText,
+        dialogTitle: "Share Victory Result"
+      };
+      if (fileUri) {
+        sharePayload.files = [fileUri];
+      }
+
+      const canShareRes = await Share.canShare().catch(() => ({ value: true }));
+      if (canShareRes.value) {
+        await Share.share(sharePayload);
+        return;
+      }
+    } catch (err) {
+      if (err.message?.includes("canceled") || err.name === "AbortError") {
+        return; // User dismissed native share dialog
+      }
+      console.warn("[Share] Capacitor Share failed, trying fallback:", err);
+    }
+  }
+
+  // 2. Mobile Web / Modern Browsers (Web Share API Level 2 with attached File)
+  if (typeof navigator !== "undefined" && navigator.share && card?.blob) {
+    try {
+      const file = new File([card.blob], `grid_leap_victory.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          files: [file]
+        });
+        return;
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.warn("[Share] navigator.share error, falling back to clipboard:", err);
+      } else {
+        return; // User cancelled native share sheet
+      }
+    }
+  }
+
+  // 3. Desktop / Web Fallback: Async Clipboard Image Copy + Direct PNG Download
+  let copiedImageToClipboard = false;
+  if (typeof navigator !== "undefined" && navigator.clipboard?.write && card?.blob && typeof ClipboardItem !== "undefined") {
+    try {
+      const item = new ClipboardItem({ "image/png": card.blob });
+      await navigator.clipboard.write([item]);
+      copiedImageToClipboard = true;
+    } catch (clipImgErr) {
+      console.warn("[Share] Image clipboard write failed, trying text fallback:", clipImgErr);
+    }
+  }
+
+  // Trigger direct PNG download for browser users
+  if (card?.dataUrl) {
+    try {
+      const link = document.createElement("a");
+      link.href = card.dataUrl;
+      link.download = `grid-leap-${isDaily ? "daily" : "level-" + padIdx}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (_) {}
+  }
+
+  if (copiedImageToClipboard) {
+    showToast("🖼️ Victory Card copied & downloaded!");
+  } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      showToast("📋 Result copied & card downloaded!");
+    } catch (_) {
+      showToast("🖼️ Victory Card downloaded!");
+    }
+  } else {
+    showToast("🖼️ Victory Card saved!");
+  }
 }
 
 export function toggleFullscreen() {
@@ -1273,8 +1453,13 @@ export function bootApp() {
     });
   }
 
+  if (DOM.winShareBtn) {
+    DOM.winShareBtn.addEventListener("click", () => shareVictoryResult());
+  }
+
   if (DOM.winRestartBtn) {
     DOM.winRestartBtn.addEventListener("click", () => {
+      ConfettiFX.stop();
       SceneRouter.popModal();
       restart();
     });
@@ -1282,15 +1467,11 @@ export function bootApp() {
   if (DOM.winNextBtn) DOM.winNextBtn.addEventListener("click", nextLevel);
   if (DOM.winHomeBtn) {
     DOM.winHomeBtn.addEventListener("click", async () => {
+      ConfettiFX.stop();
       AudioEngine.playNavBack();
       const wasDaily = Boolean(GameState.customLevel?.isDaily);
-      const isCustom = Boolean(GameState.customLevel) && !wasDaily;
-      const completedLevelIdx = GameState.levelIndex;
       SceneRouter.popModal();
       await AdController.showPendingInterstitialIfNeeded();
-      if (!wasDaily && !isCustom) {
-        ReviewManager.checkLevelMilestone(completedLevelIdx);
-      }
       openHome();
       if (wasDaily && !GameState.settings.dailyReminders && !GameState.settings.hasPromptedDailyReminders) {
         setTimeout(() => {

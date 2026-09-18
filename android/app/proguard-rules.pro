@@ -44,5 +44,13 @@
 -keep class com.community.inappreview.** { *; }
 -dontwarn com.community.inappreview.**
 
-# 8. Preserve Line Numbers and Annotations for stack traces
+# 8. Capacitor Share Plugin
+-keep class com.capacitorjs.plugins.share.** { *; }
+-dontwarn com.capacitorjs.plugins.share.**
+
+# 9. Capacitor Filesystem Plugin
+-keep class com.capacitorjs.plugins.filesystem.** { *; }
+-dontwarn com.capacitorjs.plugins.filesystem.**
+
+# 10. Preserve Line Numbers and Annotations for stack traces
 -keepattributes SourceFile,LineNumberTable,InnerClasses,EnclosingMethod,Signature,*Annotation*

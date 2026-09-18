@@ -26,56 +26,7 @@ class ReviewManagerClass {
   }
 
   /**
-   * Check whether the player reached the Level 10 milestone (or subsequent level if previously offline).
-   * Non-blocking and guaranteed safe against ad collisions and offline states.
-   */
-  async checkLevelMilestone(levelIndex) {
-    // Only trigger for Level 10 (index 9) or higher
-    if (typeof levelIndex !== "number" || levelIndex < MILESTONE_LEVEL_INDEX) {
-      return;
-    }
-
-    // Check if player has already been prompted
-    if (GameState.settings.hasRequestedReview) {
-      return;
-    }
-
-    // Offline check: If offline, defer the prompt to the next level they finish while online
-    if (!this.isOnline()) {
-      console.log("[ReviewManager] Player is offline. Deferring In-App Review milestone.");
-      return;
-    }
-
-    // Delay 500ms so screen transition or ad dismiss finishes smoothly
-    setTimeout(() => {
-      this._triggerMilestoneReview();
-    }, 500);
-  }
-
-  async _triggerMilestoneReview() {
-    if (GameState.settings.hasRequestedReview) return;
-
-    // Mark as requested immediately to prevent duplicate triggers
-    GameState.settings.hasRequestedReview = true;
-    GameState.settings.lastReviewTimestamp = Date.now();
-    GameState.saveSettings();
-
-    console.log("[ReviewManager] Triggering milestone In-App Review...");
-
-    if (TargetConfig.isPlayStore && typeof InAppReview !== "undefined") {
-      try {
-        await InAppReview.requestReview();
-        console.log("[ReviewManager] InAppReview.requestReview() completed successfully.");
-      } catch (err) {
-        console.warn("[ReviewManager] InAppReview.requestReview() error:", err);
-      }
-    } else {
-      console.log("[ReviewManager] (Web/Dev mode) Milestone In-App Review simulated.");
-    }
-  }
-
-  /**
-   * Manual Review request triggered from Settings > "Rate Grid Leap"
+   * Manual Review request triggered from Settings > "Rate"
    */
   async requestManualReview() {
     if (!this.isOnline()) {

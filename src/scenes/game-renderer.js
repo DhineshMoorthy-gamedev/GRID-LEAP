@@ -124,6 +124,7 @@ export const DOM = {
   winMovesVal: document.getElementById("winMovesVal"),
   winEfficiency: document.getElementById("winEfficiency"),
   winEfficiencyStat: document.getElementById("winEfficiencyStat"),
+  winShareBtn: document.getElementById("winShareBtn"),
   winRestartBtn: document.getElementById("winRestartBtn"),
   winNextBtn: document.getElementById("winNextBtn"),
   winHomeBtn: document.getElementById("winHomeBtn"),
@@ -1441,6 +1442,11 @@ export function renderWinModal({
       if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "flex";
       if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     }
+  }
+
+  // 5. Social Share Action Button Visibility
+  if (DOM.winShareBtn) {
+    DOM.winShareBtn.style.display = (TargetConfig.features.winShareButton !== false) ? "inline-flex" : "none";
   }
 }
 

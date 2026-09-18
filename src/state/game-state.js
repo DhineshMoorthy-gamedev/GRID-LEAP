@@ -105,6 +105,10 @@ export const GameState = {
     });
   },
 
+  saveSettings() {
+    this.save();
+  },
+
   saveCurrentSession() {
     if (!this.customLevel && this.moveCount > 0 && this.player && !this.completed[this.levelIndex]) {
       this.activeSession = {

@@ -48,7 +48,9 @@ export const TargetConfig = {
     // Bottom banner ad slot room
     showAdBanner: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.WEB,
     // In-App Purchases (Remove Ads) - Play Store only
-    removeAdsIAP: activeMode === TARGET_MODES.PLAYSTORE
+    removeAdsIAP: activeMode === TARGET_MODES.PLAYSTORE,
+    // Win Modal Social Share Button (All platforms by default, togglable)
+    winShareButton: true
   }
 };
 
