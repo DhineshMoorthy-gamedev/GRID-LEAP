@@ -934,21 +934,37 @@ export function handleToggleTrail(explicitValue) {
 export function runStudioIntro(onComplete) {
   const overlay = document.getElementById("startupOverlay");
   if (!overlay) {
+    applyTheme(GameState.getTheme());
     if (typeof onComplete === "function") onComplete();
     return;
   }
 
   const slide = document.getElementById("studioScreen");
-  if (slide) {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        slide.classList.add("active");
-      });
-    });
-  }
-
   let dismissed = false;
   let autoDismissTimer = null;
+
+  const activateSlide = () => {
+    if (slide && !dismissed) {
+      slide.classList.add("active");
+    }
+  };
+
+  // Hold a seamless solid dark screen for 300ms while Android stabilizes viewport insets and rasterizes fonts
+  const fontPromise = document.fonts?.load
+    ? Promise.all([
+        document.fonts.load('400 52px "Bodoni Moda"'),
+        document.fonts.load('400 22px "Bodoni Moda"'),
+        document.fonts.ready
+      ])
+    : Promise.resolve();
+
+  const bufferPromise = new Promise((resolve) => setTimeout(resolve, 300));
+
+  Promise.all([fontPromise, bufferPromise]).then(() => {
+    requestAnimationFrame(activateSlide);
+  }).catch(() => {
+    setTimeout(activateSlide, 300);
+  });
 
   const dismiss = () => {
     if (dismissed) return;
@@ -959,6 +975,8 @@ export function runStudioIntro(onComplete) {
     }
     if (slide) slide.classList.add("exit");
     overlay.classList.add("fade-out");
+    // Transition status bar theme in sync with the fade-out
+    applyTheme(GameState.getTheme(), true);
     setTimeout(() => {
       if (overlay.parentNode) {
         overlay.remove();
@@ -1063,7 +1081,8 @@ export function bootApp() {
     }
   });
 
-  applyTheme(GameState.getTheme());
+  // Prepare theme DOM styling quietly under the startup overlay (status bar stays dark until intro dismisses)
+  applyTheme(GameState.getTheme(), false);
   updateTrailButton(GameState.settings.showTrail);
 
   // Theme & Trail toggle bindings
@@ -1130,6 +1149,12 @@ export function bootApp() {
 
   // Play Studio Intro Screen & Launch FTUE Tutorial for first-time players
   runStudioIntro(() => {
+    // Initialize In-App Update Controller (Play Store)
+    UpdateController.init();
+
+    // Initialize Native AdMob / AdController (Play Store)
+    AdController.init();
+
     if (!GameState.settings.hasSeenRules) {
       TutorialController.open();
     }
@@ -1148,13 +1173,7 @@ export function bootApp() {
     onPlayDate: (dateKey) => startDailyLevel(dateKey)
   });
   window.DailyCalendarController = DailyCalendarController;
-
-  // Initialize In-App Update Controller
-  UpdateController.init();
   window.UpdateController = UpdateController;
-
-  // Initialize Native AdMob / AdController (Play Store)
-  AdController.init();
   window.AdController = AdController;
 
   // Initialize Reward Success Modal Controller & Hint Badge HUD

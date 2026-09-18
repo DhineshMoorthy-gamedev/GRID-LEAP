@@ -115,9 +115,18 @@ export const UpdateController = {
   setDownloadingState(pct = 0) {
     this.status = "downloading";
     this.progress = pct;
+    if (this.dom.homeUpdateBtn) {
+      this.dom.homeUpdateBtn.style.display = "inline-flex";
+      this.dom.homeUpdateBtn.classList.remove("downloaded");
+      this.dom.homeUpdateBtn.classList.add("downloading");
+      const iconEl = this.dom.homeUpdateBtn.querySelector(".update-pill-icon");
+      if (iconEl) iconEl.textContent = "⏳";
+      const textEl = this.dom.homeUpdateBtn.querySelector(".update-pill-text");
+      if (textEl) textEl.textContent = `${pct}%`;
+    }
     if (this.dom.progressWrap) this.dom.progressWrap.style.display = "block";
     if (this.dom.progressFill) this.dom.progressFill.style.width = `${pct}%`;
-    if (this.dom.progressLabel) this.dom.progressLabel.textContent = `Downloading... ${pct}%`;
+    if (this.dom.progressLabel) this.dom.progressLabel.textContent = `Downloading in background... ${pct}%`;
     if (this.dom.actionBtn) {
       this.dom.actionBtn.disabled = true;
       this.dom.actionBtn.textContent = `Downloading (${pct}%)...`;
@@ -128,14 +137,17 @@ export const UpdateController = {
     this.status = "downloaded";
     if (this.dom.homeUpdateBtn) {
       this.dom.homeUpdateBtn.style.display = "inline-flex";
+      this.dom.homeUpdateBtn.classList.remove("downloading");
       this.dom.homeUpdateBtn.classList.add("downloaded");
+      const iconEl = this.dom.homeUpdateBtn.querySelector(".update-pill-icon");
+      if (iconEl) iconEl.textContent = "✨";
       const textEl = this.dom.homeUpdateBtn.querySelector(".update-pill-text");
       if (textEl) textEl.textContent = "INSTALL";
     }
     if (this.dom.progressWrap) this.dom.progressWrap.style.display = "none";
     if (this.dom.actionBtn) {
       this.dom.actionBtn.disabled = false;
-      this.dom.actionBtn.textContent = "RESTART & INSTALL";
+      this.dom.actionBtn.textContent = "Restart & Install";
       this.dom.actionBtn.classList.add("primary");
     }
   },
@@ -145,7 +157,7 @@ export const UpdateController = {
     if (this.dom.progressWrap) this.dom.progressWrap.style.display = "none";
     if (this.dom.actionBtn) {
       this.dom.actionBtn.disabled = false;
-      this.dom.actionBtn.textContent = "UPDATE NOW";
+      this.dom.actionBtn.textContent = "Update";
     }
   },
 
@@ -181,13 +193,35 @@ export const UpdateController = {
   },
 
   render() {
-    const curVer = TargetConfig.version || "0.0.11";
-    const newVer = this.updateInfo?.availableVersionCode
-      ? `v${curVer} → Build ${this.updateInfo.availableVersionCode}`
-      : `v${curVer} Update`;
+    const curVer = TargetConfig.version || "0.0.13";
+    let newVer = this.updateInfo?.availableVersionName;
+
+    if (!newVer && this.updateInfo?.availableVersionCode) {
+      const curCode = TargetConfig.versionCode || 12;
+      const codeDiff = this.updateInfo.availableVersionCode - curCode;
+      const parts = curVer.split(".").map(Number);
+      if (parts.length === 3 && !isNaN(parts[2])) {
+        parts[2] += (codeDiff > 0 ? codeDiff : 1);
+        newVer = parts.join(".");
+      } else {
+        newVer = `0.0.${this.updateInfo.availableVersionCode}`;
+      }
+    }
+
+    if (!newVer || newVer === curVer) {
+      const parts = curVer.split(".").map(Number);
+      if (parts.length === 3 && !isNaN(parts[2])) {
+        parts[2] += 1;
+        newVer = parts.join(".");
+      } else {
+        newVer = curVer;
+      }
+    }
+
+    const verText = (newVer && newVer !== curVer) ? `v${curVer} → v${newVer}` : `v${curVer}`;
 
     if (this.dom.versionTag) {
-      this.dom.versionTag.textContent = newVer;
+      this.dom.versionTag.textContent = verText;
     }
 
     if (this.status === "downloaded") {

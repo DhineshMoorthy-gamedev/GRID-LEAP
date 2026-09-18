@@ -3,24 +3,120 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#0B131A" />
 <link rel="manifest" href="/manifest.json" />
 <title>Grid Leap</title>
 <!-- Typography: 100% Offline Self-Hosted Fonts (Space Grotesk, JetBrains Mono, Bodoni Moda) -->
-<script>
-  /* Instant flicker-free theme detection before first paint */
-  try {
-    const raw = localStorage.getItem("number_grid_maze_save_v1");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.settings && parsed.settings.theme) {
-        document.documentElement.setAttribute("data-theme", parsed.settings.theme);
-        const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", parsed.settings.theme === "vellum" ? "#F7F5F0" : "#121316");
-      }
-    }
-  } catch (e) {}
-</script>
+<link rel="preload" href="/fonts/bodoni-moda-normal-400-8.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/space-grotesk-normal-600-14.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#121316" />
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121316;
+    overflow: hidden;
+  }
+  .startup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121316;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    opacity: 1;
+    cursor: pointer;
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    contain: strict;
+  }
+  .startup-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .startup-reticle-frame {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .startup-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+  .startup-logo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.7s ease;
+  }
+  .startup-slide.active .startup-logo-box {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .startup-slide.exit .startup-logo-box {
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .logo-text-olai {
+    font-family: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Cinzel', serif;
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1;
+    color: #FFFFFF;
+    text-align: center;
+    margin-right: -0.12em;
+    letter-spacing: 0.02em;
+  }
+  .logo-text-studios {
+    font-family: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #FFFFFF;
+    text-align: center;
+    margin-top: 10px;
+    margin-right: -0.1em;
+    letter-spacing: 0.04em;
+  }
+  .logo-presents {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+    text-transform: lowercase;
+    margin-top: 32px;
+    margin-right: -0.3em;
+  }
+</style>
 </head>
 <body>
 
@@ -1307,7 +1403,7 @@
           <div class="settings-row" id="settingRowUpdateSim">
             <span class="settings-label-title">Simulate In-App Update</span>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.2)</button>
+              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.4)</button>
               <button class="btn btn-secondary" id="devSimUpdateDownloadedBtn" style="padding: 3px 8px; font-size: 10px;">Downloaded</button>
               <button class="btn btn-secondary" id="devSimUpdateResetBtn" style="padding: 3px 8px; font-size: 10px;">Reset</button>
             </div>
@@ -1315,7 +1411,7 @@
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v0.0.11 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.13 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -1420,7 +1516,7 @@
 
           <!-- Title & Version -->
           <h1 class="about-game-title">GRID LEAP</h1>
-          <div class="about-version-pill">v0.0.11</div>
+          <div class="about-version-pill">v0.0.13</div>
 
           <!-- Developer Credits -->
           <div class="about-dev-section">
@@ -1712,37 +1808,18 @@
 <div class="overlay" id="updateModal">
   <div class="card update-modal-card">
     <button class="tutorial-close-x corner" id="updateModalCloseX" aria-label="Close">✕</button>
-    <div class="update-emblem-wrap">
-      <div class="update-icon-disc">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </div>
+    
+    <div class="update-icon-disc">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
     </div>
     
-    <div class="update-header-text">
-      <span class="update-eyebrow">GOOGLE PLAY UPDATE</span>
-      <h2 class="update-title">New Version Ready</h2>
-      <span class="update-version-tag" id="updateModalVersionTag">v0.1.0 Available</span>
-    </div>
-
-    <!-- What's New Feature Highlights -->
-    <div class="update-feature-list" id="updateFeatureList">
-      <div class="update-feature-item">
-        <span class="feature-dot">✨</span>
-        <span class="feature-text">New Daily Challenges &amp; Puzzle Calendar Archive</span>
-      </div>
-      <div class="update-feature-item">
-        <span class="feature-dot">🏆</span>
-        <span class="feature-text">Complete 25-Achievement In-Game Mastery System</span>
-      </div>
-      <div class="update-feature-item">
-        <span class="feature-dot">⚡</span>
-        <span class="feature-text">Engine responsiveness &amp; touch optimization</span>
-      </div>
-    </div>
+    <h2 class="update-title">Update Available</h2>
+    <span class="update-version-tag" id="updateModalVersionTag">v0.0.13 → v0.1.4</span>
+    <p class="update-desc">A new version of Grid Leap is ready with improvements and bug fixes.</p>
 
     <!-- Live Progress Bar (Shown when downloading) -->
     <div class="update-progress-wrap" id="updateProgressWrap" style="display: none;">
@@ -1754,8 +1831,8 @@
 
     <!-- Actions -->
     <div class="update-actions-row">
-      <button class="btn btn-secondary update-later-btn" id="updateModalLaterBtn">LATER</button>
-      <button class="btn btn-primary update-action-btn" id="updateModalActionBtn">UPDATE NOW</button>
+      <button class="btn btn-secondary update-later-btn" id="updateModalLaterBtn">Later</button>
+      <button class="btn btn-primary update-action-btn" id="updateModalActionBtn">Update</button>
     </div>
   </div>
 </div>

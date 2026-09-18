@@ -199,15 +199,17 @@ export function getTokenElement() {
   return tokenEl;
 }
 
-export function applyTheme(themeName) {
+export function applyTheme(themeName, updateStatusBar = true) {
   const theme = themeName === "vellum" ? "vellum" : "obsidian";
   document.documentElement.setAttribute("data-theme", theme);
   if (document.body) document.body.setAttribute("data-theme", theme);
 
   // Status bar meta color
-  const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) {
-    metaTheme.setAttribute("content", theme === "vellum" ? "#F7F5F0" : "#121316");
+  if (updateStatusBar) {
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute("content", theme === "vellum" ? "#F7F5F0" : "#121316");
+    }
   }
 
   const isVellum = theme === "vellum";
