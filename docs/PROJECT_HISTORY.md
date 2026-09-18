@@ -124,7 +124,27 @@ Grid Leap is a 2D mathematical puzzle game where players navigate a grid by jump
 * **Commit:** 1d47667
 * **What was done:** Two major features were added: an achievement system and a daily challenge calendar. The achievement system includes 25+ achievements across six categories (Campaign Progression, Mastery, Daily Challenge, Strategy, Time-based, General) with progress tracking and unlock notifications. The daily calendar shows a full monthly view where players can see which days they completed challenges and track their streaks. A polished in-app update modal was added for a better update experience.
 * **Why it matters:** Achievements added long-term goals and replay motivation. The calendar gave visual context to daily challenge participation. Together, these features completed the engagement loop for dedicated players.
-* **Project state after this commit:** The current state -- a feature-complete puzzle game with 100 campaign levels, daily challenges with calendar, 25+ achievements, interactive tutorial, dual themes, procedural audio, and distribution infrastructure for Android, web, and itch.io.
+* **Project state after this commit:** A feature-complete puzzle game with 100 campaign levels, daily challenges with calendar, 25+ achievements, interactive tutorial, dual themes, procedural audio, and distribution infrastructure for Android, web, and itch.io.
+
+---
+
+### Commit 13 - v12 - implementing ad and iap and fixing minor bugs, v0.0.11
+
+* **Date:** September 17, 2026
+* **Commit:** d4c913b
+* **What was done:** AdMob advertising integration was implemented with a native Android ad plugin, ad banner controller, and reward modal for "watch ad to gain extra life" functionality. The app icons were completely redesigned and updated across all Android density folders. A PWA manifest was added for web installability. The CSS was significantly overhauled with expanded styling. Minor bugs were fixed throughout.
+* **Why it matters:** This established the monetization strategy through advertising. The redesigned icons gave the app a more polished, professional appearance for store submission.
+* **Project state after this commit:** A game with working ad integration, updated branding assets, and PWA support for web installation.
+
+---
+
+### Commit 14 - v13 - v0.0.13
+
+* **Date:** September 18, 2026
+* **Commit:** 4d12c4c
+* **What was done:** Play Store production readiness improvements were made, including Google Play Services configuration, Capacitor config updates, and splash screen styling fixes. The settings controller received styling improvements, and the update controller was refined. A comprehensive Play Store production readiness documentation was added.
+* **Why it matters:** This final round of polish prepared the app for actual Play Store submission, ensuring all configuration and styling met production standards.
+* **Project state after this commit:** The current state -- a production-ready puzzle game with 100 campaign levels, daily challenges with calendar, 25+ achievements, interactive tutorial, dual themes, procedural audio, ad monetization, and Play Store distribution infrastructure.
 
 ---
 
@@ -156,6 +176,8 @@ The 100-level campaign came next, followed by visual themes, path visualization,
 | Multi-platform distribution prep | v9 | Sep 16 |
 | In-app updates | v10 | Sep 16 |
 | Achievements and daily calendar | v11 | Sep 16 |
+| Ad integration and IAP | v12 | Sep 17 |
+| Play Store production readiness | v13 | Sep 18 |
 
 ### What Was Later Refined
 
@@ -167,7 +189,7 @@ The 100-level campaign came next, followed by visual themes, path visualization,
 
 ### Current State
 
-Grid Leap is a feature-complete 2D puzzle game with:
+Grid Leap is a production-ready 2D puzzle game with:
 
 - **100 handcrafted campaign levels** in 10 chapters
 - **Daily challenges** with procedural generation, streaks, and a calendar
@@ -176,9 +198,11 @@ Grid Leap is a feature-complete 2D puzzle game with:
 - **Dual visual themes** (dark and light)
 - **Procedural audio** with 28+ synthesized sound effects
 - **Level editor** for creating custom puzzles
+- **Ad monetization** with AdMob integration and reward ads
 - **Distribution infrastructure** for Google Play, itch.io, and web
+- **PWA support** for web installation
 
-The project reached this state in just 8 days, with development moving rapidly from prototype to polished product. The architecture remained stable throughout -- new features were added as modular components without requiring major rewrites of existing systems.
+The project reached this state in 10 days, with development moving rapidly from prototype to production-ready product. The architecture remained stable throughout -- new features were added as modular components without requiring major rewrites of existing systems.
 
 ### Development Pattern
 
@@ -189,5 +213,7 @@ The project followed a consistent pattern:
 3. **Polish** (Sep 10-11): Themes, trails, input, win screens
 4. **Engagement** (Sep 11-12): Daily challenges, tutorial
 5. **Infrastructure** (Sep 14-16): Settings, audio, billing, updates, achievements
+6. **Monetization** (Sep 17): Ad integration, IAP, branding
+7. **Production** (Sep 18): Play Store readiness, final polish
 
 Each phase built on the previous one without disrupting what already worked, resulting in a stable, feature-rich final product.

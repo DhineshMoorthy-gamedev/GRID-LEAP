@@ -16,7 +16,7 @@ import { AdController } from "./ad-controller.js";
 export const SettingsController = {
   dom: {},
   currentView: "main",
-  versionName: "0.0.13",
+  versionName: "0.0.14",
 
   init() {
     this.dom = {
@@ -38,7 +38,7 @@ export const SettingsController = {
 
     // Dynamic Version Sync across About pill and Settings footer
     PlatformBridge.getAppVersion().then(ver => {
-      this.versionName = ver.versionName || "0.0.13";
+      this.versionName = ver.versionName || "0.0.14";
       const versionPill = document.querySelector(".about-version-pill");
       if (versionPill) versionPill.textContent = `v${this.versionName}`;
       const footerNote = document.querySelector(".settings-footer-note");
@@ -121,7 +121,7 @@ export const SettingsController = {
     const checkUpdateBtn = document.getElementById("aboutCheckUpdateBtn");
     const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
 
-    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.13") => {
+    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.14") => {
       if (!checkUpdateLabel) return;
       if (state === "checking") {
         checkUpdateLabel.textContent = "Checking...";
@@ -143,7 +143,7 @@ export const SettingsController = {
     if (checkUpdateBtn) {
       checkUpdateBtn.addEventListener("click", async () => {
         AudioEngine.playNavBack();
-        const curVer = this.versionName || TargetConfig.version || "0.0.13";
+        const curVer = this.versionName || TargetConfig.version || "0.0.14";
         if ((TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) || TargetConfig.features.editorSettings) {
           refreshUpdateBtnState("checking", curVer);
           showToast("Checking Google Play for updates...");
@@ -187,7 +187,7 @@ export const SettingsController = {
       simAvailableBtn.addEventListener("click", () => {
         const updateData = {
           updateAvailable: true,
-          availableVersionCode: 14,
+          availableVersionCode: 15,
           isFlexibleAllowed: true,
           installStatus: "PENDING"
         };
@@ -197,7 +197,7 @@ export const SettingsController = {
         UpdateController.setUpdateAvailable(updateData);
         this.close();
         UpdateController.open(updateData);
-        showToast("Simulated: Update Available (v0.1.4)");
+        showToast("Simulated: Update Available (v0.1.5)");
       });
     }
 
@@ -225,7 +225,7 @@ export const SettingsController = {
         highlightSimBtn(simResetBtn);
         refreshUpdateBtnState("default", this.versionName);
         UpdateController.clearUpdate();
-        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.13"})`);
+        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.14"})`);
       });
     }
 

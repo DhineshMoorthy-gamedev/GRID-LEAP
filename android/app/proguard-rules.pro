@@ -1,21 +1,39 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Grid Leap ProGuard / R8 Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 1. Keep JavascriptInterface and Capacitor Bridge classes
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keep class com.getcapacitor.** { *; }
+-keepclassmembers class * extends com.getcapacitor.Plugin {
+    public <methods>;
+}
+-keep @interface com.getcapacitor.annotation.CapacitorPlugin
+-keep @interface com.getcapacitor.PluginMethod
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# 2. Keep App-specific custom Capacitor Plugins
+-keep class com.olaidigitalstudios.gridleap.** { *; }
+
+# 3. Google Play Billing Client
+-keep class com.android.billingclient.api.** { *; }
+-dontwarn com.android.billingclient.**
+
+# 4. Google Play In-App Updates (Play Core API)
+-keep class com.google.android.play.core.appupdate.** { *; }
+-keep class com.google.android.play.core.install.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+-dontwarn com.google.android.play.core.**
+
+# 5. Google Mobile Ads (AdMob)
+-keep public class com.google.android.gms.ads.** {
+   public *;
+}
+-keep public class com.google.ads.** {
+   public *;
+}
+-keep class com.google.android.gms.common.** { *; }
+-dontwarn com.google.android.gms.**
+
+# 6. Preserve Line Numbers and Annotations for stack traces
+-keepattributes SourceFile,LineNumberTable,InnerClasses,EnclosingMethod,Signature,*Annotation*

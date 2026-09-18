@@ -1,6 +1,6 @@
 {
   "name": "grid-leap",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "type": "module",
   "description": "Number Grid Maze puzzle game",
   "scripts": {
@@ -15,6 +15,7 @@
     "build:itch": "vite build --mode itch --outDir dist/itch",
     "build:playstore": "vite build --mode playstore --outDir dist && cap sync android",
     "build:apk": "npm run build:playstore && cd android && gradlew.bat assembleDebug",
+    "build:aab": "npm run build:playstore && cd android && gradlew.bat bundleRelease",
     "preview": "vite preview",
     "test:daily": "node tests/test-daily-solvability.js",
     "cap:sync": "cap sync android",

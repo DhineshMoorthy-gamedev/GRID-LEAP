@@ -1613,7 +1613,7 @@ export function bootApp() {
         UpdateController.open(info);
       }
     }).catch(err => {
-      console.log("[PlayStore] Boot update check error:", err);
+      console.warn("[PlayStore] Boot update check error:", err);
     });
   }
 }

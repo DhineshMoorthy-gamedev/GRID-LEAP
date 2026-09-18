@@ -16,8 +16,8 @@ const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TAR
 export const TargetConfig = {
   mode: activeMode,
   title: import.meta.env?.VITE_APP_TITLE || "Grid Leap",
-  version: "0.0.13",
-  versionCode: 13,
+  version: "0.0.14",
+  versionCode: 14,
 
   isEditor: activeMode === TARGET_MODES.EDITOR,
   isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,
