@@ -152,6 +152,7 @@ export const DOM = {
   pillThemeVellum: document.getElementById("pillThemeVellum"),
   settingSound: document.getElementById("settingSound"),
   settingHaptics: document.getElementById("settingHaptics"),
+  settingDailyReminders: document.getElementById("settingDailyReminders"),
   settingRelaxMode: document.getElementById("settingRelaxMode"),
   settingTrail: document.getElementById("settingTrail"),
   settingDevMode: document.getElementById("settingDevMode"),
@@ -1409,7 +1410,7 @@ export function renderWinModal({
       `;
       DOM.winNextBtn.style.display = "flex";
       if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "none";
-      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "none";
     } else if (isCustomLevel) {
       DOM.winNextBtn.innerHTML = `
         <span>Back to Editor</span>

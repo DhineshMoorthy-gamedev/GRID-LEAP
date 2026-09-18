@@ -12,6 +12,8 @@ import { showToast, updateHintBadge } from "./game-renderer.js";
 import { AudioEngine } from "../audio/audio-engine.js";
 import { UpdateController } from "./update-controller.js";
 import { AdController } from "./ad-controller.js";
+import { NotificationManager } from "../platform/notification-manager.js";
+import { GameState } from "../state/game-state.js";
 
 export const SettingsController = {
   dom: {},
@@ -33,7 +35,8 @@ export const SettingsController = {
       sectionDev: document.getElementById("settingsSectionDev"),
       rowHaptics: document.getElementById("settingRowHaptics"),
       hapticsUnavailablePill: document.getElementById("hapticsUnavailablePill"),
-      settingHaptics: document.getElementById("settingHaptics")
+      settingHaptics: document.getElementById("settingHaptics"),
+      settingDailyReminders: document.getElementById("settingDailyReminders")
     };
 
     // Dynamic Version Sync across About pill and Settings footer
@@ -317,6 +320,12 @@ export const SettingsController = {
 
   open() {
     this.setView("main");
+    if (this.dom.settingDailyReminders) {
+      this.dom.settingDailyReminders.checked = Boolean(GameState.settings.dailyReminders);
+    }
+    if (this.dom.settingHaptics) {
+      this.dom.settingHaptics.checked = PlatformBridge.isHapticsSupported() && GameState.settings.hapticsEnabled !== false;
+    }
     SceneRouter.pushModal("SETTINGS");
   },
 

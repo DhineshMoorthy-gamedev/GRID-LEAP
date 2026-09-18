@@ -18,7 +18,8 @@ const MODAL_ELEMENTS = {
   DAILY_CALENDAR: "dailyCalendarModal",
   ACHIEVEMENTS: "achievementsModal",
   UPDATE: "updateModal",
-  REWARD: "rewardModal"
+  REWARD: "rewardModal",
+  NOTIF_PROMPT: "notificationPromptModal"
 };
 
 let currentScreen = "screenHome"; // "screenHome" | "screenGame"

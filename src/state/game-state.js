@@ -35,6 +35,8 @@ export const GameState = {
     devModeEnabled: false,
     soundEnabled: true,
     hapticsEnabled: true,
+    dailyReminders: false,
+    hasPromptedDailyReminders: false,
     relaxMode: false,
     showTrail: false
   },
@@ -76,6 +78,8 @@ export const GameState = {
       devModeEnabled: false,
       soundEnabled: true,
       hapticsEnabled: true,
+      dailyReminders: false,
+      hasPromptedDailyReminders: false,
       relaxMode: false,
       showTrail: false
     };

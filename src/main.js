@@ -48,6 +48,7 @@ import { AchievementManager } from "./state/achievement-manager.js";
 import { AdController } from "./scenes/ad-controller.js";
 import { RewardModalController } from "./scenes/reward-modal-controller.js";
 import { setupInputRouter } from "./scenes/input-router.js";
+import { NotificationManager } from "./platform/notification-manager.js";
 
 // Validate all shipped levels on load
 validateAll(LEVELS);
@@ -519,6 +520,7 @@ export function showWin() {
   let dailyResult = null;
   if (isDaily) {
     dailyResult = DailyManager.recordDateCompletion(lv.dateKey, GameState.moveCount, lv.optimal);
+    NotificationManager.onDailyPuzzleCompleted();
     const todayKey = DailyManager.getTodayDateKey();
     const isPastArchive = Boolean(lv.dateKey && lv.dateKey < todayKey);
     const monthKey = lv.dateKey.slice(0, 7);
@@ -579,9 +581,15 @@ export function showPause() {
 }
 
 export async function nextLevel() {
+  const wasDaily = Boolean(GameState.customLevel?.isDaily);
   SceneRouter.popModal();
   if (GameState.customLevel?.isDaily) {
     openHome();
+    if (!GameState.settings.dailyReminders && !GameState.settings.hasPromptedDailyReminders) {
+      setTimeout(() => {
+        NotificationManager.showOptInPrompt();
+      }, 400);
+    }
     return;
   }
   if (GameState.customLevel) {
@@ -1270,9 +1278,15 @@ export function bootApp() {
   if (DOM.winHomeBtn) {
     DOM.winHomeBtn.addEventListener("click", async () => {
       AudioEngine.playNavBack();
+      const wasDaily = Boolean(GameState.customLevel?.isDaily);
       SceneRouter.popModal();
       await AdController.showPendingInterstitialIfNeeded();
       openHome();
+      if (wasDaily && !GameState.settings.dailyReminders && !GameState.settings.hasPromptedDailyReminders) {
+        setTimeout(() => {
+          NotificationManager.showOptInPrompt();
+        }, 400);
+      }
     });
   }
 
@@ -1334,6 +1348,22 @@ export function bootApp() {
       if (!isSupported) return;
       GameState.settings.hapticsEnabled = e.target.checked;
       GameState.save();
+    });
+  }
+  if (DOM.settingDailyReminders) {
+    DOM.settingDailyReminders.checked = GameState.settings.dailyReminders !== false;
+    DOM.settingDailyReminders.addEventListener("change", async (e) => {
+      GameState.settings.dailyReminders = e.target.checked;
+      GameState.save();
+      if (e.target.checked) {
+        const granted = await NotificationManager.requestPermissions();
+        if (!granted) {
+          showToast("Enable notifications in device settings");
+        }
+        await NotificationManager.scheduleDailyReminder();
+      } else {
+        await NotificationManager.cancelDailyReminder();
+      }
     });
   }
   if (DOM.settingRelaxMode) {
@@ -1540,6 +1570,7 @@ export function bootApp() {
       AudioEngine.resume();
       AchievementManager.startPlayTimeTicker();
       AdController.onResume();
+      NotificationManager.syncReminders();
       handleResize();
       if (GameState.animating) {
         GameState.animating = false;
@@ -1565,6 +1596,10 @@ export function bootApp() {
         }
         if (activeModal.name === "REWARD") {
           RewardModalController.close();
+          return true;
+        }
+        if (activeModal.name === "NOTIF_PROMPT") {
+          NotificationManager.dismissOptInPrompt();
           return true;
         }
         if (activeModal.name === "OUT_OF_LIVES") {
@@ -1600,6 +1635,11 @@ export function bootApp() {
 
   // Open Home Hub on boot
   openHome();
+
+  // Initialize Notification Manager (Daily Challenge Reminders & Deep Linking)
+  NotificationManager.init(() => {
+    startDailyLevel();
+  });
 
   // Background check for Play Store update on boot
   if (TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) {

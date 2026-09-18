@@ -57,6 +57,8 @@ export class StorageService {
         devModeEnabled: false,
         soundEnabled: true,
         hapticsEnabled: true,
+        dailyReminders: false,
+        hasPromptedDailyReminders: false,
         relaxMode: false,
         showTrail: false
       },
@@ -123,6 +125,8 @@ export class StorageService {
         devModeEnabled: Boolean(data.settings?.devModeEnabled),
         soundEnabled: data.settings?.soundEnabled !== false,
         hapticsEnabled: data.settings?.hapticsEnabled !== false,
+        dailyReminders: Boolean(data.settings?.dailyReminders),
+        hasPromptedDailyReminders: Boolean(data.settings?.hasPromptedDailyReminders),
         relaxMode: Boolean(data.settings?.relaxMode),
         showTrail: Boolean(data.settings?.showTrail)
       }

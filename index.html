@@ -1343,6 +1343,13 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+          <div class="settings-row" id="settingRowDailyReminders">
+            <span class="settings-label-title">Daily Reminders</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingDailyReminders" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
           <!-- Premium / In-App Purchases (Play Store Target Only) -->
           <div class="settings-row iap-row" id="settingsSectionIAP">
             <span class="settings-label-title">Remove Ads</span>
@@ -1833,6 +1840,29 @@
     <div class="update-actions-row">
       <button class="btn btn-secondary update-later-btn" id="updateModalLaterBtn">Later</button>
       <button class="btn btn-primary update-action-btn" id="updateModalActionBtn">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Challenge Notification Opt-In Prompt Modal -->
+<div class="overlay" id="notificationPromptModal">
+  <div class="card update-modal-card">
+    <button class="tutorial-close-x corner" id="notifPromptCloseX" aria-label="Close">✕</button>
+    
+    <div class="update-icon-disc" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10B981;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    </div>
+    
+    <h2 class="update-title">Daily Challenge Reminders</h2>
+    <p class="update-desc">Keep your puzzle streak alive! Get a reminder each morning at 10:00 AM when a new daily challenge is ready.</p>
+
+    <!-- Actions -->
+    <div class="update-actions-row">
+      <button class="btn btn-secondary update-later-btn" id="notifPromptLaterBtn">Not Now</button>
+      <button class="btn btn-primary update-action-btn" id="notifPromptEnableBtn">Turn On</button>
     </div>
   </div>
 </div>

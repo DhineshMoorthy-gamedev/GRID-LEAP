@@ -35,5 +35,9 @@
 -keep class com.google.android.gms.common.** { *; }
 -dontwarn com.google.android.gms.**
 
-# 6. Preserve Line Numbers and Annotations for stack traces
+# 6. Capacitor Local Notifications Plugin
+-keep class com.capacitorjs.plugins.localnotifications.** { *; }
+-dontwarn com.capacitorjs.plugins.localnotifications.**
+
+# 7. Preserve Line Numbers and Annotations for stack traces
 -keepattributes SourceFile,LineNumberTable,InnerClasses,EnclosingMethod,Signature,*Annotation*

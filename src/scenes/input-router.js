@@ -79,7 +79,7 @@ export function setupInputRouter({
 
     // Handle Tab key focus trapping for active modal overlays
     if (e.key === "Tab") {
-      const activeModalIds = ["settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal", "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal", "devModal"];
+      const activeModalIds = ["settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal", "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal", "updateModal", "rewardModal", "notificationPromptModal", "devModal"];
       let activeModalEl = null;
       for (const id of activeModalIds) {
         const el = document.getElementById(id);
