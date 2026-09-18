@@ -1,5 +1,6 @@
 import { solve } from "../core/solver.js";
-import { formatDisplayDate, getTodayDateKey } from "../core/daily-seed.js";
+import { formatDisplayDate, getTodayDateKey, getPreviousDateKey, getNextDateKey } from "../core/daily-seed.js";
+import { DailyManager } from "../state/daily-manager.js";
 import { TargetConfig } from "../platform/target-config.js";
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { AudioEngine } from "../audio/audio-engine.js";
@@ -14,7 +15,7 @@ export const SVG_ICONS = {
   flag: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7"/></svg>`,
   home: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
   pencil: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`,
-  trophy: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`
+  trophy: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`
 };
 
 /**
@@ -125,6 +126,11 @@ export const DOM = {
   winEfficiency: document.getElementById("winEfficiency"),
   winEfficiencyStat: document.getElementById("winEfficiencyStat"),
   winShareBtn: document.getElementById("winShareBtn"),
+  winDailyNavRow: document.getElementById("winDailyNavRow"),
+  winDailyPrevBtn: document.getElementById("winDailyPrevBtn"),
+  winDailyPrevLabel: document.getElementById("winDailyPrevLabel"),
+  winDailyNextBtn: document.getElementById("winDailyNextBtn"),
+  winDailyNextLabel: document.getElementById("winDailyNextLabel"),
   winRestartBtn: document.getElementById("winRestartBtn"),
   winNextBtn: document.getElementById("winNextBtn"),
   winHomeBtn: document.getElementById("winHomeBtn"),
@@ -1331,7 +1337,12 @@ export function renderWinModal({
     void DOM.winSubtitle.offsetWidth; // force reflow
     DOM.winSubtitle.style.animation = "";
     if (isDailyLevel) {
-      DOM.winSubtitle.innerHTML = dailyStreak > 0 ? `${SVG_ICONS.flame} ${dailyStreak} Day Streak!` : "Daily Solved!";
+      const isToday = (level?.dateKey === getTodayDateKey());
+      if (isToday) {
+        DOM.winSubtitle.innerHTML = dailyStreak > 0 ? `${SVG_ICONS.flame} ${dailyStreak} Day Streak!` : "Daily Solved!";
+      } else {
+        DOM.winSubtitle.textContent = `Archive Solved • ${formatDisplayDate(level?.dateKey || "")}`;
+      }
     } else if (isCustomLevel) {
       DOM.winSubtitle.textContent = "Playtest Complete";
     } else {
@@ -1401,7 +1412,40 @@ export function renderWinModal({
     animateEfficiencyCounter(DOM.winEffVal, eff);
   }
 
-  // 4. Next / Editor / Final Button text & Secondary Button Visibility
+  // 4. Daily Challenge Prev / Next Day Navigation
+  if (DOM.winDailyNavRow) {
+    if (isDailyLevel) {
+      DOM.winDailyNavRow.style.display = "flex";
+      const curDateKey = level?.dateKey || getTodayDateKey();
+      const prevDate = getPreviousDateKey(curDateKey);
+      const nextDate = getNextDateKey(curDateKey);
+
+      const isPrevDisabled = DailyManager.isBeforeLaunch(prevDate);
+      const isNextDisabled = DailyManager.isFutureDate(nextDate);
+
+      if (DOM.winDailyPrevBtn) {
+        DOM.winDailyPrevBtn.disabled = isPrevDisabled;
+        DOM.winDailyPrevBtn.classList.toggle("disabled", isPrevDisabled);
+        DOM.winDailyPrevBtn.dataset.dateKey = prevDate;
+        if (DOM.winDailyPrevLabel) {
+          DOM.winDailyPrevLabel.textContent = isPrevDisabled ? "Prev Day" : formatDisplayDate(prevDate);
+        }
+      }
+
+      if (DOM.winDailyNextBtn) {
+        DOM.winDailyNextBtn.disabled = isNextDisabled;
+        DOM.winDailyNextBtn.classList.toggle("disabled", isNextDisabled);
+        DOM.winDailyNextBtn.dataset.dateKey = nextDate;
+        if (DOM.winDailyNextLabel) {
+          DOM.winDailyNextLabel.textContent = isNextDisabled ? "Tomorrow 🔒" : formatDisplayDate(nextDate);
+        }
+      }
+    } else {
+      DOM.winDailyNavRow.style.display = "none";
+    }
+  }
+
+  // 5. Next / Editor / Final Button text & Secondary Button Visibility
   if (DOM.winNextBtn) {
     if (isDailyLevel) {
       DOM.winNextBtn.innerHTML = `
@@ -1411,7 +1455,7 @@ export function renderWinModal({
       `;
       DOM.winNextBtn.style.display = "flex";
       if (DOM.winHomeBtn) DOM.winHomeBtn.style.display = "none";
-      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "none";
+      if (DOM.winRestartBtn) DOM.winRestartBtn.style.display = "flex";
     } else if (isCustomLevel) {
       DOM.winNextBtn.innerHTML = `
         <span>Back to Editor</span>
@@ -1444,7 +1488,7 @@ export function renderWinModal({
     }
   }
 
-  // 5. Social Share Action Button Visibility
+  // 6. Social Share Action Button Visibility
   if (DOM.winShareBtn) {
     DOM.winShareBtn.style.display = (TargetConfig.features.winShareButton !== false) ? "inline-flex" : "none";
   }

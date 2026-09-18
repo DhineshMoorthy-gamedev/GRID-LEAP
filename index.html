@@ -151,7 +151,7 @@
           <span class="theme-label">OBSIDIAN</span>
         </button>
         <button class="nav-icon-btn" id="homeAchievementsBtn" aria-label="Achievements">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
           </svg>
           <span class="update-badge-dot" id="achievementsBadgeDot" style="display:none;"></span>
@@ -1191,6 +1191,18 @@
 
     <!-- Action Buttons Hierarchy -->
     <div class="win-actions-column">
+      <!-- Daily Challenge Prev / Next Day Navigation Row -->
+      <div class="win-daily-nav-row" id="winDailyNavRow" style="display:none;">
+        <button class="btn btn-secondary win-daily-nav-btn" id="winDailyPrevBtn" aria-label="Previous Day Challenge">
+          <span class="btn-icon">◀</span>
+          <span class="daily-nav-label" id="winDailyPrevLabel">Prev Day</span>
+        </button>
+        <button class="btn btn-secondary win-daily-nav-btn" id="winDailyNextBtn" aria-label="Next Day Challenge">
+          <span class="daily-nav-label" id="winDailyNextLabel">Next Day</span>
+          <span class="btn-icon">▶</span>
+        </button>
+      </div>
+
       <button class="btn primary btn-win-next" id="winNextBtn">
         <span>Continue</span>
         <kbd class="kbd-badge">Enter ↵</kbd>
@@ -1430,7 +1442,7 @@
           <div class="settings-row" id="settingRowUpdateSim">
             <span class="settings-label-title">Simulate In-App Update</span>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.5)</button>
+              <button class="btn btn-secondary" id="devSimUpdateAvailableBtn" style="padding: 3px 8px; font-size: 10px;">Available (v0.1.6)</button>
               <button class="btn btn-secondary" id="devSimUpdateDownloadedBtn" style="padding: 3px 8px; font-size: 10px;">Downloaded</button>
               <button class="btn btn-secondary" id="devSimUpdateResetBtn" style="padding: 3px 8px; font-size: 10px;">Reset</button>
             </div>
@@ -1438,7 +1450,7 @@
         </div>
 
         <div class="settings-footer-note">
-          GRID LEAP • v0.0.14 • OLAI DIGITAL STUDIOS
+          GRID LEAP • v0.0.15 • OLAI DIGITAL STUDIOS
         </div>
       </div>
     </div>
@@ -1543,7 +1555,7 @@
 
           <!-- Title & Version -->
           <h1 class="about-game-title">GRID LEAP</h1>
-          <div class="about-version-pill">v0.0.14</div>
+          <div class="about-version-pill">v0.0.15</div>
 
           <!-- Developer Credits -->
           <div class="about-dev-section">
@@ -1789,27 +1801,29 @@
 <!-- Dedicated Achievements Showcase Modal -->
 <div class="overlay" id="achievementsModal">
   <div class="card achievements-card">
+    <button class="ach-close-btn" id="achievementsCloseBtn" aria-label="Close Achievements">✕</button>
+
     <!-- Hero Showcase Header -->
     <div class="ach-hero-header">
-      <div class="ach-hero-left">
-        <div class="ach-trophy-ring-wrap">
-          <svg class="ach-ring-svg" viewBox="0 0 36 36">
-            <path class="ach-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            <path class="ach-ring-fill" id="achHeroRingFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+      <div class="ach-trophy-ring-wrap">
+        <svg class="ach-ring-svg" viewBox="0 0 36 36">
+          <path class="ach-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="ach-ring-fill" id="achHeroRingFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="ach-trophy-icon-inner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
           </svg>
-          <div class="ach-trophy-icon-inner">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/>
-            </svg>
-          </div>
         </div>
-        <div class="ach-hero-text">
-          <span class="ach-hero-eyebrow">GRID MASTERY</span>
-          <h2 class="ach-hero-title" id="achSummaryText">0 / 25 Unlocked</h2>
+      </div>
+      <div class="ach-hero-text">
+        <h2 class="ach-hero-title">Achievements</h2>
+        <div class="ach-hero-sub-wrap">
+          <span class="ach-hero-sub" id="achSummaryText">0 / 25 Unlocked</span>
+          <span class="ach-hero-dot">•</span>
           <span class="ach-hero-sub" id="achHeroSub">0% Completed</span>
         </div>
       </div>
-      <button class="ach-close-btn" id="achievementsCloseBtn" aria-label="Close Achievements">✕</button>
     </div>
 
     <!-- Category Filter Tabs -->
@@ -1845,7 +1859,7 @@
     </div>
     
     <h2 class="update-title">Update Available</h2>
-    <span class="update-version-tag" id="updateModalVersionTag">v0.0.14 → v0.1.5</span>
+    <span class="update-version-tag" id="updateModalVersionTag">v0.0.15 → v0.1.6</span>
     <p class="update-desc">A new version of Grid Leap is ready with improvements and bug fixes.</p>
 
     <!-- Live Progress Bar (Shown when downloading) -->
@@ -1884,6 +1898,14 @@
       <button class="btn btn-secondary update-later-btn" id="notifPromptLaterBtn">Not Now</button>
       <button class="btn btn-primary update-action-btn" id="notifPromptEnableBtn">Turn On</button>
     </div>
+  </div>
+</div>
+
+<!-- Ad Loading Indicator Overlay -->
+<div class="ad-loading-overlay" id="adLoadingOverlay" aria-hidden="true">
+  <div class="ad-loading-card">
+    <div class="ad-loading-spinner"></div>
+    <span class="ad-loading-text" id="adLoadingText">Loading Ad...</span>
   </div>
 </div>
 

@@ -579,7 +579,7 @@ export function showWin() {
     devDiagnosticsEnabled: (GameState.devModeEnabled && TargetConfig.features.devDiagnostics)
   });
 
-  AdController.recordLevelVictory(isCustom || isDaily);
+  AdController.recordLevelVictory(isCustom);
 
   PlatformBridge.vibrateSuccess();
   ConfettiFX.burst({ isFlawless: eff >= 100 });
@@ -596,7 +596,8 @@ export async function nextLevel() {
   const wasDaily = Boolean(GameState.customLevel?.isDaily);
   ConfettiFX.stop();
   SceneRouter.popModal();
-  if (GameState.customLevel?.isDaily) {
+  if (wasDaily) {
+    await AdController.showPendingInterstitialIfNeeded();
     openHome();
     if (!GameState.settings.dailyReminders && !GameState.settings.hasPromptedDailyReminders) {
       setTimeout(() => {
@@ -1453,15 +1454,43 @@ export function bootApp() {
     });
   }
 
-  if (DOM.winShareBtn) {
-    DOM.winShareBtn.addEventListener("click", () => shareVictoryResult());
+  if (DOM.winDailyPrevBtn) {
+    DOM.winDailyPrevBtn.addEventListener("click", async () => {
+      const targetDate = DOM.winDailyPrevBtn.dataset.dateKey;
+      if (!targetDate || DOM.winDailyPrevBtn.disabled) return;
+      ConfettiFX.stop();
+      AudioEngine.playDailyStart();
+      SceneRouter.popModal();
+      await AdController.showPendingInterstitialIfNeeded();
+      startDailyLevel(targetDate);
+    });
+  }
+
+  if (DOM.winDailyNextBtn) {
+    DOM.winDailyNextBtn.addEventListener("click", async () => {
+      const targetDate = DOM.winDailyNextBtn.dataset.dateKey;
+      if (!targetDate || DOM.winDailyNextBtn.disabled) return;
+      ConfettiFX.stop();
+      AudioEngine.playDailyStart();
+      SceneRouter.popModal();
+      await AdController.showPendingInterstitialIfNeeded();
+      startDailyLevel(targetDate);
+    });
   }
 
   if (DOM.winRestartBtn) {
-    DOM.winRestartBtn.addEventListener("click", () => {
+    DOM.winRestartBtn.addEventListener("click", async () => {
       ConfettiFX.stop();
+      AudioEngine.playRestart();
+      const wasDaily = Boolean(GameState.customLevel?.isDaily);
+      const dailyDateKey = GameState.customLevel?.dateKey;
       SceneRouter.popModal();
-      restart();
+      await AdController.showPendingInterstitialIfNeeded();
+      if (wasDaily && dailyDateKey) {
+        startDailyLevel(dailyDateKey);
+      } else {
+        restart();
+      }
     });
   }
   if (DOM.winNextBtn) DOM.winNextBtn.addEventListener("click", nextLevel);

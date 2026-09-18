@@ -2036,24 +2036,60 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   color: #FFFFFF;
 }
 
-/* Visited Cells Footprint: Subtly recessed tile (NO circle dots or specks) */
-.cell.visited:not(.current-cell):not(.start-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) {
-  box-shadow: 0 0 0 1px var(--line) inset;
-  background: var(--line-soft);
+/* Visited Cells Footprint: Subtly recessed tile with dimmed number glyph */
+.cell.visited:not(.current-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) {
+  background: #14161A !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.4) !important;
 }
 
-.cell.visited:not(.current-cell):not(.start-cell):not(.goal-cell)::after {
+.cell.visited:not(.current-cell):not(.goal-cell):not(.legal-dest):not(.hint-compass) .cell-glyph {
+  background: transparent !important;
+  color: #646B7C !important;
+  font-weight: 600;
+  opacity: 0.65;
+  text-shadow: none !important;
+}
+
+.cell.visited:not(.current-cell):not(.goal-cell)::after {
   display: none !important;
 }
 
 .cell.visited.legal-dest {
+  background: rgba(56, 189, 248, 0.18) !important;
+  border-color: var(--legal-dest-border) !important;
+  box-shadow: 0 0 0 1.5px var(--legal-dest-border) inset, 0 0 14px var(--legal-dest-glow) !important;
   cursor: pointer !important;
+}
+
+.cell.visited.legal-dest .cell-glyph {
+  color: var(--legal-dest-color) !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+.cell.visited.legal-dest:hover {
+  background: var(--legal-dest-color) !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px var(--legal-dest-color) inset, 0 0 20px var(--legal-dest-glow) !important;
+}
+
+.cell.visited.legal-dest:hover .cell-glyph {
+  color: #121316 !important;
 }
 
 .cell.visited.hint-compass {
   background: rgba(56, 189, 248, 0.22) !important;
   border-color: #38BDF8 !important;
   box-shadow: 0 0 0 2px #38BDF8 inset, 0 0 16px rgba(56, 189, 248, 0.45) !important;
+  cursor: pointer !important;
+}
+
+.cell.visited.hint-compass .cell-glyph {
+  color: #38BDF8 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
 }
 
 @keyframes deadEndShake {
@@ -7090,12 +7126,13 @@ body[data-target-mode="playstore"] .tutorial-card {
 
 /* 2. Achievements Showcase Modal Card */
 .achievements-card {
+  position: relative;
   width: 92vw;
   max-width: 440px;
-  height: min(580px, 84vh);
+  height: min(590px, 86vh);
   display: flex;
   flex-direction: column;
-  padding: 18px 20px;
+  padding: 20px 20px;
   gap: 12px;
   background: var(--bg-surface);
   border: 1.5px solid var(--line-soft);
@@ -7113,22 +7150,19 @@ body[data-target-mode="playstore"] .tutorial-card {
 /* Hero Showcase Header */
 .ach-hero-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
   padding-bottom: 2px;
-}
-
-.ach-hero-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  width: 100%;
 }
 
 .ach-trophy-ring-wrap {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7136,8 +7170,8 @@ body[data-target-mode="playstore"] .tutorial-card {
 }
 
 .ach-ring-svg {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   transform: rotate(-90deg);
   position: absolute;
   top: 0;
@@ -7163,12 +7197,12 @@ body[data-target-mode="playstore"] .tutorial-card {
 }
 
 .ach-trophy-icon-inner {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--accent-primary-dim);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: var(--accent-primary);
+  background: rgba(56, 189, 248, 0.10);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #7DD3FC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7176,43 +7210,55 @@ body[data-target-mode="playstore"] .tutorial-card {
 }
 
 [data-theme="vellum"] .ach-trophy-icon-inner {
-  border-color: rgba(43, 93, 125, 0.3);
+  background: rgba(43, 93, 125, 0.08);
+  border-color: rgba(43, 93, 125, 0.20);
+  color: #38769E;
 }
 
 .ach-hero-text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-}
-
-.ach-hero-eyebrow {
-  font-family: var(--font-num);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: var(--accent-primary);
-  line-height: 1;
-  text-transform: uppercase;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
 }
 
 .ach-hero-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 850;
   color: var(--text-main);
   letter-spacing: -0.01em;
-  margin: 3px 0 0 0;
+  margin: 0;
   line-height: 1.15;
+  text-align: center;
+}
+
+.ach-hero-sub-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .ach-hero-sub {
   font-family: var(--font-num);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--text-dim);
   line-height: 1;
 }
 
+.ach-hero-dot {
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  line-height: 1;
+}
+
 .ach-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -7226,6 +7272,7 @@ body[data-target-mode="playstore"] .tutorial-card {
   cursor: pointer;
   transition: transform 120ms ease, color 120ms ease;
   flex-shrink: 0;
+  z-index: 10;
 }
 
 [data-theme="vellum"] .ach-close-btn {
@@ -7797,6 +7844,139 @@ body[data-target-mode="playstore"] .tutorial-card {
   color: var(--accent-primary, #1D4E6D);
   background: rgba(43, 93, 125, 0.12);
   box-shadow: 0 4px 12px rgba(43, 93, 125, 0.18);
+}
+
+/* Daily Challenge Win Modal Prev / Next Day Navigation Row */
+.win-daily-nav-row {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.win-daily-nav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 12px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.12));
+  color: var(--text-primary, #F8FAFC);
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.win-daily-nav-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--accent-primary, #10B981);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-primary, #10B981);
+}
+
+.win-daily-nav-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.win-daily-nav-btn:disabled,
+.win-daily-nav-btn.disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.8);
+}
+
+.win-daily-nav-btn .daily-nav-label {
+  font-family: var(--font-num, sans-serif);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+[data-theme="vellum"] .win-daily-nav-btn {
+  background: #F4F1EA;
+  border: 1px solid rgba(30, 28, 26, 0.14);
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .win-daily-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary, #1D4E6D);
+  background: rgba(43, 93, 125, 0.1);
+  color: var(--accent-primary, #1D4E6D);
+}
+
+/* ==========================================
+   Ad Loading Overlay & Spinner
+   ========================================== */
+.ad-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 16, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.ad-loading-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ad-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px 30px;
+  background: var(--bg-surface, #1A1C20);
+  border: 1.5px solid var(--line-soft, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  min-width: 140px;
+}
+
+[data-theme="vellum"] .ad-loading-card {
+  background: #FFFFFF;
+  border-color: var(--line);
+  box-shadow: 0 12px 32px rgba(60, 50, 40, 0.18);
+}
+
+.ad-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(56, 189, 248, 0.18);
+  border-top-color: var(--accent-primary, #38BDF8);
+  animation: adSpin 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+[data-theme="vellum"] .ad-loading-spinner {
+  border-color: rgba(43, 93, 125, 0.18);
+  border-top-color: var(--accent-primary, #2B5D7D);
+}
+
+@keyframes adSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ad-loading-text {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.01em;
 }
 
 

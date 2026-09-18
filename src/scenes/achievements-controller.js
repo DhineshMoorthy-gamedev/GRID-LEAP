@@ -88,7 +88,7 @@ export const AchievementsController = {
 
     // 1. Hero Showcase Progress & Stats
     if (this.dom.statSummary) {
-      this.dom.statSummary.textContent = `${stats.unlockedCount} / ${stats.total} Mastered`;
+      this.dom.statSummary.textContent = `${stats.unlockedCount} / ${stats.total} Unlocked`;
     }
 
     if (this.dom.heroSub) {

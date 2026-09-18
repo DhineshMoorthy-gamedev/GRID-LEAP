@@ -166,6 +166,35 @@ class AdControllerClass {
     }
   }
 
+  showLoading(text = "Loading Ad...") {
+    if (typeof document === "undefined") return;
+    const overlay = document.getElementById("adLoadingOverlay");
+    const label = document.getElementById("adLoadingText");
+    if (label) label.textContent = text;
+    if (overlay) {
+      overlay.classList.add("active");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+    // Safety auto-dismiss fallback (max 7s)
+    if (this._loadingTimeout) clearTimeout(this._loadingTimeout);
+    this._loadingTimeout = setTimeout(() => {
+      this.hideLoading();
+    }, 7000);
+  }
+
+  hideLoading() {
+    if (typeof document === "undefined") return;
+    if (this._loadingTimeout) {
+      clearTimeout(this._loadingTimeout);
+      this._loadingTimeout = null;
+    }
+    const overlay = document.getElementById("adLoadingOverlay");
+    if (overlay) {
+      overlay.classList.remove("active");
+      overlay.setAttribute("aria-hidden", "true");
+    }
+  }
+
   /**
    * Request rewarded ad for gameplay hint.
    * Returns true if user earned the hint, false otherwise.
@@ -177,16 +206,19 @@ class AdControllerClass {
     }
 
     if (!this._rewardedReady) {
-      showToast("Loading rewarded ad...");
+      this.showLoading("Loading Hint Ad...");
       const loaded = await this._preloadRewarded();
       if (!loaded || !this._rewardedReady) {
-        showToast("Ad is loading or unavailable. Try again shortly.");
+        this.hideLoading();
+        showToast("Ad is unavailable right now. Try again shortly.");
         return false;
       }
     }
 
     try {
+      this.showLoading("Opening Ad...");
       const earned = await PlatformBridge.showRewardedAd();
+      this.hideLoading();
       this._rewardedReady = false;
       setTimeout(() => this._preloadRewarded(), 500);
 
@@ -195,11 +227,14 @@ class AdControllerClass {
       }
       return earned;
     } catch (err) {
+      this.hideLoading();
       console.warn("[AdController] showRewardedAd exception:", err);
       this._rewardedReady = false;
       setTimeout(() => this._preloadRewarded(), 500);
       showToast("Ad failed to play. Please try again.");
       return false;
+    } finally {
+      this.hideLoading();
     }
   }
 
@@ -213,16 +248,19 @@ class AdControllerClass {
     }
 
     if (!this._rewardedReady) {
-      showToast("Loading rewarded ad...");
+      this.showLoading("Loading Extra Life Ad...");
       const loaded = await this._preloadRewarded();
       if (!loaded || !this._rewardedReady) {
-        showToast("Ad is loading or unavailable. Try again shortly.");
+        this.hideLoading();
+        showToast("Ad is unavailable right now. Try again shortly.");
         return false;
       }
     }
 
     try {
+      this.showLoading("Opening Ad...");
       const earned = await PlatformBridge.showRewardedAd();
+      this.hideLoading();
       this._rewardedReady = false;
       setTimeout(() => this._preloadRewarded(), 500);
 
@@ -231,20 +269,23 @@ class AdControllerClass {
       }
       return earned;
     } catch (err) {
+      this.hideLoading();
       console.warn("[AdController] showRewardedAd exception (life):", err);
       this._rewardedReady = false;
       setTimeout(() => this._preloadRewarded(), 500);
       showToast("Ad failed to play. Please try again.");
       return false;
+    } finally {
+      this.hideLoading();
     }
   }
 
   /**
-   * Called whenever a standard level is solved.
+   * Called whenever a standard level or daily challenge is solved.
    * Increments the persistent level counter and preloads the interstitial.
    */
-  recordLevelVictory(isCustomOrDaily = false) {
-    if (!this.isAdsEnabled() || !TargetConfig.isPlayStore || isCustomOrDaily) return;
+  recordLevelVictory(isCustom = false) {
+    if (!this.isAdsEnabled() || !TargetConfig.isPlayStore || isCustom) return;
     this._levelsSinceLastInterstitial++;
     this._saveLevelCount();
     if (!this._interstitialReady) {
@@ -264,6 +305,7 @@ class AdControllerClass {
 
     if (this._levelsSinceLastInterstitial >= INTERSTITIAL_MIN_LEVEL_GAP) {
       if (!this._interstitialReady) {
+        this.showLoading("Loading...");
         await this._preloadInterstitial();
       }
 
@@ -271,14 +313,18 @@ class AdControllerClass {
         this._levelsSinceLastInterstitial = 0;
         this._saveLevelCount();
         try {
+          this.showLoading("Loading...");
           await PlatformBridge.showInterstitial();
           return true;
         } catch (err) {
           console.warn("[AdController] showInterstitial failed:", err);
         } finally {
+          this.hideLoading();
           this._interstitialReady = false;
           setTimeout(() => this._preloadInterstitial(), 500);
         }
+      } else {
+        this.hideLoading();
       }
     }
     return false;

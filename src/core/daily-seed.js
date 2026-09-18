@@ -54,3 +54,29 @@ export function formatDisplayDate(dateKey) {
   } catch (_) {}
   return dateKey;
 }
+
+/**
+ * Derives the previous calendar day's date key (YYYY-MM-DD)
+ */
+export function getPreviousDateKey(dateKey) {
+  try {
+    const parts = dateKey.split("-").map(Number);
+    const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] - 1));
+    return d.toISOString().slice(0, 10);
+  } catch (_) {
+    return dateKey;
+  }
+}
+
+/**
+ * Derives the next calendar day's date key (YYYY-MM-DD)
+ */
+export function getNextDateKey(dateKey) {
+  try {
+    const parts = dateKey.split("-").map(Number);
+    const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + 1));
+    return d.toISOString().slice(0, 10);
+  } catch (_) {
+    return dateKey;
+  }
+}
