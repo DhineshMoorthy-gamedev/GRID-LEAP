@@ -49,6 +49,14 @@ export const AchievementsController = {
           this.setCategory(cat);
         }
       });
+
+      // Mouse wheel horizontal scroll on desktop
+      this.dom.tabsContainer.addEventListener("wheel", (e) => {
+        if (e.deltaY !== 0) {
+          this.dom.tabsContainer.scrollLeft += e.deltaY;
+          e.preventDefault();
+        }
+      }, { passive: false });
     }
   },
 
@@ -56,6 +64,12 @@ export const AchievementsController = {
     AchievementManager.markAllAsViewed();
     this.render();
     SceneRouter.pushModal("ACHIEVEMENTS");
+    requestAnimationFrame(() => {
+      const activeTab = this.dom.tabsContainer?.querySelector(`.ach-tab-btn[data-category="${this.currentCategory}"]`);
+      if (activeTab) {
+        activeTab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    });
   },
 
   close() {
@@ -65,6 +79,12 @@ export const AchievementsController = {
   setCategory(category) {
     this.currentCategory = category;
     this.render();
+    requestAnimationFrame(() => {
+      const activeTab = this.dom.tabsContainer?.querySelector(`.ach-tab-btn[data-category="${category}"]`);
+      if (activeTab) {
+        activeTab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    });
   },
 
   cycleCategory(delta) {

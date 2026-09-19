@@ -19,7 +19,7 @@ import { GameState } from "../state/game-state.js";
 export const SettingsController = {
   dom: {},
   currentView: "main",
-  versionName: "0.0.15",
+  versionName: "0.0.16",
 
   init() {
     this.dom = {
@@ -44,7 +44,7 @@ export const SettingsController = {
 
     // Dynamic Version Sync across About pill and Settings footer
     PlatformBridge.getAppVersion().then(ver => {
-      this.versionName = ver.versionName || "0.0.15";
+      this.versionName = ver.versionName || "0.0.16";
       const versionPill = document.querySelector(".about-version-pill");
       if (versionPill) versionPill.textContent = `v${this.versionName}`;
       const footerNote = document.querySelector(".settings-footer-note");
@@ -148,7 +148,7 @@ export const SettingsController = {
     const checkUpdateBtn = document.getElementById("aboutCheckUpdateBtn");
     const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
 
-    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.15") => {
+    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.16") => {
       if (!checkUpdateLabel) return;
       if (state === "checking") {
         checkUpdateLabel.textContent = "Checking...";
@@ -170,7 +170,7 @@ export const SettingsController = {
     if (checkUpdateBtn) {
       checkUpdateBtn.addEventListener("click", async () => {
         AudioEngine.playNavBack();
-        const curVer = this.versionName || TargetConfig.version || "0.0.15";
+        const curVer = this.versionName || TargetConfig.version || "0.0.16";
         if (TargetConfig.isDesktop || TargetConfig.isItch) {
           refreshUpdateBtnState("checking", curVer);
           showToast("Opening updates & changelog page...");
@@ -224,7 +224,7 @@ export const SettingsController = {
       simAvailableBtn.addEventListener("click", () => {
         const updateData = {
           updateAvailable: true,
-          availableVersionCode: 16,
+          availableVersionCode: 17,
           isFlexibleAllowed: true,
           installStatus: "PENDING"
         };
@@ -234,7 +234,7 @@ export const SettingsController = {
         UpdateController.setUpdateAvailable(updateData);
         this.close();
         UpdateController.open(updateData);
-        showToast("Simulated: Update Available (v0.1.6)");
+        showToast("Simulated: Update Available (v0.1.7)");
       });
     }
 
@@ -262,7 +262,7 @@ export const SettingsController = {
         highlightSimBtn(simResetBtn);
         refreshUpdateBtnState("default", this.versionName);
         UpdateController.clearUpdate();
-        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.15"})`);
+        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.16"})`);
       });
     }
 

@@ -272,7 +272,6 @@ class LocalAchievementManager {
   init() {
     this.load();
     this.ensureToastContainer();
-    this.startPlayTimeTicker();
   }
 
   load() {
@@ -739,7 +738,6 @@ class LocalAchievementManager {
       viewed: {}
     };
     this.save();
-    this.startPlayTimeTicker();
     this.updateHomeBadge();
   }
 

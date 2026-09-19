@@ -16,7 +16,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 1,
     title: "Number = Leap Distance",
     prompt: "Swipe RIGHT to leap 1 tile into Goal.",
-    successMsg: "Standing on 1 = 1 tile leap! 🎯",
+    successMsg: "Standing on 1 = 1 tile leap!",
     w: 2,
     h: 1,
     start: [0, 0],
@@ -32,7 +32,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 2,
     title: "Leap Over Empty Tiles",
     prompt: "Standing on 2 leaps you 2 tiles DOWN.",
-    successMsg: "Leapt 2 tiles down to Goal! 🚀",
+    successMsg: "Leapt 2 tiles down to Goal!",
     w: 1,
     h: 3,
     start: [0, 0],
@@ -50,7 +50,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 3,
     title: "Longer Leap Distance",
     prompt: "Standing on 3 leaps you 3 tiles LEFT.",
-    successMsg: "Tile number = leap distance! 💥",
+    successMsg: "Tile number = leap distance!",
     w: 4,
     h: 1,
     start: [0, 3],
@@ -66,7 +66,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 4,
     title: "Chain Your Leaps",
     prompt: "Swipe UP to 1, then leap UP to Goal.",
-    successMsg: "Smooth rhythm! 2 leaps chained. ⚡",
+    successMsg: "Smooth rhythm! 2 leaps chained.",
     w: 1,
     h: 3,
     start: [2, 0],
@@ -77,7 +77,7 @@ const TUTORIAL_STAGES = [
       [1]
     ],
     hintSwipe: { from: [2, 0], to: [1, 0], dir: "up" },
-    step2Hint: { from: [1, 0], to: [0, 0], dir: "up", prompt: "Now swipe UP into the Goal! 🎯" }
+    step2Hint: { from: [1, 0], to: [0, 0], dir: "up", prompt: "Now swipe UP into the Goal!" }
   },
   // --- LESSON 5: Power Increase (RIGHT) ---
   {
@@ -85,7 +85,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 5,
     title: "Tile Changes Power",
     prompt: "Land on 2 to boost leap distance.",
-    successMsg: "Landed on 2 = boosted leap! ⚡",
+    successMsg: "Landed on 2 = boosted leap!",
     w: 4,
     h: 1,
     start: [0, 0],
@@ -94,7 +94,7 @@ const TUTORIAL_STAGES = [
       [1, 2, 1, 0]
     ],
     hintSwipe: { from: [0, 0], to: [0, 1], dir: "right" },
-    step2Hint: { from: [0, 1], to: [0, 3], dir: "right", prompt: "Now on 2! Swipe 2 tiles to Goal! 🎯" }
+    step2Hint: { from: [0, 1], to: [0, 3], dir: "right", prompt: "Now on 2: Swipe 2 tiles to Goal!" }
   },
   // --- LESSON 6: Power Decrease (LEFT) ---
   {
@@ -102,7 +102,7 @@ const TUTORIAL_STAGES = [
     lessonNum: 6,
     title: "Step Down Power",
     prompt: "Leap 2 tiles LEFT to 1, then to Goal.",
-    successMsg: "Power stepped down to 1! 🎯",
+    successMsg: "Power stepped down to 1!",
     w: 4,
     h: 1,
     start: [0, 3],
@@ -111,54 +111,65 @@ const TUTORIAL_STAGES = [
       [0, 1, 1, 2]
     ],
     hintSwipe: { from: [0, 3], to: [0, 1], dir: "left" },
-    step2Hint: { from: [0, 1], to: [0, 0], dir: "left", prompt: "Now on 1! Swipe into the Goal! 🎯" }
+    step2Hint: { from: [0, 1], to: [0, 0], dir: "left", prompt: "Now on 1: Swipe into the Goal!" }
   },
-  // --- LESSON 7: Cardinal Turns ---
+  // --- LESSON 7: The 90° Turn ---
   {
     lesson: "LESSON 7",
     lessonNum: 7,
     isCardinal: true,
-    title: "Turn in 4 Directions",
-    prompt: "Swipe UP onto 1.",
-    successMsg: "Great turn! Up and Right leaps. 🧭",
+    title: "The 90° Turn",
+    prompt: "Standing on 2: Swipe UP 2 tiles onto 2.",
+    successMsg: "Mastered the 90° turn!",
     w: 3,
     h: 3,
-    start: [1, 1],
+    start: [2, 0],
     goal: [0, 2],
     grid: [
       [2, 1, 0],
-      [1, 1, 2],
-      [2, 1, 2]
+      [1, 1, 1],
+      [2, 1, 1]
     ],
-    hintSwipe: { from: [1, 1], to: [0, 1], dir: "up" },
-    step2Hint: { from: [0, 1], to: [0, 2], dir: "right", prompt: "Now turn and swipe RIGHT to Goal! 🎯" },
-    wrongMoves: {
-      "2,1": "❌ Goal is upper-right! Resetting...",
-      "1,0": "❌ Goal is upper-right! Resetting..."
+    hintSwipe: { from: [2, 0], to: [0, 0], dir: "up" },
+    stepHints: {
+      "0,0": { from: [0, 0], to: [0, 2], dir: "right", prompt: "Now turn 90°: Swipe RIGHT 2 tiles to Goal!" },
+      "2,2": { from: [2, 2], to: [1, 2], dir: "up", prompt: "On 1: Swipe UP to 1, then UP into Goal!" },
+      "1,2": { from: [1, 2], to: [0, 2], dir: "up", prompt: "Almost there: Swipe UP into Goal!" },
+      "2,1": { prompt: "On 1: Swipe UP towards Goal!" },
+      "1,1": { prompt: "On 1: Swipe UP or RIGHT towards Goal!" },
+      "0,1": { prompt: "On 1: Swipe RIGHT into Goal!" }
     }
   },
-  // --- LESSON 8: Cardinal Freedom ---
+  // --- LESSON 8: Beware of Dead Ends ---
   {
     lesson: "LESSON 8",
     lessonNum: 8,
     isCardinal: true,
-    title: "Follow the Chevrons",
-    prompt: "Look at arrows (↑, ↓, ←, →). Swipe DOWN!",
-    successMsg: "Ready to play! Tutorial clear! 🏆",
-    w: 3,
-    h: 3,
-    start: [1, 1],
-    goal: [2, 1],
+    title: "Beware of Dead Ends",
+    prompt: "Swipe RIGHT 2 tiles onto 3.",
+    successMsg: "Mastered pathfinding & dead ends!",
+    w: 4,
+    h: 4,
+    start: [3, 0],
+    goal: [0, 3],
     grid: [
-      [2, 1, 2],
-      [1, 1, 1],
-      [2, 0, 2]
+      [4, 1, 1, 0],
+      [4, 4, 1, 4],
+      [1, 1, 4, 1],
+      [2, 1, 3, 4]
     ],
-    hintSwipe: { from: [1, 1], to: [2, 1], dir: "down" },
+    hintSwipe: { from: [3, 0], to: [3, 2], dir: "right" },
+    stepHints: {
+      "3,2": { from: [3, 2], to: [0, 2], dir: "up", prompt: "Standing on 3: Swipe UP 3 tiles onto 1!" },
+      "0,2": { from: [0, 2], to: [0, 3], dir: "right", prompt: "Now on 1: Swipe RIGHT into Goal!" },
+      "0,1": { prompt: "Swipe RIGHT back towards Goal!" },
+      "1,2": { prompt: "Swipe UP back towards Goal!" }
+    },
     wrongMoves: {
-      "0,1": "❌ Goal is DOWN! Resetting...",
-      "1,0": "❌ Goal is DOWN! Resetting...",
-      "1,2": "❌ Goal is DOWN! Resetting..."
+      "1,0": "Dead End! Resetting...",
+      "0,0": "Dead End! Resetting...",
+      "1,3": "Dead End! Resetting...",
+      "2,2": "Dead End! Resetting..."
     }
   }
 ];
@@ -419,7 +430,7 @@ export const TutorialController = {
     if (this.dom.actionBtn) {
       this.dom.actionBtn.disabled = true;
       this.dom.actionBtn.classList.remove("primary");
-      this.dom.actionBtn.textContent = idx === TUTORIAL_STAGES.length - 1 ? "Start Playing! 🚀" : "Next ▶";
+      this.dom.actionBtn.textContent = idx === TUTORIAL_STAGES.length - 1 ? "Start Playing!" : "Next";
     }
 
     this.renderMicroBoard(stage);
@@ -446,7 +457,10 @@ export const TutorialController = {
     if (!this.dom.board) return;
     this.dom.board.innerHTML = "";
     const isTablet = window.innerWidth >= 560 && window.innerHeight >= 760;
-    const cellSize = isTablet ? 64 : 54;
+    let cellSize = isTablet ? 64 : 54;
+    if (stage.w >= 5 || stage.h >= 5) {
+      cellSize = isTablet ? 50 : 44;
+    }
     this.dom.board.style.setProperty("--tut-cell-size", `${cellSize}px`);
     this.dom.board.style.gridTemplateColumns = `repeat(${stage.w}, ${cellSize}px)`;
     this.dom.board.style.gridTemplateRows = `repeat(${stage.h}, ${cellSize}px)`;
@@ -605,7 +619,7 @@ export const TutorialController = {
     this.updateLegalHighlights();
 
     // Set error prompt
-    const msg = customMsg || stage.wrongMoves?.[`${r},${c}`] || "❌ Dead End! Resetting...";
+    const msg = customMsg || stage.wrongMoves?.[`${r},${c}`] || "Dead End! Resetting...";
     if (this.dom.prompt) {
       this.dom.prompt.textContent = msg;
       this.dom.prompt.classList.add("error-hint");
@@ -684,7 +698,7 @@ export const TutorialController = {
     const stage = TUTORIAL_STAGES[this.currentStageIdx];
     const currentVal = stage.grid[pr][pc];
     if (this.dom.prompt) {
-      this.dom.prompt.textContent = `❌ Cannot leap that way! Stand on ${currentVal} = ${currentVal} tiles.`;
+      this.dom.prompt.textContent = `Cannot leap that way: Stand on ${currentVal} = ${currentVal} tiles.`;
       this.dom.prompt.classList.add("error-hint");
       if (this.dom.promptBox) this.dom.promptBox.classList.add("error-state");
 
@@ -734,6 +748,16 @@ export const TutorialController = {
       }
 
       // 2. Check if reached intermediate step in multi-step stage
+      const stepKey = `${targetR},${targetC}`;
+      if (stage.stepHints && stage.stepHints[stepKey]) {
+        this.updateLegalHighlights();
+        if (this.dom.prompt && stage.stepHints[stepKey].prompt) {
+          this.dom.prompt.textContent = stage.stepHints[stepKey].prompt;
+        }
+        this.showArcGuide();
+        return;
+      }
+
       if (stage.step2Hint && targetR === stage.step2Hint.from[0] && targetC === stage.step2Hint.from[1]) {
         this.updateLegalHighlights();
         if (this.dom.prompt && stage.step2Hint.prompt) {
@@ -743,7 +767,18 @@ export const TutorialController = {
         return;
       }
 
-      // 3. Any other destination in the tutorial is a wrong move or dead end
+      // 3. Check if returned to start tile
+      if (targetR === stage.start[0] && targetC === stage.start[1]) {
+        this.updateLegalHighlights();
+        if (this.dom.prompt) {
+          this.dom.prompt.textContent = stage.prompt;
+          this.dom.prompt.classList.remove("error-hint");
+        }
+        this.showArcGuide();
+        return;
+      }
+
+      // 4. Any explicit wrong move or dead end
       const key = `${targetR},${targetC}`;
       const updatedLegal = calculateLegalDestinations(stage, this.playerPos);
 
@@ -753,7 +788,17 @@ export const TutorialController = {
       }
 
       if (updatedLegal.length === 0) {
-        this.handleLandedOnWrongCell(targetR, targetC, "❌ Dead End! Resetting...");
+        this.handleLandedOnWrongCell(targetR, targetC, "Dead End! Resetting...");
+        return;
+      }
+
+      // 5. If cardinal stage with legal exits, allow smooth player exploration
+      if (stage.isCardinal) {
+        this.updateLegalHighlights();
+        if (this.dom.prompt) {
+          const val = stage.grid[targetR][targetC];
+          this.dom.prompt.textContent = `Standing on ${val}: Choose a direction towards Goal.`;
+        }
         return;
       }
 

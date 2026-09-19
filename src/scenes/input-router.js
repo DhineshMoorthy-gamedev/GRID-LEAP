@@ -338,7 +338,7 @@ export function setupInputRouter({
           window.TutorialController?.startTutorialFromWelcome();
           return;
         } else if (currentTutView === "complete") {
-          window.TutorialController?.dom?.completeCampaignBtn?.click();
+          window.TutorialController?.dom?.completeHomeBtn?.click() || window.TutorialController?.dom?.completeCampaignBtn?.click();
           return;
         } else if (currentTutView === "game") {
           if (window.TutorialController?.isStageSolved) {

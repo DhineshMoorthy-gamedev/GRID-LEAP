@@ -68,6 +68,7 @@ function clearAutoUndo() {
 }
 
 export function openHome() {
+  AchievementManager.stopPlayTimeTicker();
   clearAutoUndo();
   hideToast();
   ConfettiFX.stop();
@@ -130,6 +131,7 @@ export function startDailyLevel(targetDateKey = null) {
   updateGameHeader(888, dailyLv, GameState.moveCount, GameState.history.length);
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   AdController.ensureBanner();
+  AchievementManager.startPlayTimeTicker();
   tick();
 }
 
@@ -190,6 +192,7 @@ export async function startLevel(i) {
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
   AdController.ensureBanner();
+  AchievementManager.startPlayTimeTicker();
   tick();
 }
 
@@ -236,6 +239,7 @@ export function resumeLevelSession() {
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
   refreshTrail();
+  AchievementManager.startPlayTimeTicker();
   tick();
 }
 
@@ -267,6 +271,7 @@ export function playtestCustomLevel(customLv) {
   updateHintBadge(GameState.getHintsCount(), AdController.isPremiumUser());
   if (DOM.gameTitle) DOM.gameTitle.textContent = "PLAYTEST";
   if (DOM.gameChapter) DOM.gameChapter.textContent = `${customLv.phase || "Custom"} • ${customLv.name || "Maze"}`;
+  AchievementManager.startPlayTimeTicker();
   tick();
 }
 
@@ -1308,12 +1313,22 @@ export function bootApp() {
     const isSpecialMusicalModal = modalName === "WIN" || modalName === "OUT_OF_LIVES" || modalName === "FINAL";
 
     if (event === "modal_opened") {
+      AchievementManager.stopPlayTimeTicker();
       if (!isSpecialMusicalModal) {
         AudioEngine.playModalOpen();
       }
     } else if (event === "modal_closed") {
+      if (SceneRouter.getCurrentScreen() === "screenGame" && !SceneRouter.currentModal()) {
+        AchievementManager.startPlayTimeTicker();
+      }
       if (!isSpecialMusicalModal) {
         AudioEngine.playModalClose();
+      }
+    } else if (event === "screen_changed") {
+      if (data?.screenId === "screenGame" && !SceneRouter.currentModal()) {
+        AchievementManager.startPlayTimeTicker();
+      } else {
+        AchievementManager.stopPlayTimeTicker();
       }
     }
   });
@@ -1957,7 +1972,9 @@ async function copyImageBlobToClipboard(blob) {
     },
     onResume: () => {
       AudioEngine.resume();
-      AchievementManager.startPlayTimeTicker();
+      if (SceneRouter.getCurrentScreen() === "screenGame" && !SceneRouter.currentModal()) {
+        AchievementManager.startPlayTimeTicker();
+      }
       AdController.onResume();
       NotificationManager.syncReminders();
       handleResize();

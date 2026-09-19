@@ -1466,7 +1466,7 @@ export function renderWinModal({
   if (DOM.winNextBtn) {
     if (isDailyLevel) {
       DOM.winNextBtn.innerHTML = `
-        <span>Back to Hub</span>
+        <span>Home</span>
         <kbd class="kbd-badge">Enter ↵</kbd>
         ${SVG_ICONS.home}
       `;

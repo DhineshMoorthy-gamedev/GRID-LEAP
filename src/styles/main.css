@@ -4057,8 +4057,15 @@ body[data-ad-position="top"] #settingsModal {
 }
 
 .theme-segment-btn:hover:not(.active) {
-  color: var(--paper);
-  background: rgba(255, 255, 255, 0.04);
+  color: #FFFFFF;
+  background: rgba(56, 189, 248, 0.18);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35), inset 0 0 0 1px rgba(56, 189, 248, 0.45);
+  transform: translateY(-1px);
+}
+
+.theme-segment-btn:hover:not(.active) svg {
+  color: var(--accent-primary, #38BDF8);
+  transform: scale(1.14);
 }
 
 [data-theme="vellum"] .theme-segment-btn {
@@ -4066,14 +4073,21 @@ body[data-ad-position="top"] #settingsModal {
 }
 
 [data-theme="vellum"] .theme-segment-btn:hover:not(.active) {
-  color: #2D241E;
-  background: rgba(60, 50, 40, 0.05);
+  color: #0F172A;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(60, 50, 40, 0.18), inset 0 0 0 1px rgba(60, 50, 40, 0.25);
+  transform: translateY(-1px);
+}
+
+[data-theme="vellum"] .theme-segment-btn:hover:not(.active) svg {
+  color: #1E3A5F;
+  transform: scale(1.14);
 }
 
 .theme-segment-btn.active {
   background: var(--ink-700, #222733);
   color: var(--accent-primary, #38BDF8);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(56, 189, 248, 0.25);
 }
 
 .theme-segment-btn.active svg {
@@ -4083,7 +4097,7 @@ body[data-ad-position="top"] #settingsModal {
 [data-theme="vellum"] .theme-segment-btn.active {
   background: #FFFFFF;
   color: #2A3644;
-  box-shadow: 0 1px 4px rgba(60, 50, 40, 0.14);
+  box-shadow: 0 1px 4px rgba(60, 50, 40, 0.14), inset 0 0 0 1px rgba(60, 50, 40, 0.18);
 }
 
 /* Toggle Switch */
@@ -5819,20 +5833,22 @@ body[data-target-mode="playstore"] .tutorial-card {
   background: rgba(15, 23, 42, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 8px 18px;
+  padding: 4px 16px;
   width: 100%;
   max-width: 420px;
   box-sizing: border-box;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
+  max-height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  flex: 0 0 auto;
+  flex: 0 0 42px;
   box-shadow: none;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: all 200ms ease;
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
   margin-bottom: 0;
 }
 
@@ -5844,13 +5860,17 @@ body[data-target-mode="playstore"] .tutorial-card {
 
 .tutorial-prompt {
   margin: 0;
-  font-size: clamp(13px, 3.2vw, 14.5px);
+  font-size: clamp(12.5px, 3vw, 14px);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.25;
   color: #FFFFFF;
   opacity: 1 !important;
   transition: color 200ms ease;
   text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -7326,12 +7346,25 @@ body[data-target-mode="playstore"] .tutorial-card {
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
+  overflow-y: hidden;
+  padding: 2px 2px 6px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-soft) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ach-tabs-container::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+}
+
+.ach-tabs-container::-webkit-scrollbar-thumb {
+  background: var(--line-soft);
+  border-radius: 999px;
+}
+
+.ach-tabs-container::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .ach-tab-btn {
@@ -7348,12 +7381,26 @@ body[data-target-mode="playstore"] .tutorial-card {
   white-space: nowrap;
   transition: all 120ms ease;
   flex-shrink: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 [data-theme="vellum"] .ach-tab-btn {
   background: #FAF6F0;
   border-color: var(--line);
   color: var(--text-dim);
+}
+
+.ach-tab-btn:hover:not(.active) {
+  color: var(--paper);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+[data-theme="vellum"] .ach-tab-btn:hover:not(.active) {
+  color: #1E293B;
+  border-color: rgba(60, 50, 40, 0.3);
+  background: #FFFFFF;
 }
 
 .ach-tab-btn.active {
