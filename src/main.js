@@ -1306,6 +1306,7 @@ function setupAudioLab() {
 export function bootApp() {
   GameState.init();
   AudioEngine.init();
+  AdController.init();
   setupAudioLab();
 
   SceneRouter.subscribe((event, data) => {
@@ -1314,12 +1315,14 @@ export function bootApp() {
 
     if (event === "modal_opened") {
       AchievementManager.stopPlayTimeTicker();
+      AdController.gameplayStop();
       if (!isSpecialMusicalModal) {
         AudioEngine.playModalOpen();
       }
     } else if (event === "modal_closed") {
       if (SceneRouter.getCurrentScreen() === "screenGame" && !SceneRouter.currentModal()) {
         AchievementManager.startPlayTimeTicker();
+        AdController.gameplayStart();
       }
       if (!isSpecialMusicalModal) {
         AudioEngine.playModalClose();
@@ -1327,8 +1330,10 @@ export function bootApp() {
     } else if (event === "screen_changed") {
       if (data?.screenId === "screenGame" && !SceneRouter.currentModal()) {
         AchievementManager.startPlayTimeTicker();
+        AdController.gameplayStart();
       } else {
         AchievementManager.stopPlayTimeTicker();
+        AdController.gameplayStop();
       }
     }
   });

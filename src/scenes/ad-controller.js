@@ -1,6 +1,7 @@
 import { PlatformBridge } from "../platform/lifecycle.js";
 import { TargetConfig } from "../platform/target-config.js";
 import { AD_UNIT_IDS } from "../platform/ad-config.js";
+import { AudioEngine } from "../audio/audio-engine.js";
 import { showToast } from "./game-renderer.js";
 
 const INTERSTITIAL_MIN_LEVEL_GAP = 2;
@@ -34,6 +35,20 @@ class AdControllerClass {
   async init() {
     // Check if ads feature is enabled on this target build
     if (!TargetConfig.features.showAdBanner) return;
+
+    // ── CrazyGames SDK Initialization ───────────────────────────────────────
+    if (TargetConfig.isCrazyGames) {
+      if (typeof window !== "undefined" && window.CrazyGames?.SDK) {
+        try {
+          await window.CrazyGames.SDK.init();
+          console.log("[AdController] CrazyGames SDK initialized successfully");
+        } catch (err) {
+          console.warn("[AdController] CrazyGames SDK init error:", err);
+        }
+      }
+      this._adsEnabled = true;
+      return;
+    }
 
     // ── Layer 1: Instant Local Cache (Offline-ready) ──────────────────────────
     try {
@@ -200,6 +215,29 @@ class AdControllerClass {
    * Returns true if user earned the hint, false otherwise.
    */
   async requestHintReward() {
+    if (TargetConfig.isCrazyGames) {
+      if (typeof window !== "undefined" && window.CrazyGames?.SDK) {
+        return new Promise((resolve) => {
+          const callbacks = {
+            adFinished: () => {
+              AudioEngine.resume();
+              resolve(true);
+            },
+            adError: (error) => {
+              console.warn("[CrazyGames] Rewarded ad error:", error);
+              AudioEngine.resume();
+              resolve(false);
+            },
+            adStarted: () => {
+              AudioEngine.suspend();
+            }
+          };
+          window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+        });
+      }
+      return true;
+    }
+
     if (!this.isAdsEnabled() || !TargetConfig.isPlayStore) {
       // Free hint for premium or non-PlayStore platforms
       return true;
@@ -243,6 +281,29 @@ class AdControllerClass {
    * Returns true if user earned the life, false otherwise.
    */
   async requestLifeReward() {
+    if (TargetConfig.isCrazyGames) {
+      if (typeof window !== "undefined" && window.CrazyGames?.SDK) {
+        return new Promise((resolve) => {
+          const callbacks = {
+            adFinished: () => {
+              AudioEngine.resume();
+              resolve(true);
+            },
+            adError: (error) => {
+              console.warn("[CrazyGames] Rewarded ad error:", error);
+              AudioEngine.resume();
+              resolve(false);
+            },
+            adStarted: () => {
+              AudioEngine.suspend();
+            }
+          };
+          window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+        });
+      }
+      return true;
+    }
+
     if (!this.isAdsEnabled() || !TargetConfig.isPlayStore) {
       return true;
     }
@@ -285,22 +346,45 @@ class AdControllerClass {
    * Increments the persistent level counter and preloads the interstitial.
    */
   recordLevelVictory(isCustom = false) {
-    if (!this.isAdsEnabled() || !TargetConfig.isPlayStore || isCustom) return;
+    if (!this.isAdsEnabled() || (!TargetConfig.isPlayStore && !TargetConfig.isCrazyGames) || isCustom) return;
     this._levelsSinceLastInterstitial++;
     this._saveLevelCount();
-    if (!this._interstitialReady) {
+    if (!this._interstitialReady && TargetConfig.isPlayStore) {
       this._preloadInterstitial();
     }
   }
 
   /**
    * Shows an interstitial if the player has completed >= 2 levels since the last ad.
-   * Invoked when:
-   * 1. Clicking "Next Level" on the Win modal
-   * 2. Clicking "Home" on the Win modal
-   * 3. Starting a level from the Home screen if an ad is pending
    */
   async showPendingInterstitialIfNeeded() {
+    if (TargetConfig.isCrazyGames) {
+      if (this._levelsSinceLastInterstitial >= INTERSTITIAL_MIN_LEVEL_GAP) {
+        this._levelsSinceLastInterstitial = 0;
+        this._saveLevelCount();
+        if (typeof window !== "undefined" && window.CrazyGames?.SDK) {
+          return new Promise((resolve) => {
+            const callbacks = {
+              adFinished: () => {
+                AudioEngine.resume();
+                resolve(true);
+              },
+              adError: (error) => {
+                console.warn("[CrazyGames] Midgame ad error:", error);
+                AudioEngine.resume();
+                resolve(false);
+              },
+              adStarted: () => {
+                AudioEngine.suspend();
+              }
+            };
+            window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+          });
+        }
+      }
+      return false;
+    }
+
     if (!this.isAdsEnabled() || !TargetConfig.isPlayStore) return false;
 
     if (this._levelsSinceLastInterstitial >= INTERSTITIAL_MIN_LEVEL_GAP) {
@@ -332,6 +416,18 @@ class AdControllerClass {
 
   async onLevelCompleted() {
     return await this.showPendingInterstitialIfNeeded();
+  }
+
+  gameplayStart() {
+    if (TargetConfig.isCrazyGames && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStart) {
+      window.CrazyGames.SDK.game.gameplayStart();
+    }
+  }
+
+  gameplayStop() {
+    if (TargetConfig.isCrazyGames && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStop) {
+      window.CrazyGames.SDK.game.gameplayStop();
+    }
   }
 
   onPause() {

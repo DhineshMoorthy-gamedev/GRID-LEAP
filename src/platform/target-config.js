@@ -8,7 +8,8 @@ export const TARGET_MODES = {
   PLAYSTORE: "playstore",
   ITCH: "itch",
   WEB: "web",
-  DESKTOP: "desktop"
+  DESKTOP: "desktop",
+  CRAZYGAMES: "crazygames"
 };
 
 // Automatic detection for native Tauri Desktop runtime
@@ -30,6 +31,7 @@ export const TargetConfig = {
   isItch: activeMode === TARGET_MODES.ITCH,
   isWeb: activeMode === TARGET_MODES.WEB,
   isDesktop: activeMode === TARGET_MODES.DESKTOP,
+  isCrazyGames: activeMode === TARGET_MODES.CRAZYGAMES,
 
   features: {
     // Level Editor & creation suite
@@ -62,8 +64,8 @@ export const TargetConfig = {
     haptics: activeMode === TARGET_MODES.PLAYSTORE,
     // Show Hint Count / Ad badge (hidden on Desktop & Editor where hints are unlimited & ad-free)
     showHintBadge: activeMode !== TARGET_MODES.DESKTOP && activeMode !== TARGET_MODES.EDITOR,
-    // Win Modal Social Share Button (Enabled on Play Store & Desktop, hidden on Web & Itch)
-    winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH
+    // Win Modal Social Share Button (Enabled on Play Store & Desktop, hidden on Web, Itch & CrazyGames)
+    winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH && activeMode !== TARGET_MODES.CRAZYGAMES
   }
 };
 

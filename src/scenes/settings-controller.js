@@ -92,9 +92,9 @@ export const SettingsController = {
       this.dom.sectionDev.style.display = TargetConfig.features.editorSettings ? "block" : "none";
     }
 
-    // Platform Gating: Rate button visible on mobile / store targets, hidden on Desktop
+    // Platform Gating: Rate button visible on Play Store only
     if (this.dom.btnRateApp) {
-      this.dom.btnRateApp.style.display = (TargetConfig.isDesktop || TargetConfig.isItch) ? "none" : "flex";
+      this.dom.btnRateApp.style.display = TargetConfig.isPlayStore ? "flex" : "none";
     }
 
     // Subview Navigation Listeners
@@ -157,6 +157,12 @@ export const SettingsController = {
     // In-App Updates Action (Google Play / Editor Simulator)
     const checkUpdateBtn = document.getElementById("aboutCheckUpdateBtn");
     const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
+    const aboutActionsRow = document.querySelector(".about-actions-row");
+
+    if (TargetConfig.isCrazyGames || TargetConfig.isWeb) {
+      if (checkUpdateBtn) checkUpdateBtn.style.display = "none";
+      if (aboutActionsRow) aboutActionsRow.style.display = "none";
+    }
 
     const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.16") => {
       if (!checkUpdateLabel) return;
@@ -295,17 +301,21 @@ export const SettingsController = {
     // "More Games by Olai" Action
     const moreGamesBtn = document.getElementById("aboutMoreGamesBtn");
     if (moreGamesBtn) {
-      moreGamesBtn.addEventListener("click", () => {
-        AudioEngine.playNavBack();
-        if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
-          PlatformBridge.openExternalUrl("https://play.google.com/store/apps/developer?id=Olai+Digital+Studios");
-        } else if (TargetConfig.isItch) {
-          PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
-        } else {
-          // Desktop / Editor
-          PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
-        }
-      });
+      if (TargetConfig.isCrazyGames || TargetConfig.isWeb) {
+        moreGamesBtn.style.display = "none";
+      } else {
+        moreGamesBtn.addEventListener("click", () => {
+          AudioEngine.playNavBack();
+          if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
+            PlatformBridge.openExternalUrl("https://play.google.com/store/apps/developer?id=Olai+Digital+Studios");
+          } else if (TargetConfig.isItch) {
+            PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
+          } else {
+            // Desktop / Editor
+            PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
+          }
+        });
+      }
     }
 
     // In-App Purchase Action & Status Sync
