@@ -83,35 +83,38 @@ export const PlatformBridge = {
   },
 
   async vibrateLight() {
+    if (!TargetConfig.features.haptics) return;
     if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.impact({ style: ImpactStyle.Light });
       } catch (_) {}
-    } else if (navigator.vibrate) {
-      try { navigator.vibrate(10); } catch (_) {}
+    } else if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try { navigator.vibrate(15); } catch (_) {}
     }
   },
 
   async vibrateSuccess() {
+    if (!TargetConfig.features.haptics) return;
     if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.notification({ type: NotificationType.Success });
       } catch (_) {}
-    } else if (navigator.vibrate) {
-      try { navigator.vibrate([15, 50, 25]); } catch (_) {}
+    } else if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try { navigator.vibrate([20, 60, 30]); } catch (_) {}
     }
   },
 
   async vibrateWarning() {
+    if (!TargetConfig.features.haptics) return;
     if (typeof window !== "undefined" && window.GameState?.settings?.hapticsEnabled === false) return;
     if (isCapacitor) {
       try {
         await Haptics.notification({ type: NotificationType.Warning });
       } catch (_) {}
-    } else if (navigator.vibrate) {
-      try { navigator.vibrate([30, 40, 30]); } catch (_) {}
+    } else if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try { navigator.vibrate([35, 50, 35]); } catch (_) {}
     }
   },
 
@@ -121,10 +124,10 @@ export const PlatformBridge = {
     if (isCapacitor) return true;
     if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return false;
     const ua = navigator.userAgent || "";
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     if (isIOS) return false;
-    const isAndroidMobile = /Android/i.test(ua);
-    return isAndroidMobile;
+    const isAndroidMobile = /Android/i.test(ua) || ("ontouchstart" in window && navigator.maxTouchPoints > 0 && !/Macintosh|Windows|Linux x86_64/i.test(ua));
+    return Boolean(isAndroidMobile);
   },
 
   openExternalUrl(url) {

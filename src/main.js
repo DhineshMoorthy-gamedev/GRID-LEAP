@@ -885,9 +885,9 @@ export async function toggleSolutionPath() {
   }
 
   // ── Hint Currency & Rewarded Ad Gate ──────────────────────────────────────
-  const isPremium = AdController.isPremiumUser();
+  const isPremium = AdController.isPremiumUser() || TargetConfig.isDesktop || TargetConfig.isEditor;
   if (isPremium) {
-    // Premium players get unlimited free hints
+    // Premium & Desktop players get unlimited free hints
     updateHintBadge(Infinity, true);
     GameState.hintUsedThisLevel = true;
   } else if (GameState.hintUsedThisLevel) {

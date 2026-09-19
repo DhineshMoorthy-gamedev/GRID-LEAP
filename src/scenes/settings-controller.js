@@ -51,23 +51,33 @@ export const SettingsController = {
       if (footerNote) footerNote.textContent = `GRID LEAP • v${this.versionName} • OLAI DIGITAL STUDIOS`;
     });
 
-    // Strategic Gating: On Desktop (Tauri / Itch), hide mobile-only rows (Haptics & Daily Push Reminders)
-    if (TargetConfig.isDesktop || TargetConfig.isItch) {
-      if (this.dom.rowHaptics) {
+    // Strategic Gating: Hide Daily Push Reminders on platforms without native local notification support (Desktop, Itch, Web)
+    if (this.dom.rowDailyReminders) {
+      this.dom.rowDailyReminders.style.display = TargetConfig.features.dailyRemindersPush ? "flex" : "none";
+    }
+
+    // Strategic Gating: Haptics handling (Play Store native only, hidden on Web and Desktop)
+    if (this.dom.rowHaptics) {
+      if (!TargetConfig.features.haptics) {
         this.dom.rowHaptics.style.display = "none";
-      }
-      if (this.dom.rowDailyReminders) {
-        this.dom.rowDailyReminders.style.display = "none";
-      }
-    } else {
-      const hapticsAvailable = PlatformBridge.isHapticsSupported();
-      if (!hapticsAvailable) {
-        if (this.dom.rowHaptics) this.dom.rowHaptics.classList.add("disabled");
-        if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "inline-block";
-        if (this.dom.settingHaptics) {
-          this.dom.settingHaptics.disabled = true;
-          this.dom.settingHaptics.checked = false;
-          this.dom.settingHaptics.tabIndex = -1;
+      } else {
+        const hapticsAvailable = PlatformBridge.isHapticsSupported();
+        if (!hapticsAvailable) {
+          this.dom.rowHaptics.classList.add("disabled");
+          if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "inline-block";
+          if (this.dom.settingHaptics) {
+            this.dom.settingHaptics.disabled = true;
+            this.dom.settingHaptics.checked = false;
+            this.dom.settingHaptics.tabIndex = -1;
+          }
+        } else {
+          this.dom.rowHaptics.classList.remove("disabled");
+          if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "none";
+          if (this.dom.settingHaptics) {
+            this.dom.settingHaptics.disabled = false;
+            this.dom.settingHaptics.checked = Boolean(GameState.settings.hapticsEnabled);
+            this.dom.settingHaptics.tabIndex = 0;
+          }
         }
       }
     }

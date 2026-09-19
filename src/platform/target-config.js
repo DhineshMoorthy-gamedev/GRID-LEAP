@@ -56,8 +56,14 @@ export const TargetConfig = {
     showAdBanner: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.WEB,
     // In-App Purchases (Remove Ads) - Play Store only
     removeAdsIAP: activeMode === TARGET_MODES.PLAYSTORE,
-    // Win Modal Social Share Button (All platforms by default, togglable)
-    winShareButton: true
+    // Daily Reminders offline push scheduling (Play Store native only)
+    dailyRemindersPush: activeMode === TARGET_MODES.PLAYSTORE,
+    // Haptic vibration feedback (Play Store native only, hidden on Web and Desktop)
+    haptics: activeMode === TARGET_MODES.PLAYSTORE,
+    // Show Hint Count / Ad badge (hidden on Desktop & Editor where hints are unlimited & ad-free)
+    showHintBadge: activeMode !== TARGET_MODES.DESKTOP && activeMode !== TARGET_MODES.EDITOR,
+    // Win Modal Social Share Button (Enabled on Play Store & Desktop, hidden on Web & Itch)
+    winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH
   }
 };
 

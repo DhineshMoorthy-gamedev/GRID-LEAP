@@ -1523,6 +1523,11 @@ export function renderFinalModal({ totalSolved, totalLevels }) {
 export function updateHintBadge(hintsCount, isPremium = false) {
   const el = DOM.hintCountBadge || document.getElementById("hintCountBadge");
   if (!el) return;
+  if (!TargetConfig.features.showHintBadge) {
+    el.style.display = "none";
+    return;
+  }
+  el.style.display = "";
   if (isPremium) {
     el.textContent = "∞";
     el.className = "hint-badge-circle premium";
