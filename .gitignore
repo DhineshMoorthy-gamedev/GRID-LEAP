@@ -21,3 +21,14 @@ android/.gradle/
 android/app/build/
 android/build/
 
+# Local Scratch & Reference Files
+admob_ids.txt
+cmd.txt
+names.txt
+bug.png
+*.local
+.env*.local
+
+# Firebase / Google Services
+google-services.json
+
