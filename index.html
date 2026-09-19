@@ -195,6 +195,7 @@
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
+              <kbd class="kbd-badge">C</kbd>
             </button>
             <button class="daily-play-btn" id="dailyPlayBtn" aria-label="Play Daily Challenge">
               <span class="daily-play-icon" id="dailyPlayIcon">▶</span>
@@ -1145,6 +1146,7 @@
         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
       </svg>
+      <kbd class="kbd-badge">S</kbd>
     </button>
 
     <!-- Centerpiece: The Constellation Sigil Medallion -->
@@ -1196,10 +1198,12 @@
         <button class="btn btn-secondary win-daily-nav-btn" id="winDailyPrevBtn" aria-label="Previous Day Challenge">
           <span class="btn-icon">◀</span>
           <span class="daily-nav-label" id="winDailyPrevLabel">Prev Day</span>
+          <kbd class="kbd-badge">[</kbd>
         </button>
         <button class="btn btn-secondary win-daily-nav-btn" id="winDailyNextBtn" aria-label="Next Day Challenge">
           <span class="daily-nav-label" id="winDailyNextLabel">Next Day</span>
           <span class="btn-icon">▶</span>
+          <kbd class="kbd-badge">]</kbd>
         </button>
       </div>
 
@@ -1229,6 +1233,101 @@
           </span> Levels <kbd class="kbd-badge">Esc</kbd>
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Desktop / Web Share Options Modal -->
+<div class="overlay" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+  <div class="card share-modal-card">
+    <div class="share-modal-header">
+      <div class="share-modal-title-wrap">
+        <span class="share-modal-eyebrow">SHARE RESULT</span>
+        <h2 class="share-modal-title" id="shareModalTitle">Share Victory</h2>
+      </div>
+      <button class="share-modal-close-btn" id="shareModalCloseBtn" aria-label="Close Share Modal">
+        ✕
+        <kbd class="kbd-badge">Esc</kbd>
+      </button>
+    </div>
+
+    <!-- Preview Card Thumbnail / Summary -->
+    <div class="share-preview-box">
+      <div class="share-preview-thumb-wrap">
+        <img class="share-preview-img" id="sharePreviewImg" alt="Victory Card Preview" style="display:none;" />
+        <div class="share-preview-placeholder" id="sharePreviewPlaceholder">★</div>
+      </div>
+      <div class="share-preview-meta">
+        <div class="share-preview-level" id="sharePreviewLevel">Level 01</div>
+        <div class="share-preview-stats" id="sharePreviewStats">4 Moves • 100% Flawless</div>
+        <div class="share-preview-saved-tag" id="sharePreviewSavedTag">💾 Saved to Pictures</div>
+      </div>
+    </div>
+
+    <!-- Helpful Paste Tip -->
+    <div class="share-hint-tip">
+      <span class="share-hint-icon">💡</span>
+      <span>Card is in clipboard — press <kbd class="kbd-badge">Ctrl+V</kbd> in your chat or tweet to attach image!</span>
+    </div>
+
+    <!-- Action Channels Grid -->
+    <div class="share-channels-grid">
+      <!-- 1. X / Twitter -->
+      <button class="share-channel-btn share-channel-x" id="shareBtnX" aria-label="Share on X Twitter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <div class="channel-info">
+          <span class="channel-name">X (Twitter)</span>
+          <span class="channel-desc">Post stats</span>
+        </div>
+      </button>
+
+      <!-- 2. WhatsApp Web -->
+      <button class="share-channel-btn share-channel-wa" id="shareBtnWhatsApp" aria-label="Share on WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <div class="channel-info">
+          <span class="channel-name">WhatsApp</span>
+          <span class="channel-desc">Send to friends</span>
+        </div>
+      </button>
+
+      <!-- 3. Email (Default OS Mail Client) -->
+      <button class="share-channel-btn share-channel-mail" id="shareBtnEmail" aria-label="Share via Email">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        <div class="channel-info">
+          <span class="channel-name">Email</span>
+          <span class="channel-desc">Default mail app</span>
+        </div>
+      </button>
+
+      <!-- 4. Open Image / View in Folder -->
+      <button class="share-channel-btn share-channel-folder" id="shareBtnOpenImage" aria-label="View Saved Image Card">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <div class="channel-info">
+          <span class="channel-name">View Card</span>
+          <span class="channel-desc">Open high-res PNG</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Quick Copy Actions Bottom Strip -->
+    <div class="share-quick-actions">
+      <button class="btn btn-secondary share-quick-btn" id="shareCopyTextBtn">
+        <span>📋 Copy Text</span>
+        <kbd class="kbd-badge">T</kbd>
+      </button>
+      <button class="btn btn-secondary share-quick-btn" id="shareCopyImageBtn">
+        <span>🖼️ Copy Image</span>
+        <kbd class="kbd-badge">I</kbd>
+      </button>
     </div>
   </div>
 </div>
@@ -1603,7 +1702,10 @@
   <!-- 1. SIMPLE WELCOME MODAL VIEW -->
   <div class="tutorial-subview" id="tutorialWelcomeView">
     <div class="tutorial-simple-card">
-      <button class="tutorial-close-x corner" id="welcomeCloseX" aria-label="Close">✕</button>
+      <button class="tutorial-close-x corner" id="welcomeCloseX" aria-label="Close">
+        ✕
+        <kbd class="kbd-badge">Esc</kbd>
+      </button>
       <h2 class="tutorial-modal-title">HOW TO PLAY</h2>
       <button class="btn btn-primary tutorial-modal-btn" id="welcomeStartBtn">
         START ▶ <kbd class="kbd-badge">Enter ↵</kbd>
@@ -1654,7 +1756,10 @@
   <!-- 3. SIMPLE TUTORIAL COMPLETE MODAL VIEW -->
   <div class="tutorial-subview" id="tutorialCompleteView">
     <div class="tutorial-simple-card">
-      <button class="tutorial-close-x corner" id="completeCloseX" aria-label="Close">✕</button>
+      <button class="tutorial-close-x corner" id="completeCloseX" aria-label="Close">
+        ✕
+        <kbd class="kbd-badge">Esc</kbd>
+      </button>
       <div class="complete-check-icon">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
@@ -1757,7 +1862,10 @@
       <div class="daily-cal-title-wrap">
         <h2 class="daily-cal-title">Puzzle Calendar</h2>
       </div>
-      <button class="daily-cal-close-btn" id="dailyCalendarCloseBtn" aria-label="Close Calendar">✕</button>
+      <button class="daily-cal-close-btn" id="dailyCalendarCloseBtn" aria-label="Close Calendar">
+        ✕
+        <kbd class="kbd-badge">Esc</kbd>
+      </button>
     </div>
 
     <!-- Month Navigation Bar -->
@@ -1801,7 +1909,10 @@
 <!-- Dedicated Achievements Showcase Modal -->
 <div class="overlay" id="achievementsModal">
   <div class="card achievements-card">
-    <button class="ach-close-btn" id="achievementsCloseBtn" aria-label="Close Achievements">✕</button>
+    <button class="ach-close-btn" id="achievementsCloseBtn" aria-label="Close Achievements">
+      ✕
+      <kbd class="kbd-badge">Esc</kbd>
+    </button>
 
     <!-- Hero Showcase Header -->
     <div class="ach-hero-header">
@@ -1848,7 +1959,10 @@
 <!-- Dedicated In-App Update Modal -->
 <div class="overlay" id="updateModal">
   <div class="card update-modal-card">
-    <button class="tutorial-close-x corner" id="updateModalCloseX" aria-label="Close">✕</button>
+    <button class="tutorial-close-x corner" id="updateModalCloseX" aria-label="Close">
+      ✕
+      <kbd class="kbd-badge">Esc</kbd>
+    </button>
     
     <div class="update-icon-disc">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1881,7 +1995,10 @@
 <!-- Daily Challenge Notification Opt-In Prompt Modal -->
 <div class="overlay" id="notificationPromptModal">
   <div class="card update-modal-card">
-    <button class="tutorial-close-x corner" id="notifPromptCloseX" aria-label="Close">✕</button>
+    <button class="tutorial-close-x corner" id="notifPromptCloseX" aria-label="Close">
+      ✕
+      <kbd class="kbd-badge">Esc</kbd>
+    </button>
     
     <div class="update-icon-disc" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10B981;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

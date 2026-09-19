@@ -7,6 +7,7 @@
 
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { PlatformBridge } from "./lifecycle.js";
+import { TargetConfig } from "./target-config.js";
 import { GameState } from "../state/game-state.js";
 import { DailyManager } from "../state/daily-manager.js";
 import { SceneRouter } from "../scenes/scene-router.js";
@@ -110,6 +111,9 @@ export const NotificationManager = {
    * Shows opt-in modal after winning a daily challenge if player hasn't decided yet
    */
   showOptInPrompt() {
+    if (TargetConfig.isDesktop || TargetConfig.isItch) {
+      return;
+    }
     if (GameState.settings.dailyReminders || GameState.settings.hasPromptedDailyReminders) {
       return;
     }

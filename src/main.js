@@ -12,7 +12,7 @@ import { PlatformBridge } from "./platform/lifecycle.js";
 import { TargetConfig } from "./platform/target-config.js";
 import { EditorController } from "./editor/editor-controller.js";
 import { DailyManager } from "./state/daily-manager.js";
-import { formatDisplayDate } from "./core/daily-seed.js";
+import { formatDisplayDate, getTodayDateKey, getPreviousDateKey, getNextDateKey } from "./core/daily-seed.js";
 import { AudioEngine } from "./audio/audio-engine.js";
 import {
   DOM,
@@ -131,6 +131,24 @@ export function startDailyLevel(targetDateKey = null) {
   renderLivesHUD(GameState.lives, GameState.maxLives, GameState.settings.relaxMode);
   AdController.ensureBanner();
   tick();
+}
+
+export function navigateToAdjacentDaily(delta) {
+  if (!GameState.customLevel?.isDaily) return;
+  const curDateKey = GameState.customLevel?.dateKey || getTodayDateKey();
+  const targetDate = delta < 0 ? getPreviousDateKey(curDateKey) : getNextDateKey(curDateKey);
+  if (delta < 0 && DailyManager.isBeforeLaunch(targetDate)) {
+    showToast("📅 Sept 16, 2026 is the earliest daily puzzle");
+    PlatformBridge.vibrateWarning?.();
+    return;
+  }
+  if (delta > 0 && DailyManager.isFutureDate(targetDate)) {
+    showToast("🔒 Future daily challenge unlocks tomorrow");
+    PlatformBridge.vibrateWarning?.();
+    return;
+  }
+  AudioEngine.playDailyStart();
+  startDailyLevel(targetDate);
 }
 
 export async function startLevel(i) {
@@ -606,7 +624,7 @@ export async function nextLevel() {
     }
     return;
   }
-  if (GameState.customLevel) {
+  if (GameState.customLevel && !GameState.customLevel.isDaily) {
     SceneRouter.navigateTo("screenEditor");
     return;
   }
@@ -624,6 +642,37 @@ export async function nextLevel() {
   startLevel(GameState.levelIndex + 1);
 }
 
+let activeShareContext = null;
+
+export function openShareModal(shareContext) {
+  activeShareContext = shareContext;
+  const { shareTitle, shareText, storeUrl, card, savedFilePath, levelTitle, statsText } = shareContext;
+
+  if (DOM.sharePreviewLevel) DOM.sharePreviewLevel.textContent = levelTitle || "Level Complete";
+  if (DOM.sharePreviewStats) DOM.sharePreviewStats.textContent = statsText || "";
+
+  if (DOM.sharePreviewImg && card?.dataUrl) {
+    DOM.sharePreviewImg.src = card.dataUrl;
+    DOM.sharePreviewImg.style.display = "block";
+    if (DOM.sharePreviewPlaceholder) DOM.sharePreviewPlaceholder.style.display = "none";
+  } else if (DOM.sharePreviewPlaceholder) {
+    DOM.sharePreviewPlaceholder.style.display = "block";
+    if (DOM.sharePreviewImg) DOM.sharePreviewImg.style.display = "none";
+  }
+
+  if (DOM.sharePreviewSavedTag) {
+    if (savedFilePath) {
+      DOM.sharePreviewSavedTag.textContent = "💾 Saved to Pictures";
+      DOM.sharePreviewSavedTag.style.display = "block";
+    } else {
+      DOM.sharePreviewSavedTag.textContent = "🖼️ Victory Card Ready";
+      DOM.sharePreviewSavedTag.style.display = "block";
+    }
+  }
+
+  SceneRouter.pushModal("SHARE");
+}
+
 export async function shareVictoryResult() {
   const lv = GameState.currentLevel();
   const isDaily = Boolean(lv?.isDaily);
@@ -635,7 +684,7 @@ export async function shareVictoryResult() {
   const visitedPath = GameState.history.map(h => h.player).concat([GameState.player || lv?.goal || [0, 0]]);
 
   let storeUrl = "https://play.google.com/store/apps/details?id=com.olaidigitalstudios.gridleap";
-  if (TargetConfig.isItch) {
+  if (TargetConfig.isItch || TargetConfig.isDesktop) {
     storeUrl = "https://olaidigitalstudios.itch.io/grid-leap";
   } else if (TargetConfig.isWeb) {
     storeUrl = "https://gridleap.netlify.app";
@@ -643,6 +692,8 @@ export async function shareVictoryResult() {
 
   let shareTitle = "Grid Leap";
   let shareText = "";
+  let levelTitle = "";
+  let statsText = "";
 
   const moveSuffix = actualMoves === 1 ? "move" : "moves";
   const optSuffix = optimalMoves === 1 ? "move" : "moves";
@@ -652,12 +703,18 @@ export async function shareVictoryResult() {
     const streak = DailyManager.data?.currentStreak || 1;
     const streakSuffix = streak === 1 ? "day" : "days";
 
+    levelTitle = `Daily Challenge • ${displayDate}`;
+    statsText = `${actualMoves} Moves (${eff}%) • 🔥 ${streak} ${streakSuffix}`;
     shareTitle = `Grid Leap — Daily Challenge | ${displayDate}`;
     shareText = `Grid Leap — Daily Challenge | ${displayDate}\n\nToday's challenge is solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\nStreak: ${streak} ${streakSuffix}\n\nCan you match the optimal solution?\n\nPlay today's challenge:\n${storeUrl}`;
   } else if (isCustom) {
+    levelTitle = "Custom Maze";
+    statsText = `${actualMoves} Moves (${eff}%) • Optimal ${optimalMoves}`;
     shareTitle = "Grid Leap — Custom Maze";
     shareText = `Grid Leap — Custom Maze\n\nCustom maze solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\n\nCan you match the optimal solution?\n\nPlay Grid Leap:\n${storeUrl}`;
   } else {
+    levelTitle = `Level ${padIdx}`;
+    statsText = `${actualMoves} Moves (${eff}%) • Optimal ${optimalMoves}`;
     shareTitle = `Grid Leap — Level ${padIdx}`;
     shareText = `Grid Leap — Level ${padIdx}\n\nLevel ${padIdx} solved in ${actualMoves} ${moveSuffix}.\n\nOptimal: ${optimalMoves} ${optSuffix}\nEfficiency: ${eff}%\n\nCan you match the optimal solution?\n\nPlay Grid Leap:\n${storeUrl}`;
   }
@@ -735,62 +792,50 @@ export async function shareVictoryResult() {
     }
   }
 
-  // 2. Mobile Web / Modern Browsers (Web Share API Level 2 with attached File)
-  if (typeof navigator !== "undefined" && navigator.share && card?.blob) {
+  // 2. Desktop Native Tauri App (Save high-res PNG to Pictures / Downloads)
+  let savedFilePath = null;
+  if (TargetConfig.isDesktop || typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
     try {
-      const file = new File([card.blob], `grid_leap_victory.png`, { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          files: [file]
-        });
-        return;
+      const fileName = `Grid_Leap_${isDaily ? "Daily_" + (lv?.dateKey || getTodayDateKey()) : "Level_" + padIdx}.png`;
+      if (card?.rawBase64) {
+        const tauriInvoke = window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke;
+        if (typeof tauriInvoke === "function") {
+          savedFilePath = await tauriInvoke("save_image_card", {
+            base64Data: card.rawBase64,
+            filename: fileName,
+            openFile: false
+          });
+        }
       }
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.warn("[Share] navigator.share error, falling back to clipboard:", err);
-      } else {
-        return; // User cancelled native share sheet
-      }
+    } catch (tauriErr) {
+      console.warn("[Share] Tauri native image save failed, continuing with browser/clipboard fallback:", tauriErr);
     }
   }
 
-  // 3. Desktop / Web Fallback: Async Clipboard Image Copy + Direct PNG Download
-  let copiedImageToClipboard = false;
-  if (typeof navigator !== "undefined" && navigator.clipboard?.write && card?.blob && typeof ClipboardItem !== "undefined") {
-    try {
-      const item = new ClipboardItem({ "image/png": card.blob });
-      await navigator.clipboard.write([item]);
-      copiedImageToClipboard = true;
-    } catch (clipImgErr) {
-      console.warn("[Share] Image clipboard write failed, trying text fallback:", clipImgErr);
-    }
-  }
-
-  // Trigger direct PNG download for browser users
-  if (card?.dataUrl) {
-    try {
-      const link = document.createElement("a");
-      link.href = card.dataUrl;
-      link.download = `grid-leap-${isDaily ? "daily" : "level-" + padIdx}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (_) {}
-  }
-
-  if (copiedImageToClipboard) {
-    showToast("🖼️ Victory Card copied & downloaded!");
-  } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+  // 3. Guaranteed Clipboard Copy: Copy formatted text directly to clipboard so user can immediately Ctrl+V
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(shareText);
-      showToast("📋 Result copied & card downloaded!");
-    } catch (_) {
-      showToast("🖼️ Victory Card downloaded!");
+    } catch (clipErr) {
+      console.warn("[Share] Clipboard writeText failed:", clipErr);
     }
+  }
+
+  // 4. Open Desktop / Web Share Options Modal with 1-click channels (X, WhatsApp, Email, Open Card, Copy)
+  openShareModal({
+    shareTitle,
+    shareText,
+    storeUrl,
+    card,
+    savedFilePath,
+    levelTitle,
+    statsText
+  });
+
+  if (savedFilePath) {
+    showToast("💾 Victory Card saved & score text copied!");
   } else {
-    showToast("🖼️ Victory Card saved!");
+    showToast("📋 Score text copied to clipboard!");
   }
 }
 
@@ -1365,6 +1410,7 @@ export function bootApp() {
     onPlayDate: (dateKey) => startDailyLevel(dateKey)
   });
   ReviewManager.init();
+  window.AchievementsController = AchievementsController;
   window.DailyCalendarController = DailyCalendarController;
   window.UpdateController = UpdateController;
   window.AdController = AdController;
@@ -1446,7 +1492,7 @@ export function bootApp() {
     DOM.pauseHomeBtn.addEventListener("click", () => {
       AudioEngine.playNavBack();
       SceneRouter.popModal();
-      if (GameState.customLevel) {
+      if (GameState.customLevel && !GameState.customLevel.isDaily) {
         SceneRouter.navigateTo("screenEditor");
       } else {
         openHome();
@@ -1506,6 +1552,119 @@ export function bootApp() {
         setTimeout(() => {
           NotificationManager.showOptInPrompt();
         }, 400);
+      }
+    });
+  }
+
+  if (DOM.winShareBtn) {
+    DOM.winShareBtn.addEventListener("click", () => {
+      shareVictoryResult();
+    });
+  }
+
+  // Desktop / Web Share Options Modal Listeners
+  if (DOM.shareModalCloseBtn) {
+    DOM.shareModalCloseBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
+      SceneRouter.popModal();
+    });
+  }
+
+async function copyImageBlobToClipboard(blob) {
+  if (!blob) return false;
+  if (typeof navigator !== "undefined" && navigator.clipboard?.write && typeof ClipboardItem !== "undefined") {
+    try {
+      const item = new ClipboardItem({ "image/png": blob });
+      await navigator.clipboard.write([item]);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  return false;
+}
+
+  if (DOM.shareBtnX) {
+    DOM.shareBtnX.addEventListener("click", async () => {
+      if (!activeShareContext) return;
+      AudioEngine.playLeap();
+      if (activeShareContext.card?.blob) {
+        await copyImageBlobToClipboard(activeShareContext.card.blob);
+      }
+      const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(activeShareContext.shareText)}`;
+      PlatformBridge.openExternalUrl(xUrl);
+      showToast("🐦 X (Twitter) opened — press Ctrl+V to attach card image!");
+    });
+  }
+
+  if (DOM.shareBtnWhatsApp) {
+    DOM.shareBtnWhatsApp.addEventListener("click", async () => {
+      if (!activeShareContext) return;
+      AudioEngine.playLeap();
+      if (activeShareContext.card?.blob) {
+        await copyImageBlobToClipboard(activeShareContext.card.blob);
+      }
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(activeShareContext.shareText)}`;
+      PlatformBridge.openExternalUrl(waUrl);
+      showToast("💬 WhatsApp opened — press Ctrl+V to paste card image!");
+    });
+  }
+
+  if (DOM.shareBtnEmail) {
+    DOM.shareBtnEmail.addEventListener("click", async () => {
+      if (!activeShareContext) return;
+      AudioEngine.playLeap();
+      if (activeShareContext.card?.blob) {
+        await copyImageBlobToClipboard(activeShareContext.card.blob);
+      }
+      const formattedBody = (activeShareContext.shareText || "").replace(/\r?\n/g, "\r\n");
+      const mailUrl = `mailto:?subject=${encodeURIComponent(activeShareContext.shareTitle)}&body=${encodeURIComponent(formattedBody)}`;
+      PlatformBridge.openExternalUrl(mailUrl);
+      showToast("✉️ Mail client opened — press Ctrl+V to paste card image!");
+    });
+  }
+
+  if (DOM.shareBtnOpenImage) {
+    DOM.shareBtnOpenImage.addEventListener("click", () => {
+      if (!activeShareContext) return;
+      AudioEngine.playLeap();
+      if (activeShareContext.savedFilePath) {
+        const tauriInvoke = window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke;
+        if (typeof tauriInvoke === "function") {
+          tauriInvoke("open_file_path", { path: activeShareContext.savedFilePath });
+          showToast("📂 Opened saved card in viewer!");
+          return;
+        }
+      }
+      if (activeShareContext.card?.dataUrl) {
+        PlatformBridge.openExternalUrl(activeShareContext.card.dataUrl);
+      }
+    });
+  }
+
+  if (DOM.shareCopyTextBtn) {
+    DOM.shareCopyTextBtn.addEventListener("click", async () => {
+      if (!activeShareContext) return;
+      AudioEngine.playLeap();
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(activeShareContext.shareText).catch(() => {});
+        showToast("📋 Score text copied to clipboard!");
+      }
+    });
+  }
+
+  if (DOM.shareCopyImageBtn) {
+    DOM.shareCopyImageBtn.addEventListener("click", async () => {
+      if (!activeShareContext?.card?.blob) return;
+      AudioEngine.playLeap();
+      if (typeof navigator !== "undefined" && navigator.clipboard?.write && typeof ClipboardItem !== "undefined") {
+        try {
+          const item = new ClipboardItem({ "image/png": activeShareContext.card.blob });
+          await navigator.clipboard.write([item]);
+          showToast("🖼️ Victory Card image copied to clipboard!");
+        } catch (err) {
+          showToast("⚠️ Image clipboard copy not supported by browser");
+        }
       }
     });
   }
@@ -1720,6 +1879,10 @@ export function bootApp() {
     onUndo: () => undo(false),
     onRestart: restart,
     onStepForward: () => {
+      if (GameState.customLevel?.isDaily) {
+        navigateToAdjacentDaily(1);
+        return;
+      }
       if (SceneRouter.getCurrentScreen() === "screenEditor") {
         EditorController.stepForward();
       } else {
@@ -1727,6 +1890,10 @@ export function bootApp() {
       }
     },
     onStepBackward: () => {
+      if (GameState.customLevel?.isDaily) {
+        navigateToAdjacentDaily(-1);
+        return;
+      }
       if (SceneRouter.getCurrentScreen() === "screenEditor") {
         EditorController.stepBackward();
       } else {
@@ -1749,7 +1916,7 @@ export function bootApp() {
     onToggleSolution: toggleSolutionPath,
     onShowPause: showPause,
     onShowLevelSelect: () => {
-      if (GameState.customLevel) {
+      if (GameState.customLevel && !GameState.customLevel.isDaily) {
         SceneRouter.navigateTo("screenEditor");
       } else {
         openHome();
@@ -1765,6 +1932,8 @@ export function bootApp() {
       }
     },
     onDailyPlay: () => startDailyLevel(),
+    onOpenAchievements: () => AchievementsController.open(),
+    onOpenCalendar: () => DailyCalendarController.open(),
     onOpenSettings: () => SettingsController.open(),
     onOpenHelp: () => TutorialController.open(),
     boardElement: DOM.board,
@@ -1831,7 +2000,7 @@ export function bootApp() {
         return true;
       }
       // 2. If in custom level playtest, Back returns to Level Editor
-      if (GameState.customLevel && SceneRouter.getCurrentScreen() === "screenGame") {
+      if (GameState.customLevel && !GameState.customLevel.isDaily && SceneRouter.getCurrentScreen() === "screenGame") {
         SceneRouter.navigateTo("screenEditor");
         return true;
       }

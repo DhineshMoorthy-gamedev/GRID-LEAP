@@ -36,6 +36,7 @@ export const SettingsController = {
       sectionIAP: document.getElementById("settingsSectionIAP"),
       sectionDev: document.getElementById("settingsSectionDev"),
       rowHaptics: document.getElementById("settingRowHaptics"),
+      rowDailyReminders: document.getElementById("settingRowDailyReminders"),
       hapticsUnavailablePill: document.getElementById("hapticsUnavailablePill"),
       settingHaptics: document.getElementById("settingHaptics"),
       settingDailyReminders: document.getElementById("settingDailyReminders")
@@ -50,15 +51,24 @@ export const SettingsController = {
       if (footerNote) footerNote.textContent = `GRID LEAP • v${this.versionName} • OLAI DIGITAL STUDIOS`;
     });
 
-    // Strategic Dimming: If haptics is unsupported on this device/browser
-    const hapticsAvailable = PlatformBridge.isHapticsSupported();
-    if (!hapticsAvailable) {
-      if (this.dom.rowHaptics) this.dom.rowHaptics.classList.add("disabled");
-      if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "inline-block";
-      if (this.dom.settingHaptics) {
-        this.dom.settingHaptics.disabled = true;
-        this.dom.settingHaptics.checked = false;
-        this.dom.settingHaptics.tabIndex = -1;
+    // Strategic Gating: On Desktop (Tauri / Itch), hide mobile-only rows (Haptics & Daily Push Reminders)
+    if (TargetConfig.isDesktop || TargetConfig.isItch) {
+      if (this.dom.rowHaptics) {
+        this.dom.rowHaptics.style.display = "none";
+      }
+      if (this.dom.rowDailyReminders) {
+        this.dom.rowDailyReminders.style.display = "none";
+      }
+    } else {
+      const hapticsAvailable = PlatformBridge.isHapticsSupported();
+      if (!hapticsAvailable) {
+        if (this.dom.rowHaptics) this.dom.rowHaptics.classList.add("disabled");
+        if (this.dom.hapticsUnavailablePill) this.dom.hapticsUnavailablePill.style.display = "inline-block";
+        if (this.dom.settingHaptics) {
+          this.dom.settingHaptics.disabled = true;
+          this.dom.settingHaptics.checked = false;
+          this.dom.settingHaptics.tabIndex = -1;
+        }
       }
     }
 
@@ -70,6 +80,11 @@ export const SettingsController = {
     // Platform Gating: Dev tools visible only in Editor mode
     if (this.dom.sectionDev) {
       this.dom.sectionDev.style.display = TargetConfig.features.editorSettings ? "block" : "none";
+    }
+
+    // Platform Gating: Rate button visible on mobile / store targets, hidden on Desktop
+    if (this.dom.btnRateApp) {
+      this.dom.btnRateApp.style.display = (TargetConfig.isDesktop || TargetConfig.isItch) ? "none" : "flex";
     }
 
     // Subview Navigation Listeners
@@ -156,6 +171,16 @@ export const SettingsController = {
       checkUpdateBtn.addEventListener("click", async () => {
         AudioEngine.playNavBack();
         const curVer = this.versionName || TargetConfig.version || "0.0.15";
+        if (TargetConfig.isDesktop || TargetConfig.isItch) {
+          refreshUpdateBtnState("checking", curVer);
+          showToast("Opening updates & changelog page...");
+          PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io/grid-leap");
+          setTimeout(() => {
+            refreshUpdateBtnState("uptodate", curVer);
+          }, 1200);
+          return;
+        }
+
         if ((TargetConfig.isPlayStore && PlatformBridge.isCapacitor()) || TargetConfig.features.editorSettings) {
           refreshUpdateBtnState("checking", curVer);
           showToast("Checking Google Play for updates...");
@@ -351,5 +376,66 @@ export const SettingsController = {
     }
     this.close();
     return true;
+  },
+
+  getFocusableItems() {
+    const mainView = document.getElementById("settingsMainView");
+    if (!mainView) return [];
+    const items = Array.from(mainView.querySelectorAll(
+      "button:not([disabled]), input:not([disabled])"
+    )).filter(el => {
+      return el.offsetParent !== null && el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== "none";
+    });
+    return items;
+  },
+
+  navigateFocus(direction) {
+    if (this.currentView !== "main") {
+      this.scrollSubView(direction);
+      return;
+    }
+
+    const items = this.getFocusableItems();
+    if (items.length === 0) return;
+
+    let idx = items.indexOf(document.activeElement);
+    if (idx === -1) {
+      idx = direction > 0 ? 0 : items.length - 1;
+    } else {
+      idx = (idx + direction + items.length) % items.length;
+    }
+
+    items[idx].focus();
+    items[idx].scrollIntoView({ block: "nearest", behavior: "smooth" });
+  },
+
+  handleHorizontal(direction) {
+    if (this.currentView !== "main") return;
+    const active = document.activeElement;
+
+    // Theme segmented control
+    if (active?.id === "pillThemeObsidian" && direction > 0) {
+      document.getElementById("pillThemeVellum")?.click();
+      document.getElementById("pillThemeVellum")?.focus();
+      return;
+    }
+    if (active?.id === "pillThemeVellum" && direction < 0) {
+      document.getElementById("pillThemeObsidian")?.click();
+      document.getElementById("pillThemeObsidian")?.focus();
+      return;
+    }
+
+    // Toggles
+    if (active && active.tagName === "INPUT" && active.type === "checkbox") {
+      active.click();
+    }
+  },
+
+  scrollSubView(direction) {
+    const activeView = this.dom.modal?.querySelector(`.settings-subview#settings${this.currentView.charAt(0).toUpperCase() + this.currentView.slice(1)}View`);
+    const scrollArea = activeView?.querySelector(".settings-scroll-area");
+    if (scrollArea) {
+      scrollArea.scrollBy({ top: direction * 140, behavior: "smooth" });
+    }
   }
 };

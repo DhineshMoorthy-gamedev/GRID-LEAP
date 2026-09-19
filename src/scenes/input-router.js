@@ -24,6 +24,8 @@ export function setupInputRouter({
   onCloseRules,
   onHomePlay,
   onDailyPlay,
+  onOpenAchievements,
+  onOpenCalendar,
   onOpenSettings,
   onOpenHelp,
   boardElement,
@@ -39,6 +41,8 @@ export function setupInputRouter({
   if (typeof window !== "undefined") {
     if (TargetConfig.isPlayStore) {
       setInputModality("touch");
+    } else if (TargetConfig.isDesktop) {
+      setInputModality("keyboard");
     } else {
       const isTouch = "ontouchstart" in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
       const hasFinePointer = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -68,18 +72,30 @@ export function setupInputRouter({
     }
 
     const currentScreen = SceneRouter.getCurrentScreen();
-    const isWinModalOpen = SceneRouter.isModalOpen("WIN") || document.getElementById("winOverlay")?.classList.contains("show");
-    const isFinalModalOpen = SceneRouter.isModalOpen("FINAL") || document.getElementById("finalOverlay")?.classList.contains("show");
-    const isSettingsOpen = SceneRouter.isModalOpen("SETTINGS") || document.getElementById("settingsModal")?.classList.contains("show");
-    const isTutorialOpen = SceneRouter.isModalOpen("RULES") || document.getElementById("rulesModal")?.classList.contains("show");
-    const isPauseOpen = SceneRouter.isModalOpen("PAUSE") || document.getElementById("pauseModal")?.classList.contains("show");
-
-    const isCalendarOpen = SceneRouter.isModalOpen("DAILY_CALENDAR") || document.getElementById("dailyCalendarModal")?.classList.contains("show");
-    const isAchievementsOpen = SceneRouter.isModalOpen("ACHIEVEMENTS") || document.getElementById("achievementsModal")?.classList.contains("show");
+    const isWinModalOpen = SceneRouter.isModalOpen("WIN");
+    const isFinalModalOpen = SceneRouter.isModalOpen("FINAL");
+    const isSettingsOpen = SceneRouter.isModalOpen("SETTINGS");
+    const isTutorialOpen = SceneRouter.isModalOpen("RULES");
+    const isPauseOpen = SceneRouter.isModalOpen("PAUSE");
+    const isCalendarOpen = SceneRouter.isModalOpen("DAILY_CALENDAR");
+    const isAchievementsOpen = SceneRouter.isModalOpen("ACHIEVEMENTS");
+    const isDevModalOpen = SceneRouter.isModalOpen("DEV");
+    const isEditorJsonOpen = SceneRouter.isModalOpen("EDITOR_JSON");
+    const isOutOfLivesOpen = SceneRouter.isModalOpen("OUT_OF_LIVES");
+    const isUpdateOpen = SceneRouter.isModalOpen("UPDATE");
+    const isRewardOpen = SceneRouter.isModalOpen("REWARD");
+    const isNotifPromptOpen = SceneRouter.isModalOpen("NOTIF_PROMPT");
+    const isShareOpen = SceneRouter.isModalOpen("SHARE");
+    const hasAnyModal = SceneRouter.hasAnyModalOpen();
 
     // Handle Tab key focus trapping for active modal overlays
     if (e.key === "Tab") {
-      const activeModalIds = ["settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal", "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal", "updateModal", "rewardModal", "notificationPromptModal", "devModal"];
+      const activeModalIds = [
+        "settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal",
+        "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal",
+        "updateModal", "rewardModal", "notificationPromptModal", "devModal", "editorJsonModal",
+        "shareModal"
+      ];
       let activeModalEl = null;
       for (const id of activeModalIds) {
         const el = document.getElementById(id);
@@ -137,27 +153,161 @@ export function setupInputRouter({
         }
         return;
       }
-      if (isAchievementsOpen && window.AchievementsController) {
-        window.AchievementsController.close();
+      if (isAchievementsOpen) {
+        if (window.AchievementsController) window.AchievementsController.close();
+        else SceneRouter.popModal();
         return;
       }
-      if (isCalendarOpen && window.DailyCalendarController) {
-        window.DailyCalendarController.close();
+      if (isCalendarOpen) {
+        if (window.DailyCalendarController) window.DailyCalendarController.close();
+        else SceneRouter.popModal();
         return;
       }
-      if (isSettingsOpen && window.SettingsController) {
-        window.SettingsController.back();
+      if (isSettingsOpen) {
+        if (window.SettingsController) window.SettingsController.back();
+        else SceneRouter.popModal();
         return;
       }
-      if (isTutorialOpen && window.TutorialController) {
-        window.TutorialController.close();
+      if (isTutorialOpen) {
+        if (window.TutorialController) window.TutorialController.close();
+        else SceneRouter.popModal();
+        return;
+      }
+      if (isPauseOpen) {
+        document.getElementById("resumeBtn")?.click();
+        return;
+      }
+      if (isOutOfLivesOpen) {
+        document.getElementById("outOfLivesRestartBtn")?.click();
+        return;
+      }
+      if (isRewardOpen) {
+        document.getElementById("rewardContinueBtn")?.click();
+        return;
+      }
+      if (isDevModalOpen) {
+        document.getElementById("closeDevBtn")?.click();
+        return;
+      }
+      if (isEditorJsonOpen) {
+        document.getElementById("closeEditorJsonBtn")?.click();
+        return;
+      }
+      if (isUpdateOpen) {
+        document.getElementById("updateModalCloseX")?.click() || document.getElementById("updateModalLaterBtn")?.click();
+        return;
+      }
+      if (isNotifPromptOpen) {
+        document.getElementById("notifPromptCloseX")?.click() || document.getElementById("notifPromptLaterBtn")?.click();
+        return;
+      }
+      if (isShareOpen) {
+        document.getElementById("shareModalCloseBtn")?.click();
         return;
       }
       if (SceneRouter.popModal()) {
         return;
       }
-      if (currentScreen === "screenGame") {
+      if (currentScreen === "screenGame" || currentScreen === "screenEditor") {
         if (onShowLevelSelect) onShowLevelSelect();
+        return;
+      }
+      return;
+    }
+
+    // Modal Specific Hotkeys & Strict Modal Layer Isolation
+    if (isAchievementsOpen) {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        window.AchievementsController?.cycleCategory(-1);
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        window.AchievementsController?.cycleCategory(1);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        window.AchievementsController?.scrollList(-1);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        window.AchievementsController?.scrollList(1);
+        return;
+      }
+      if (e.key === "PageUp") {
+        e.preventDefault();
+        window.AchievementsController?.scrollList(-3);
+        return;
+      }
+      if (e.key === "PageDown") {
+        e.preventDefault();
+        window.AchievementsController?.scrollList(3);
+        return;
+      }
+      return;
+    }
+
+    if (isCalendarOpen) {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        window.DailyCalendarController?.navigateDay(0, -1);
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        window.DailyCalendarController?.navigateDay(0, 1);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        window.DailyCalendarController?.navigateDay(-1, 0);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        window.DailyCalendarController?.navigateDay(1, 0);
+        return;
+      }
+      if (e.key === "[" || e.key === ",") {
+        e.preventDefault();
+        window.DailyCalendarController?.changeMonth(-1);
+        return;
+      }
+      if (e.key === "]" || e.key === ".") {
+        e.preventDefault();
+        window.DailyCalendarController?.changeMonth(1);
+        return;
+      }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        window.DailyCalendarController?.playSelectedDay();
+        return;
+      }
+      return;
+    }
+
+    if (isSettingsOpen) {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        window.SettingsController?.navigateFocus(-1);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        window.SettingsController?.navigateFocus(1);
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        window.SettingsController?.handleHorizontal(-1);
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        window.SettingsController?.handleHorizontal(1);
         return;
       }
       return;
@@ -180,10 +330,10 @@ export function setupInputRouter({
 
     // Tutorial Modal Hotkeys & Isolation
     if (isTutorialOpen) {
+      const rulesModal = document.getElementById("rulesModal");
+      const currentTutView = rulesModal?.dataset?.view || "welcome";
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        const rulesModal = document.getElementById("rulesModal");
-        const currentTutView = rulesModal?.dataset?.view || "welcome";
         if (currentTutView === "welcome") {
           window.TutorialController?.startTutorialFromWelcome();
           return;
@@ -203,21 +353,53 @@ export function setupInputRouter({
         window.TutorialController?.resetCurrentStage();
         return;
       }
-      // CRITICAL: Block all other hotkeys (like Home/Game shortcuts) from running while tutorial is open
-      return;
-    }
-
-    // Settings Modal Open -> Block background hotkeys
-    if (isSettingsOpen) {
+      if (currentTutView === "game") {
+        const keyMap = {
+          ArrowUp: "up", w: "up", W: "up",
+          ArrowDown: "down", s: "down", S: "down",
+          ArrowLeft: "left", a: "left", A: "left",
+          ArrowRight: "right", d: "right", D: "right"
+        };
+        const dir = keyMap[e.key];
+        if (dir) {
+          e.preventDefault();
+          window.TutorialController?.attemptDirectionMove?.(dir);
+          return;
+        }
+      }
       return;
     }
 
     // Win Modal action hotkeys
     if (isWinModalOpen) {
+      if (e.key === "[" || e.key === "," || e.key === "ArrowLeft") {
+        const prevBtn = document.getElementById("winDailyPrevBtn");
+        if (prevBtn && prevBtn.offsetParent !== null && !prevBtn.disabled) {
+          e.preventDefault();
+          prevBtn.click();
+          return;
+        }
+      }
+      if (e.key === "]" || e.key === "." || e.key === "ArrowRight") {
+        const nextBtn = document.getElementById("winDailyNextBtn");
+        if (nextBtn && nextBtn.offsetParent !== null && !nextBtn.disabled) {
+          e.preventDefault();
+          nextBtn.click();
+          return;
+        }
+      }
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         if (onNextLevel) onNextLevel();
         return;
+      }
+      if (e.key === "s" || e.key === "S") {
+        const shareBtn = document.getElementById("winShareBtn");
+        if (shareBtn && shareBtn.offsetParent !== null) {
+          e.preventDefault();
+          shareBtn.click();
+          return;
+        }
       }
       if (e.key === "r" || e.key === "R") {
         e.preventDefault();
@@ -227,8 +409,78 @@ export function setupInputRouter({
       return;
     }
 
-    // Any unhandled modal (e.g. Pause, Out of lives) consumes hotkeys
-    if (isPauseOpen || isWinModalOpen || isFinalModalOpen || isSettingsOpen || isTutorialOpen) {
+    // Pause Modal action hotkeys
+    if (isPauseOpen) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        document.getElementById("resumeBtn")?.click();
+        return;
+      }
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        document.getElementById("pauseRestartBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Out of Lives Modal
+    if (isOutOfLivesOpen) {
+      if (e.key === "Enter" || e.key === " " || e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        document.getElementById("outOfLivesRestartBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Reward Modal
+    if (isRewardOpen) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        document.getElementById("rewardContinueBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Update Modal
+    if (isUpdateOpen) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        document.getElementById("updateModalActionBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Notification Prompt Modal
+    if (isNotifPromptOpen) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        document.getElementById("notifPromptEnableBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Share Modal Hotkeys
+    if (isShareOpen) {
+      if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        document.getElementById("shareCopyTextBtn")?.click();
+        return;
+      }
+      if (e.key === "i" || e.key === "I") {
+        e.preventDefault();
+        document.getElementById("shareCopyImageBtn")?.click();
+        return;
+      }
+      return;
+    }
+
+    // Global Modal Safety Guard: If ANY modal is visible, unconditionally block all background hotkeys
+    if (hasAnyModal) {
       return;
     }
 
@@ -242,6 +494,24 @@ export function setupInputRouter({
       if (e.key === "d" || e.key === "D") {
         e.preventDefault();
         if (onDailyPlay) onDailyPlay();
+        return;
+      }
+      if (e.key === "a" || e.key === "A") {
+        e.preventDefault();
+        if (onOpenAchievements) {
+          onOpenAchievements();
+        } else if (window.AchievementsController) {
+          window.AchievementsController.open();
+        }
+        return;
+      }
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault();
+        if (onOpenCalendar) {
+          onOpenCalendar();
+        } else if (window.DailyCalendarController) {
+          window.DailyCalendarController.open();
+        }
         return;
       }
       if (e.key === "s" || e.key === "S") {

@@ -183,6 +183,7 @@ export const DailyCalendarController = {
       const tile = document.createElement("button");
       tile.className = "cal-day-tile";
       tile.dataset.date = day.dateKey;
+      tile.tabIndex = 0;
 
       if (day.isBeforeLaunch) {
         tile.classList.add("before-launch");
@@ -236,6 +237,10 @@ export const DailyCalendarController = {
         tile.addEventListener("click", () => this.handleTileClick(day.dateKey));
       }
 
+      if (this.selectedDateKey === day.dateKey) {
+        tile.classList.add("selected-focus");
+      }
+
       this.dom.gridContainer.appendChild(tile);
     });
   },
@@ -245,6 +250,66 @@ export const DailyCalendarController = {
     this.close();
     if (typeof this.onPlayDateCallback === "function") {
       this.onPlayDateCallback(dateKey);
+    }
+  },
+
+  /**
+   * Keyboard Arrow Navigation across Calendar Grid
+   */
+  navigateDay(deltaRow, deltaCol) {
+    const tiles = Array.from(this.dom.gridContainer?.querySelectorAll("button.cal-day-tile") || []);
+    if (tiles.length === 0) return;
+
+    let currentIndex = tiles.findIndex(t => t.dataset.date === this.selectedDateKey);
+    if (currentIndex === -1) {
+      // Find today or first playable tile
+      currentIndex = tiles.findIndex(t => t.classList.contains("today") || t.classList.contains("playable") || t.classList.contains("completed"));
+      if (currentIndex === -1) currentIndex = 0;
+    }
+
+    const targetIndex = currentIndex + (deltaRow * 7) + deltaCol;
+
+    if (targetIndex < 0) {
+      // Navigate to previous month
+      this.changeMonth(-1);
+      const newTiles = Array.from(this.dom.gridContainer?.querySelectorAll("button.cal-day-tile") || []);
+      if (newTiles.length > 0) {
+        const dest = deltaRow < 0 ? Math.max(0, newTiles.length - 7 + (currentIndex % 7)) : newTiles.length - 1;
+        this.selectTile(newTiles[dest]);
+      }
+      return;
+    }
+
+    if (targetIndex >= tiles.length) {
+      // Navigate to next month
+      this.changeMonth(1);
+      const newTiles = Array.from(this.dom.gridContainer?.querySelectorAll("button.cal-day-tile") || []);
+      if (newTiles.length > 0) {
+        const dest = deltaRow > 0 ? Math.min(newTiles.length - 1, currentIndex % 7) : 0;
+        this.selectTile(newTiles[dest]);
+      }
+      return;
+    }
+
+    this.selectTile(tiles[targetIndex]);
+  },
+
+  selectTile(tileEl) {
+    if (!tileEl) return;
+    const tiles = this.dom.gridContainer?.querySelectorAll("button.cal-day-tile") || [];
+    tiles.forEach(t => t.classList.remove("selected-focus"));
+    tileEl.classList.add("selected-focus");
+    tileEl.focus();
+    this.selectedDateKey = tileEl.dataset.date;
+  },
+
+  playSelectedDay() {
+    if (!this.selectedDateKey) return;
+    const tile = this.dom.gridContainer?.querySelector(`button.cal-day-tile[data-date="${this.selectedDateKey}"]`);
+    if (tile && !tile.disabled) {
+      tile.click();
+    } else {
+      AudioEngine.playBlocked?.();
     }
   }
 };

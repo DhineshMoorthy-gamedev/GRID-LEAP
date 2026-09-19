@@ -1,6 +1,6 @@
 cd /d "E:\PROTO\GRID LEAP"
  
-npm run dev
+npm run dev:playstore
 
 npx cap open android
 
@@ -11,3 +11,7 @@ npx cap sync android && cd android && .\gradlew.bat assembleDebug && explorer ap
 agy --conversation=fb26f97c-1383-4d4f-aabb-fa44d9a7f9b3 - dev
  
 agy --conversation=cec7d73e-1f15-431a-9e98-21adcb6bf778 - analytics
+
+npm run tauri:dev
+
+npm run tauri:build

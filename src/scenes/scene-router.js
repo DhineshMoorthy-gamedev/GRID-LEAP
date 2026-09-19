@@ -19,7 +19,8 @@ const MODAL_ELEMENTS = {
   ACHIEVEMENTS: "achievementsModal",
   UPDATE: "updateModal",
   REWARD: "rewardModal",
-  NOTIF_PROMPT: "notificationPromptModal"
+  NOTIF_PROMPT: "notificationPromptModal",
+  SHARE: "shareModal"
 };
 
 let currentScreen = "screenHome"; // "screenHome" | "screenGame"
@@ -45,8 +46,19 @@ export const SceneRouter = {
     this._notify("screen_changed", { screenId });
   },
 
+  hasAnyModalOpen() {
+    if (modalStack.length > 0) return true;
+    for (const id of Object.values(MODAL_ELEMENTS)) {
+      const el = document.getElementById(id);
+      if (el && (el.classList.contains("show") || el.classList.contains("active"))) {
+        return true;
+      }
+    }
+    return false;
+  },
+
   isInputBlocked() {
-    return modalStack.length > 0 || currentScreen !== "screenGame";
+    return this.hasAnyModalOpen() || currentScreen !== "screenGame";
   },
 
   currentModal() {
@@ -84,7 +96,9 @@ export const SceneRouter = {
   },
 
   isModalOpen(modalName) {
-    return modalStack.some(m => m.name === modalName);
+    if (modalStack.some(m => m.name === modalName)) return true;
+    const el = getElement(modalName);
+    return !!(el && (el.classList.contains("show") || el.classList.contains("active")));
   },
 
   subscribe(fn) {

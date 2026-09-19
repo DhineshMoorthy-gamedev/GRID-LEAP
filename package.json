@@ -9,19 +9,25 @@
     "dev:playstore": "vite --mode playstore",
     "dev:itch": "vite --mode itch",
     "dev:web": "vite --mode web",
+    "dev:desktop": "vite --mode desktop",
     "build": "vite build --mode editor",
     "build:editor": "vite build --mode editor --outDir dist/editor",
     "build:web": "vite build --mode web --outDir dist/web",
     "build:itch": "vite build --mode itch --outDir dist/itch",
+    "build:desktop": "vite build --mode desktop --outDir dist/desktop",
     "build:playstore": "vite build --mode playstore --outDir dist && cap sync android",
     "build:apk": "npm run build:playstore && cd android && gradlew.bat assembleDebug",
     "build:aab": "npm run build:playstore && cd android && gradlew.bat bundleRelease",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "npm run build:desktop && tauri build",
     "preview": "vite preview",
     "test:daily": "node tests/test-daily-solvability.js",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "vite": "^6.0.0"
   },
   "dependencies": {

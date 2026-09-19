@@ -7,11 +7,17 @@ export const TARGET_MODES = {
   EDITOR: "editor",
   PLAYSTORE: "playstore",
   ITCH: "itch",
-  WEB: "web"
+  WEB: "web",
+  DESKTOP: "desktop"
 };
 
-const rawMode = (import.meta.env?.VITE_APP_TARGET || "editor").toLowerCase();
-const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TARGET_MODES.EDITOR;
+// Automatic detection for native Tauri Desktop runtime
+const isTauriRuntime = typeof window !== "undefined" && Boolean(
+  window.__TAURI_INTERNALS__ || window.__TAURI__ || window.__TAURI_METADATA__ || window.__TAURI_IPC__ || window.__TAURI_PATTERN__
+);
+
+const rawMode = (isTauriRuntime ? "desktop" : (import.meta.env?.VITE_APP_TARGET || "desktop")).toLowerCase();
+const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TARGET_MODES.DESKTOP;
 
 export const TargetConfig = {
   mode: activeMode,
@@ -23,6 +29,7 @@ export const TargetConfig = {
   isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,
   isItch: activeMode === TARGET_MODES.ITCH,
   isWeb: activeMode === TARGET_MODES.WEB,
+  isDesktop: activeMode === TARGET_MODES.DESKTOP,
 
   features: {
     // Level Editor & creation suite
@@ -31,8 +38,8 @@ export const TargetConfig = {
     devDiagnostics: activeMode === TARGET_MODES.EDITOR,
     // Native Capacitor plugins (Haptics, StatusBar, App)
     nativePlugins: activeMode === TARGET_MODES.PLAYSTORE,
-    // Itch.io / Desktop fullscreen toggle
-    fullscreenControl: activeMode === TARGET_MODES.ITCH || activeMode === TARGET_MODES.WEB,
+    // Itch.io / Desktop / Web fullscreen toggle
+    fullscreenControl: activeMode === TARGET_MODES.ITCH || activeMode === TARGET_MODES.WEB || activeMode === TARGET_MODES.DESKTOP,
     // Keyboard hint pill on screen (disabled to keep clean minimalist gameplay UI)
     keyboardHints: false,
     // Web Share API

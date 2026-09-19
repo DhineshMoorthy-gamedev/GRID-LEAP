@@ -3083,6 +3083,15 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 /* LEVEL COMPLETE & CAMPAIGN COMPLETE PANELS (Reworked)      */
 /* ======================================================== */
 
+#winOverlay {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+}
+
+#winOverlay::-webkit-scrollbar {
+  display: none !important;
+}
+
 .win-card {
   max-width: 380px;
   width: 100%;
@@ -3093,11 +3102,16 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--line);
-  max-height: min(580px, calc(100dvh - 32px));
+  max-height: min(600px, calc(100dvh - 32px));
   margin: auto;
   box-sizing: border-box;
+}
+
+.win-card::-webkit-scrollbar {
+  display: none !important;
 }
 
 [data-theme="vellum"] .win-card {
@@ -3120,11 +3134,16 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  max-height: min(580px, calc(100dvh - 32px));
+  max-height: min(600px, calc(100dvh - 32px));
   margin: auto;
   box-sizing: border-box;
+}
+
+.win-sigil-card::-webkit-scrollbar {
+  display: none !important;
 }
 
 [data-theme="vellum"] .win-sigil-card {
@@ -3138,14 +3157,14 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 6px 0 16px;
+  margin: 4px 0 14px;
   position: relative;
   flex-shrink: 0;
 }
 
 .win-sigil-medallion {
-  width: clamp(124px, 21vh, 176px);
-  height: clamp(124px, 21vh, 176px);
+  width: clamp(112px, 18vh, 154px);
+  height: clamp(112px, 18vh, 154px);
   border-radius: 50%;
   position: relative;
   background: radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.18) 0%, rgba(11, 14, 19, 0.96) 75%);
@@ -3828,7 +3847,7 @@ body[data-ad-position="top"] #settingsModal {
   flex-direction: column;
   box-sizing: border-box;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Top Bar */
@@ -3838,9 +3857,10 @@ body[data-ad-position="top"] #settingsModal {
   justify-content: space-between;
   width: 100%;
   min-height: 48px;
-  padding: 4px 0 10px 0;
+  padding: 4px 10px 10px 10px;
   border-bottom: 1px solid var(--line-soft);
   flex: 0 0 auto;
+  box-sizing: border-box;
 }
 
 .settings-close-btn,
@@ -5167,18 +5187,7 @@ body[data-target-mode="web"] .about-actions-row {
 /* ======================================================== */
 
 .kbd-badge {
-  display: none !important;
-}
-
-/* PlayStore target is strictly mobile touch — never display kbd badges */
-body[data-target-mode="playstore"] .kbd-badge {
-  display: none !important;
-}
-
-/* Enabled strictly on Web / Desktop target with Keyboard Modality */
-body:not([data-target-mode="playstore"])[data-input-modality="keyboard"] .kbd-badge,
-body[data-target-mode="web"]:not([data-input-modality="touch"]) .kbd-badge {
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-num);
@@ -5200,9 +5209,14 @@ body[data-target-mode="web"]:not([data-input-modality="touch"]) .kbd-badge {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
+/* PlayStore target and touch screens: strictly suppress kbd badges */
+body[data-target-mode="playstore"] .kbd-badge,
+body[data-input-modality="touch"] .kbd-badge {
+  display: none !important;
+}
+
 /* Vellum Theme (High-Contrast Charcoal on Paper White) */
-[data-theme="vellum"] body:not([data-target-mode="playstore"])[data-input-modality="keyboard"] .kbd-badge,
-[data-theme="vellum"] body[data-target-mode="web"]:not([data-input-modality="touch"]) .kbd-badge {
+[data-theme="vellum"] .kbd-badge {
   background: #FFFFFF;
   color: #1E293B;
   border: 1px solid #CBD5E1;
@@ -5228,16 +5242,24 @@ body[data-target-mode="web"]:not([data-input-modality="touch"]) .kbd-badge {
 .nav-icon-btn,
 .nav-back-btn,
 .daily-play-btn,
+.daily-cal-trigger-btn,
 .settings-close-btn,
-.tutorial-close-x {
+.tutorial-close-x,
+.win-share-circle-btn,
+.ach-close-btn,
+.daily-cal-close-btn {
   position: relative;
 }
 
 .nav-icon-btn .kbd-badge,
 .nav-back-btn .kbd-badge,
 .daily-play-btn .kbd-badge,
+.daily-cal-trigger-btn .kbd-badge,
 .settings-close-btn .kbd-badge,
-.tutorial-close-x .kbd-badge {
+.tutorial-close-x .kbd-badge,
+.win-share-circle-btn .kbd-badge,
+.ach-close-btn .kbd-badge,
+.daily-cal-close-btn .kbd-badge {
   position: absolute;
   bottom: -4px;
   right: -4px;
@@ -5257,12 +5279,21 @@ body[data-target-mode="web"]:not([data-input-modality="touch"]) .kbd-badge {
 [data-theme="vellum"] .nav-icon-btn .kbd-badge,
 [data-theme="vellum"] .nav-back-btn .kbd-badge,
 [data-theme="vellum"] .daily-play-btn .kbd-badge,
+[data-theme="vellum"] .daily-cal-trigger-btn .kbd-badge,
 [data-theme="vellum"] .settings-close-btn .kbd-badge,
-[data-theme="vellum"] .tutorial-close-x .kbd-badge {
+[data-theme="vellum"] .tutorial-close-x .kbd-badge,
+[data-theme="vellum"] .win-share-circle-btn .kbd-badge,
+[data-theme="vellum"] .ach-close-btn .kbd-badge,
+[data-theme="vellum"] .daily-cal-close-btn .kbd-badge {
   background: #FFFFFF;
   border: 1px solid #2B5D7D;
   color: #1E3A5F;
   box-shadow: 0 2px 5px rgba(60, 50, 40, 0.16);
+}
+
+.settings-close-btn .kbd-badge {
+  bottom: -2px;
+  right: 0px;
 }
 
 /* Consumer Play Hero Badge */
@@ -6654,6 +6685,8 @@ body[data-target-mode="playstore"] .tutorial-card {
 .daily-calendar-card {
   max-width: 440px;
   width: 92vw;
+  max-height: min(640px, calc(100dvh - 32px));
+  overflow-y: auto;
   padding: 20px 22px;
   text-align: left;
   border-radius: 22px;
@@ -6663,6 +6696,7 @@ body[data-target-mode="playstore"] .tutorial-card {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-sizing: border-box;
 }
 
 [data-theme="vellum"] .daily-calendar-card {
@@ -7978,5 +8012,375 @@ body[data-target-mode="playstore"] .tutorial-card {
   color: var(--text-main);
   letter-spacing: 0.01em;
 }
+
+/* ==========================================
+   Desktop Keyboard Navigation & Focus Rings
+   ========================================== */
+.cal-day-tile:focus-visible,
+.cal-day-tile.selected-focus {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px var(--accent-primary-glow) !important;
+  z-index: 5;
+}
+
+.settings-nav-row:focus-visible,
+.settings-close-btn:focus-visible,
+.theme-segment-btn:focus-visible,
+.btn-iap:focus-visible,
+.toggle-switch input:focus-visible + .toggle-slider {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 10px var(--accent-primary-glow) !important;
+}
+
+.ach-tab-btn:focus-visible,
+.ach-close-btn:focus-visible,
+.daily-cal-close-btn:focus-visible,
+.cal-nav-btn:focus-visible,
+.share-channel-btn:focus-visible,
+.share-quick-btn:focus-visible,
+.share-modal-close-btn:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* ==========================================
+   Desktop / Web Share Options Modal
+   ========================================== */
+.share-modal-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.share-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.share-modal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.share-modal-eyebrow {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-primary, #38BDF8);
+}
+
+.share-modal-title {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main, #F8FAFC);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.share-modal-close-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.12));
+  color: var(--text-muted, #94A3B8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 140ms ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.share-modal-close-btn:hover {
+  color: var(--text-main, #FFFFFF);
+  border-color: var(--line, rgba(255, 255, 255, 0.25));
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.share-modal-close-btn .kbd-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+}
+
+/* Preview Box */
+.share-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.08));
+}
+
+.share-preview-thumb-wrap {
+  width: 48px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.share-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.share-preview-placeholder {
+  font-size: 20px;
+  color: var(--accent-primary, #38BDF8);
+}
+
+.share-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.share-preview-level {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main, #FFFFFF);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-preview-stats {
+  font-family: var(--font-num);
+  font-size: 12px;
+  color: var(--text-muted, #94A3B8);
+}
+
+.share-preview-saved-tag {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary, #10B981);
+}
+
+/* Helpful Hint Banner */
+.share-hint-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  color: var(--text-main, #F8FAFC);
+  line-height: 1.35;
+}
+
+.share-hint-tip .kbd-badge {
+  display: inline-block !important;
+  font-size: 8px;
+  padding: 1px 4px;
+}
+
+[data-theme="vellum"] .share-hint-tip {
+  background: rgba(43, 93, 125, 0.08);
+  border-color: rgba(43, 93, 125, 0.2);
+  color: #1E1C1A;
+}
+
+/* Channels Grid */
+.share-channels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.share-channel-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.1));
+  color: var(--text-main, #FFFFFF);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.share-channel-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-primary, #38BDF8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.share-channel-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.share-channel-btn svg {
+  flex-shrink: 0;
+}
+
+.share-channel-x svg {
+  color: #FFFFFF;
+}
+
+.share-channel-wa svg {
+  color: #25D366;
+}
+
+.share-channel-mail svg {
+  color: #38BDF8;
+}
+
+.share-channel-folder svg {
+  color: #F59E0B;
+}
+
+.channel-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.channel-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main, #FFFFFF);
+  line-height: 1.2;
+}
+
+.channel-desc {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  color: var(--text-muted, #94A3B8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Quick Actions Bottom Row */
+.share-quick-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.share-quick-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+/* Vellum Theme Adjustments */
+[data-theme="vellum"] .share-modal-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(30, 28, 26, 0.16);
+  box-shadow: 0 20px 48px rgba(60, 50, 40, 0.16);
+}
+
+[data-theme="vellum"] .share-modal-eyebrow {
+  color: var(--accent-primary, #2B5D7D);
+}
+
+[data-theme="vellum"] .share-modal-title {
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .share-modal-close-btn {
+  background: #F4F1EA;
+  border-color: rgba(30, 28, 26, 0.14);
+  color: #6E6962;
+}
+
+[data-theme="vellum"] .share-modal-close-btn:hover {
+  background: #ECE7DE;
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .share-preview-box {
+  background: #F8F6F0;
+  border-color: rgba(30, 28, 26, 0.1);
+}
+
+[data-theme="vellum"] .share-preview-thumb-wrap {
+  background: #EDE8DE;
+  border-color: rgba(30, 28, 26, 0.12);
+}
+
+[data-theme="vellum"] .share-preview-level {
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .share-preview-stats {
+  color: #6E6962;
+}
+
+[data-theme="vellum"] .share-preview-saved-tag {
+  color: #1D4E6D;
+}
+
+[data-theme="vellum"] .share-channel-btn {
+  background: #F8F6F0;
+  border-color: rgba(30, 28, 26, 0.12);
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .share-channel-btn:hover {
+  background: #F0EDE4;
+  border-color: var(--accent-primary, #2B5D7D);
+  box-shadow: 0 4px 12px rgba(60, 50, 40, 0.12);
+}
+
+[data-theme="vellum"] .share-channel-x svg {
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .channel-name {
+  color: #1E1C1A;
+}
+
+[data-theme="vellum"] .channel-desc {
+  color: #6E6962;
+}
+
 
 

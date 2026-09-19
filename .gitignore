@@ -12,3 +12,12 @@ docs/store-assets/screenshots/
 *.jks
 *.keystore
 
+# Tauri Desktop Build Artifacts
+src-tauri/target/
+
+# Android Build Artifacts
+.gradle/
+android/.gradle/
+android/app/build/
+android/build/
+

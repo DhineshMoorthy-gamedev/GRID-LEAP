@@ -129,10 +129,34 @@ export const PlatformBridge = {
 
   openExternalUrl(url) {
     if (!url) return;
+    // 1. If running in Tauri Desktop, use native OS opener command
+    if (typeof window !== "undefined") {
+      const tauriInvoke = window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.core?.invoke;
+      if (typeof tauriInvoke === "function") {
+        try {
+          tauriInvoke("open_url", { url });
+          return;
+        } catch (err) {
+          console.warn("[PlatformBridge] Tauri open_url error:", err);
+        }
+      }
+    }
+
+    // 2. Standard Web fallback: create an invisible anchor with _blank
     try {
-      window.open(url, "_blank", "noopener,noreferrer");
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch (e) {
-      window.location.href = url;
+      try {
+        window.open(url, "_blank", "noopener,noreferrer");
+      } catch (_) {
+        window.location.href = url;
+      }
     }
   },
 

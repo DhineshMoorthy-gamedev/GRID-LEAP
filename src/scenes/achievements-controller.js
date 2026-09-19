@@ -67,6 +67,29 @@ export const AchievementsController = {
     this.render();
   },
 
+  cycleCategory(delta) {
+    const categories = [
+      ACHIEVEMENT_CATEGORIES.ALL,
+      ACHIEVEMENT_CATEGORIES.CAMPAIGN,
+      ACHIEVEMENT_CATEGORIES.MASTERY,
+      ACHIEVEMENT_CATEGORIES.DAILY,
+      ACHIEVEMENT_CATEGORIES.STRATEGY,
+      ACHIEVEMENT_CATEGORIES.TIME
+    ];
+    let idx = categories.indexOf(this.currentCategory);
+    if (idx === -1) idx = 0;
+    idx = (idx + delta + categories.length) % categories.length;
+    AudioEngine.playNavBack();
+    this.setCategory(categories[idx]);
+  },
+
+  scrollList(direction) {
+    const scrollArea = this.dom.modal?.querySelector(".achievements-scroll-area");
+    if (scrollArea) {
+      scrollArea.scrollBy({ top: direction * 140, behavior: "smooth" });
+    }
+  },
+
   render() {
     const totalCompletedCampaign = (GameState.completed || []).filter(Boolean).length;
     const totalAllTimeDaily = (typeof window !== "undefined" && window.DailyManager) ? (window.DailyManager.getTotalCompletedCount?.() || 0) : 0;

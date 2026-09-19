@@ -134,6 +134,23 @@ export const DOM = {
   winRestartBtn: document.getElementById("winRestartBtn"),
   winNextBtn: document.getElementById("winNextBtn"),
   winHomeBtn: document.getElementById("winHomeBtn"),
+  winShareBtn: document.getElementById("winShareBtn"),
+
+  // Share Modal
+  shareModal: document.getElementById("shareModal"),
+  shareModalTitle: document.getElementById("shareModalTitle"),
+  shareModalCloseBtn: document.getElementById("shareModalCloseBtn"),
+  sharePreviewImg: document.getElementById("sharePreviewImg"),
+  sharePreviewPlaceholder: document.getElementById("sharePreviewPlaceholder"),
+  sharePreviewLevel: document.getElementById("sharePreviewLevel"),
+  sharePreviewStats: document.getElementById("sharePreviewStats"),
+  sharePreviewSavedTag: document.getElementById("sharePreviewSavedTag"),
+  shareBtnX: document.getElementById("shareBtnX"),
+  shareBtnWhatsApp: document.getElementById("shareBtnWhatsApp"),
+  shareBtnEmail: document.getElementById("shareBtnEmail"),
+  shareBtnOpenImage: document.getElementById("shareBtnOpenImage"),
+  shareCopyTextBtn: document.getElementById("shareCopyTextBtn"),
+  shareCopyImageBtn: document.getElementById("shareCopyImageBtn"),
 
   finalOverlay: document.getElementById("finalOverlay"),
   finalTitle: document.getElementById("finalTitle"),
