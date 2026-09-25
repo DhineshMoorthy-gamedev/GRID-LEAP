@@ -65,7 +65,10 @@ export const TargetConfig = {
     // Show Hint Count / Ad badge (hidden on Desktop & Editor where hints are unlimited & ad-free)
     showHintBadge: activeMode !== TARGET_MODES.DESKTOP && activeMode !== TARGET_MODES.EDITOR,
     // Win Modal Social Share Button (Enabled on Play Store & Desktop, hidden on Web, Itch & CrazyGames)
-    winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH && activeMode !== TARGET_MODES.CRAZYGAMES
+    winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH && activeMode !== TARGET_MODES.CRAZYGAMES,
+    // Rewarded and Interstitial ads (Play Store native AdMob and CrazyGames SDK)
+    ads: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.CRAZYGAMES,
+    rewardedAds: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.CRAZYGAMES
   }
 };
 

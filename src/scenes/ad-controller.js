@@ -15,6 +15,8 @@ class AdControllerClass {
     this._isRewardedLoading = false;
     this._interstitialReady = false;
     this._isInterstitialLoading = false;
+    this._initialized = false;   // guard against double-init
+    this._sdkReady = false;      // CrazyGames SDK fully initialized
   }
 
   _loadLevelCount() {
@@ -33,22 +35,29 @@ class AdControllerClass {
   }
 
   async init() {
-    // Check if ads feature is enabled on this target build
-    if (!TargetConfig.features.showAdBanner) return;
+    // Prevent double-init (called twice: early in bootApp + inside afterIntro)
+    if (this._initialized) return;
+    this._initialized = true;
 
     // ── CrazyGames SDK Initialization ───────────────────────────────────────
     if (TargetConfig.isCrazyGames) {
       if (typeof window !== "undefined" && window.CrazyGames?.SDK) {
         try {
           await window.CrazyGames.SDK.init();
+          this._sdkReady = true;
           console.log("[AdController] CrazyGames SDK initialized successfully");
         } catch (err) {
           console.warn("[AdController] CrazyGames SDK init error:", err);
+          // Still mark sdkReady so gameplay events don't get permanently blocked
+          this._sdkReady = true;
         }
       }
       this._adsEnabled = true;
       return;
     }
+
+    // Check if ads feature is enabled on this target build
+    if (!TargetConfig.features.showAdBanner && !TargetConfig.features.ads) return;
 
     // ── Layer 1: Instant Local Cache (Offline-ready) ──────────────────────────
     try {
@@ -226,13 +235,33 @@ class AdControllerClass {
             adError: (error) => {
               console.warn("[CrazyGames] Rewarded ad error:", error);
               AudioEngine.resume();
+              const isBasicLaunch = 
+                error === "adsDisabledBasicLaunch" || 
+                error?.code === "adsDisabledBasicLaunch" || 
+                (typeof error === "string" && error.includes("adsDisabledBasicLaunch")) || 
+                (error?.message && (String(error.message).includes("basic launch") || String(error.message).includes("Basic launch") || String(error.message).includes("Basic Launch")));
+
+              if (isBasicLaunch) {
+                // In Basic Launch, CrazyGames disables live ads. Grant the reward as per CrazyGames guidelines.
+                resolve(true);
+                return;
+              }
+
+              showToast("Ad is unavailable right now. Try again shortly.");
               resolve(false);
             },
             adStarted: () => {
               AudioEngine.suspend();
             }
           };
-          window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+          try {
+            window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+          } catch (err) {
+            console.warn("[CrazyGames] requestAd exception:", err);
+            AudioEngine.resume();
+            showToast("Ad failed to play. Please try again.");
+            resolve(false);
+          }
         });
       }
       return true;
@@ -292,13 +321,33 @@ class AdControllerClass {
             adError: (error) => {
               console.warn("[CrazyGames] Rewarded ad error:", error);
               AudioEngine.resume();
+              const isBasicLaunch = 
+                error === "adsDisabledBasicLaunch" || 
+                error?.code === "adsDisabledBasicLaunch" || 
+                (typeof error === "string" && error.includes("adsDisabledBasicLaunch")) || 
+                (error?.message && (String(error.message).includes("basic launch") || String(error.message).includes("Basic launch") || String(error.message).includes("Basic Launch")));
+
+              if (isBasicLaunch) {
+                // In Basic Launch, CrazyGames disables live ads. Grant the revive as per CrazyGames guidelines.
+                resolve(true);
+                return;
+              }
+
+              showToast("Ad is unavailable right now. Try again shortly.");
               resolve(false);
             },
             adStarted: () => {
               AudioEngine.suspend();
             }
           };
-          window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+          try {
+            window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+          } catch (err) {
+            console.warn("[CrazyGames] requestAd exception:", err);
+            AudioEngine.resume();
+            showToast("Ad failed to play. Please try again.");
+            resolve(false);
+          }
         });
       }
       return true;
@@ -370,15 +419,22 @@ class AdControllerClass {
                 resolve(true);
               },
               adError: (error) => {
-                console.warn("[CrazyGames] Midgame ad error:", error);
+                console.warn("[CrazyGames] Midgame ad callback:", error);
                 AudioEngine.resume();
-                resolve(false);
+                // Never block game progression if ads are disabled or fail
+                resolve(true);
               },
               adStarted: () => {
                 AudioEngine.suspend();
               }
             };
-            window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+            try {
+              window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+            } catch (err) {
+              console.warn("[CrazyGames] Midgame requestAd exception:", err);
+              AudioEngine.resume();
+              resolve(false);
+            }
           });
         }
       }
@@ -419,13 +475,13 @@ class AdControllerClass {
   }
 
   gameplayStart() {
-    if (TargetConfig.isCrazyGames && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStart) {
+    if (TargetConfig.isCrazyGames && this._sdkReady && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStart) {
       window.CrazyGames.SDK.game.gameplayStart();
     }
   }
 
   gameplayStop() {
-    if (TargetConfig.isCrazyGames && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStop) {
+    if (TargetConfig.isCrazyGames && this._sdkReady && typeof window !== "undefined" && window.CrazyGames?.SDK?.game?.gameplayStop) {
       window.CrazyGames.SDK.game.gameplayStop();
     }
   }

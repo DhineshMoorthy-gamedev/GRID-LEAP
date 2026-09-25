@@ -899,7 +899,7 @@ export async function toggleSolutionPath() {
     const rem = GameState.getHintsCount();
     updateHintBadge(rem, false);
     showToast(`Hint used (${rem === 1 ? "1 hint remaining" : `${rem} hints remaining`})`, 1800);
-  } else if (TargetConfig.isPlayStore) {
+  } else if (TargetConfig.isPlayStore || TargetConfig.isCrazyGames) {
     // 0 free hints remaining: watch rewarded ad to earn +1 hint
     const earned = await AdController.requestHintReward();
     if (!earned) {
@@ -1405,7 +1405,8 @@ export function bootApp() {
   }
 
   // Play Studio Intro Screen & Launch FTUE Tutorial for first-time players
-  runStudioIntro(() => {
+  // CrazyGames: Skip studio intro — go straight to tutorial/home for instant gameplay
+  const afterIntro = () => {
     // Initialize In-App Update Controller (Play Store)
     UpdateController.init();
 
@@ -1415,7 +1416,17 @@ export function bootApp() {
     if (!GameState.settings.hasSeenRules) {
       TutorialController.open();
     }
-  });
+  };
+
+  if (TargetConfig.isCrazyGames) {
+    // Remove the startup overlay immediately — no studio intro on CrazyGames
+    const overlay = document.getElementById("startupOverlay");
+    if (overlay) overlay.remove();
+    applyTheme(GameState.getTheme());
+    afterIntro();
+  } else {
+    runStudioIntro(afterIntro);
+  }
 
   if (DOM.homeHelpBtn) {
     DOM.homeHelpBtn.addEventListener("click", () => {
@@ -1692,7 +1703,7 @@ async function copyImageBlobToClipboard(blob) {
   if (DOM.outOfLivesWatchAdBtn) {
     DOM.outOfLivesWatchAdBtn.addEventListener("click", async () => {
       // 1. Request rewarded ad for life
-      if (TargetConfig.isPlayStore && !AdController.isPremiumUser()) {
+      if ((TargetConfig.isPlayStore || TargetConfig.isCrazyGames) && !AdController.isPremiumUser()) {
         const earned = await AdController.requestLifeReward();
         if (!earned) return;
       }
