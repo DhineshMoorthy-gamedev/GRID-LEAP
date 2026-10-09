@@ -1,6 +1,10 @@
 package com.olaidigitalstudios.gridleap;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -249,9 +253,62 @@ public class AppUpdatePlugin extends Plugin implements InstallStateUpdatedListen
             Log.w(TAG, "Failed to get app version: " + e.getMessage());
         }
         JSObject fallback = new JSObject();
-        fallback.put("versionName", "0.0.16");
-        fallback.put("versionCode", 16);
+        fallback.put("versionName", "0.0.17");
+        fallback.put("versionCode", 17);
         call.resolve(fallback);
+    }
+
+    @PluginMethod
+    public void openNotificationSettings(PluginCall call) {
+        try {
+            Activity activity = getActivity();
+            if (activity != null) {
+                Intent intent = new Intent();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                    intent.putExtra(Settings.EXTRA_APP_PACKAGE, activity.getPackageName());
+                } else {
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.fromParts("package", activity.getPackageName(), null));
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(intent);
+                call.resolve();
+                return;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open notification settings: " + e.getMessage());
+        }
+        call.reject("Unable to open notification settings");
+    }
+
+    @PluginMethod
+    public void getNotificationPermissionStatus(PluginCall call) {
+        try {
+            Activity activity = getActivity();
+            if (activity != null) {
+                boolean areEnabled = androidx.core.app.NotificationManagerCompat.from(activity).areNotificationsEnabled();
+                boolean shouldShowRationale = false;
+                if (Build.VERSION.SDK_INT >= 33) {
+                    shouldShowRationale = androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+                        activity,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    );
+                }
+                JSObject ret = new JSObject();
+                ret.put("areEnabled", areEnabled);
+                ret.put("shouldShowRationale", shouldShowRationale);
+                ret.put("isBlocked", !areEnabled && !shouldShowRationale);
+                call.resolve(ret);
+                return;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to get notification permission status: " + e.getMessage());
+        }
+        JSObject ret = new JSObject();
+        ret.put("areEnabled", false);
+        ret.put("isBlocked", false);
+        call.resolve(ret);
     }
 
     private String statusToString(int status) {

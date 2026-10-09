@@ -36,8 +36,15 @@ export const PlatformBridge = {
     // Native Capacitor Bridge
     if (isCapacitor) {
       try {
-        await StatusBar.setStyle({ style: Style.Dark });
-        await StatusBar.setBackgroundColor({ color: "#0b131a" });
+        let initialTheme = "obsidian";
+        try {
+          const raw = localStorage.getItem("grid_leap_state");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.theme === "vellum") initialTheme = "vellum";
+          }
+        } catch (_) {}
+        await this.setStatusBarTheme(initialTheme);
       } catch (err) {
         console.warn("[Platform] StatusBar setup skipped:", err);
       }
@@ -80,6 +87,33 @@ export const PlatformBridge = {
         } catch (_) {}
       }
     }
+  },
+
+  async setStatusBarTheme(theme) {
+    if (!isCapacitor) return;
+    try {
+      if (theme === "vellum") {
+        await StatusBar.setStyle({ style: Style.Light });
+        await StatusBar.setBackgroundColor({ color: "#F7F5F0" });
+      } else {
+        await StatusBar.setStyle({ style: Style.Dark });
+        await StatusBar.setBackgroundColor({ color: "#121316" });
+      }
+    } catch (err) {
+      console.warn("[Platform] setStatusBarTheme error:", err);
+    }
+  },
+
+  async openNotificationSettings() {
+    if (isCapacitor && window.Capacitor?.Plugins?.AppUpdatePlugin?.openNotificationSettings) {
+      try {
+        await window.Capacitor.Plugins.AppUpdatePlugin.openNotificationSettings();
+        return true;
+      } catch (err) {
+        console.warn("[Platform] openNotificationSettings error:", err);
+      }
+    }
+    return false;
   },
 
   async vibrateLight() {
@@ -222,7 +256,7 @@ export const PlatformBridge = {
         if (res?.versionName) {
           return {
             versionName: res.versionName,
-            versionCode: res.versionCode || 16
+            versionCode: res.versionCode || 17
           };
         }
       } catch (e) {
@@ -230,8 +264,8 @@ export const PlatformBridge = {
       }
     }
     return {
-      versionName: TargetConfig.version || "0.0.16",
-      versionCode: TargetConfig.versionCode || 16
+      versionName: TargetConfig.version || "0.0.17",
+      versionCode: TargetConfig.versionCode || 17
     };
   },
 

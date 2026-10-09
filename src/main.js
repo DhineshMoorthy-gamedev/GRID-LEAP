@@ -1145,7 +1145,7 @@ export function handleToggleTheme(targetTheme) {
   } else {
     nextTheme = GameState.toggleTheme();
   }
-  applyTheme(nextTheme);
+  applyTheme(nextTheme, true, true);
   refreshTrail(GameState.settings.showTrail);
   if (GameState.settings.hapticsEnabled !== false) {
     PlatformBridge.vibrateLight();
@@ -1153,7 +1153,6 @@ export function handleToggleTheme(targetTheme) {
   if (GameState.settings.soundEnabled !== false) {
     AudioEngine.playThemeSwitch();
   }
-  showToast(`Theme: ${nextTheme === "vellum" ? "☀️ Vellum & Deboss" : "🌙 Obsidian & Ochre"}`);
 }
 
 export function handleToggleTrail(explicitValue) {
@@ -1176,7 +1175,7 @@ export function handleToggleTrail(explicitValue) {
 export function runStudioIntro(onComplete) {
   const overlay = document.getElementById("startupOverlay");
   if (!overlay) {
-    applyTheme(GameState.getTheme());
+    applyTheme(GameState.getTheme(), false, false);
     if (typeof onComplete === "function") onComplete();
     return;
   }
@@ -1218,7 +1217,7 @@ export function runStudioIntro(onComplete) {
     if (slide) slide.classList.add("exit");
     overlay.classList.add("fade-out");
     // Transition status bar theme in sync with the fade-out
-    applyTheme(GameState.getTheme(), true);
+    applyTheme(GameState.getTheme(), true, false);
     setTimeout(() => {
       if (overlay.parentNode) {
         overlay.remove();
@@ -1339,7 +1338,7 @@ export function bootApp() {
   });
 
   // Prepare theme DOM styling quietly under the startup overlay (status bar stays dark until intro dismisses)
-  applyTheme(GameState.getTheme(), false);
+  applyTheme(GameState.getTheme(), false, false);
   updateTrailButton(GameState.settings.showTrail);
 
   // Theme & Trail toggle bindings
@@ -1422,7 +1421,7 @@ export function bootApp() {
     // Remove the startup overlay immediately — no studio intro on CrazyGames
     const overlay = document.getElementById("startupOverlay");
     if (overlay) overlay.remove();
-    applyTheme(GameState.getTheme());
+    applyTheme(GameState.getTheme(), true, false);
     afterIntro();
   } else {
     runStudioIntro(afterIntro);
@@ -1761,18 +1760,42 @@ async function copyImageBlobToClipboard(blob) {
     });
   }
   if (DOM.settingDailyReminders) {
-    DOM.settingDailyReminders.checked = GameState.settings.dailyReminders !== false;
+    DOM.settingDailyReminders.checked = Boolean(GameState.settings.dailyReminders);
     DOM.settingDailyReminders.addEventListener("change", async (e) => {
-      GameState.settings.dailyReminders = e.target.checked;
-      GameState.save();
       if (e.target.checked) {
-        const granted = await NotificationManager.requestPermissions();
-        if (!granted) {
-          showToast("Enable notifications in device settings");
+        const isBlocked = await NotificationManager.isPermanentlyDenied();
+        if (isBlocked) {
+          DOM.settingDailyReminders.checked = false;
+          GameState.settings.dailyReminders = false;
+          GameState.save();
+          NotificationManager.showBlockedModal();
+          return;
         }
-        await NotificationManager.scheduleDailyReminder();
+
+        const startTime = Date.now();
+        const granted = await NotificationManager.requestPermissions();
+        const elapsed = Date.now() - startTime;
+        if (!granted) {
+          DOM.settingDailyReminders.checked = false;
+          GameState.settings.dailyReminders = false;
+          GameState.save();
+          const isNowBlocked = (await NotificationManager.isPermanentlyDenied()) || elapsed < 350;
+          if (isNowBlocked) {
+            NotificationManager.showBlockedModal();
+          } else {
+            showToast("Notifications not allowed in device settings");
+          }
+          return;
+        }
+        GameState.settings.dailyReminders = true;
+        GameState.save();
+        await NotificationManager.scheduleDailyReminder(true);
+        showToast("Daily reminders active for 10:00 AM");
       } else {
+        GameState.settings.dailyReminders = false;
+        GameState.save();
         await NotificationManager.cancelDailyReminder();
+        showToast("Daily reminders turned off");
       }
     });
   }
@@ -1993,6 +2016,7 @@ async function copyImageBlobToClipboard(blob) {
       }
       AdController.onResume();
       NotificationManager.syncReminders();
+      NotificationManager.checkAndSyncOnResume();
       handleResize();
       if (GameState.animating) {
         GameState.animating = false;
@@ -2022,6 +2046,10 @@ async function copyImageBlobToClipboard(blob) {
         }
         if (activeModal.name === "NOTIF_PROMPT") {
           NotificationManager.dismissOptInPrompt();
+          return true;
+        }
+        if (activeModal.name === "NOTIF_BLOCKED") {
+          SceneRouter.popModal();
           return true;
         }
         if (activeModal.name === "OUT_OF_LIVES") {

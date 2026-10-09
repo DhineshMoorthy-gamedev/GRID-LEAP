@@ -20,6 +20,7 @@ const MODAL_ELEMENTS = {
   UPDATE: "updateModal",
   REWARD: "rewardModal",
   NOTIF_PROMPT: "notificationPromptModal",
+  NOTIF_BLOCKED: "notifBlockedModal",
   SHARE: "shareModal"
 };
 

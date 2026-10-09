@@ -224,62 +224,91 @@ export function getTokenElement() {
   return tokenEl;
 }
 
-export function applyTheme(themeName, updateStatusBar = true) {
+export function applyTheme(themeName, updateStatusBar = true, animate = true) {
   const theme = themeName === "vellum" ? "vellum" : "obsidian";
-  document.documentElement.setAttribute("data-theme", theme);
-  if (document.body) document.body.setAttribute("data-theme", theme);
+  const oldTheme = (typeof document !== "undefined" && document.documentElement)
+    ? (document.documentElement.getAttribute("data-theme") || (theme === "vellum" ? "obsidian" : "vellum"))
+    : "obsidian";
 
-  // Status bar meta color
-  if (updateStatusBar) {
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) {
-      metaTheme.setAttribute("content", theme === "vellum" ? "#F7F5F0" : "#121316");
-    }
-  }
+  const updateDOM = () => {
+    document.documentElement.setAttribute("data-theme", theme);
+    if (document.body) document.body.setAttribute("data-theme", theme);
 
-  const isVellum = theme === "vellum";
-  const icon = isVellum ? "☀️" : "🌙";
-  const label = isVellum ? "VELLUM" : "OBSIDIAN";
-
-  if (DOM.homeThemeToggleBtn) {
-    const iconEl = DOM.homeThemeToggleBtn.querySelector(".theme-icon");
-    const labelEl = DOM.homeThemeToggleBtn.querySelector(".theme-label");
-    if (iconEl) iconEl.textContent = icon;
-    if (labelEl) labelEl.textContent = label;
-  }
-
-  if (DOM.gameThemeToggleBtn) {
-    const iconEl = DOM.gameThemeToggleBtn.querySelector(".theme-icon");
-    if (iconEl) iconEl.textContent = icon;
-  }
-
-  if (DOM.devThemeToggleBtn) {
-    DOM.devThemeToggleBtn.textContent = `🎨 ${label}`;
-  }
-
-  if (DOM.pillThemeObsidian) {
-    DOM.pillThemeObsidian.classList.toggle("active", !isVellum);
-  }
-  if (DOM.pillThemeVellum) {
-    DOM.pillThemeVellum.classList.toggle("active", isVellum);
-  }
-
-  // Update SVG filter color dynamically
-  const glowTrail = document.getElementById("glowTrail") || document.getElementById("glowSky");
-  if (glowTrail) {
-    const shadow = glowTrail.querySelector("feDropShadow");
-    if (shadow) {
-      if (isVellum) {
-        shadow.setAttribute("flood-color", "#1D4E6D");
-        shadow.setAttribute("flood-opacity", "0.45");
-      } else {
-        shadow.setAttribute("flood-color", "#38BDF8");
-        shadow.setAttribute("flood-opacity", "0.70");
+    if (updateStatusBar) {
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute("content", theme === "vellum" ? "#F7F5F0" : "#121316");
       }
     }
+
+    const isVellum = theme === "vellum";
+    const icon = isVellum ? "☀️" : "🌙";
+    const label = isVellum ? "VELLUM" : "OBSIDIAN";
+
+    if (DOM.homeThemeToggleBtn) {
+      const iconEl = DOM.homeThemeToggleBtn.querySelector(".theme-icon");
+      const labelEl = DOM.homeThemeToggleBtn.querySelector(".theme-label");
+      if (iconEl) iconEl.textContent = icon;
+      if (labelEl) labelEl.textContent = label;
+    }
+
+    if (DOM.gameThemeToggleBtn) {
+      const iconEl = DOM.gameThemeToggleBtn.querySelector(".theme-icon");
+      if (iconEl) iconEl.textContent = icon;
+    }
+
+    if (DOM.devThemeToggleBtn) {
+      DOM.devThemeToggleBtn.textContent = `🎨 ${label}`;
+    }
+
+    if (DOM.pillThemeObsidian) {
+      DOM.pillThemeObsidian.classList.toggle("active", !isVellum);
+    }
+    if (DOM.pillThemeVellum) {
+      DOM.pillThemeVellum.classList.toggle("active", isVellum);
+    }
+
+    // Update SVG filter color dynamically
+    const glowTrail = document.getElementById("glowTrail") || document.getElementById("glowSky");
+    if (glowTrail) {
+      const shadow = glowTrail.querySelector("feDropShadow");
+      if (shadow) {
+        if (isVellum) {
+          shadow.setAttribute("flood-color", "#1D4E6D");
+          shadow.setAttribute("flood-opacity", "0.45");
+        } else {
+          shadow.setAttribute("flood-color", "#38BDF8");
+          shadow.setAttribute("flood-opacity", "0.70");
+        }
+      }
+    }
+
+    refreshTrail();
+  };
+
+  const shouldAnimate = animate && oldTheme !== theme && typeof document !== "undefined" && typeof document.startViewTransition === "function";
+
+  if (shouldAnimate) {
+    try {
+      const transition = document.startViewTransition(() => {
+        updateDOM();
+      });
+      if (updateStatusBar) {
+        transition.finished.finally(() => {
+          PlatformBridge.setStatusBarTheme(theme);
+        });
+      }
+      return;
+    } catch (_) {
+      // Fallback below if startViewTransition threw
+    }
   }
 
-  refreshTrail();
+  // Non-animated or unsupported fallback (e.g. boot time)
+  updateDOM();
+  if (updateStatusBar) {
+    PlatformBridge.setStatusBarTheme(theme);
+  }
 }
 
 export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSelect, session = null) {

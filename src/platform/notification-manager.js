@@ -12,6 +12,7 @@ import { GameState } from "../state/game-state.js";
 import { DailyManager } from "../state/daily-manager.js";
 import { SceneRouter } from "../scenes/scene-router.js";
 import { AudioEngine } from "../audio/audio-engine.js";
+import { showToast } from "../scenes/game-renderer.js";
 
 const DAILY_REMINDER_ID = 1001;
 const CHANNEL_ID = "grid_leap_daily_channel";
@@ -36,6 +37,7 @@ export const NotificationManager = {
     }
 
     this._bindPromptModal();
+    this._bindBlockedModal();
 
     if (PlatformBridge.isCapacitor()) {
       try {
@@ -107,6 +109,34 @@ export const NotificationManager = {
     }
   },
 
+  _bindBlockedModal() {
+    const modal = document.getElementById("notifBlockedModal");
+    const closeX = document.getElementById("notifBlockedCloseX");
+    const cancelBtn = document.getElementById("notifBlockedCancelBtn");
+    const settingsBtn = document.getElementById("notifBlockedSettingsBtn");
+
+    const closeHandler = () => {
+      AudioEngine.playNavBack();
+      SceneRouter.popModal();
+    };
+
+    if (closeX) closeX.addEventListener("click", closeHandler);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeHandler);
+
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", async () => {
+        AudioEngine.playNavBack();
+        await PlatformBridge.openNotificationSettings();
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeHandler();
+      });
+    }
+  },
+
   /**
    * Shows opt-in modal after winning a daily challenge if player hasn't decided yet
    */
@@ -149,6 +179,10 @@ export const NotificationManager = {
   async checkPermissions() {
     if (PlatformBridge.isCapacitor()) {
       try {
+        if (window.Capacitor?.Plugins?.AppUpdatePlugin?.getNotificationPermissionStatus) {
+          const nativeStatus = await window.Capacitor.Plugins.AppUpdatePlugin.getNotificationPermissionStatus();
+          return nativeStatus?.areEnabled === true;
+        }
         const res = await LocalNotifications.checkPermissions();
         return res?.display === "granted";
       } catch (e) {
@@ -159,6 +193,78 @@ export const NotificationManager = {
       return Notification.permission === "granted";
     }
     return false;
+  },
+
+  async getPermissionStatus() {
+    if (PlatformBridge.isCapacitor()) {
+      try {
+        if (window.Capacitor?.Plugins?.AppUpdatePlugin?.getNotificationPermissionStatus) {
+          const nativeStatus = await window.Capacitor.Plugins.AppUpdatePlugin.getNotificationPermissionStatus();
+          if (nativeStatus?.areEnabled) return "granted";
+          if (nativeStatus?.isBlocked) return "denied";
+          return "prompt";
+        }
+        const res = await LocalNotifications.checkPermissions();
+        return res?.display || "prompt";
+      } catch (e) {
+        console.warn("[NotificationManager] getPermissionStatus error:", e);
+        return "prompt";
+      }
+    } else if (typeof Notification !== "undefined") {
+      return Notification.permission;
+    }
+    return "denied";
+  },
+
+  async isPermanentlyDenied() {
+    if (PlatformBridge.isCapacitor()) {
+      try {
+        if (window.Capacitor?.Plugins?.AppUpdatePlugin?.getNotificationPermissionStatus) {
+          const nativeStatus = await window.Capacitor.Plugins.AppUpdatePlugin.getNotificationPermissionStatus();
+          if (nativeStatus?.areEnabled === false && nativeStatus?.isBlocked === true) {
+            return true;
+          }
+        }
+        const status = await this.getPermissionStatus();
+        return status === "denied";
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  },
+
+  showBlockedModal() {
+    SceneRouter.pushModal("NOTIF_BLOCKED");
+  },
+
+  async checkAndSyncOnResume() {
+    if (!TargetConfig.features.dailyRemindersPush) return;
+    const isGranted = await this.checkPermissions();
+    const toggle = document.getElementById("settingDailyReminders");
+    if (isGranted) {
+      if (!GameState.settings.dailyReminders) {
+        GameState.settings.dailyReminders = true;
+        GameState.save();
+        if (toggle) toggle.checked = true;
+        await this.scheduleDailyReminder(true);
+        showToast("Daily reminders active for 10:00 AM");
+      } else if (toggle) {
+        toggle.checked = true;
+      }
+      if (SceneRouter.currentModal()?.name === "NOTIF_BLOCKED") {
+        SceneRouter.popModal();
+      }
+    } else {
+      if (GameState.settings.dailyReminders) {
+        GameState.settings.dailyReminders = false;
+        GameState.save();
+        if (toggle) toggle.checked = false;
+        await this.cancelDailyReminder();
+      } else if (toggle) {
+        toggle.checked = false;
+      }
+    }
   },
 
   /**

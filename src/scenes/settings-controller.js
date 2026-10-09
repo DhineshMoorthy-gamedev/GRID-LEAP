@@ -19,7 +19,7 @@ import { GameState } from "../state/game-state.js";
 export const SettingsController = {
   dom: {},
   currentView: "main",
-  versionName: "0.0.16",
+  versionName: "0.0.17",
 
   init() {
     this.dom = {
@@ -44,7 +44,7 @@ export const SettingsController = {
 
     // Dynamic Version Sync across About pill and Settings footer
     PlatformBridge.getAppVersion().then(ver => {
-      this.versionName = ver.versionName || "0.0.16";
+      this.versionName = ver.versionName || "0.0.17";
       const versionPill = document.querySelector(".about-version-pill");
       if (versionPill) versionPill.textContent = `v${this.versionName}`;
       const footerNote = document.querySelector(".settings-footer-note");
@@ -164,7 +164,7 @@ export const SettingsController = {
       if (aboutActionsRow) aboutActionsRow.style.display = "none";
     }
 
-    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.16") => {
+    const refreshUpdateBtnState = (state, ver = this.versionName || "0.0.17") => {
       if (!checkUpdateLabel) return;
       if (state === "checking") {
         checkUpdateLabel.textContent = "Checking...";
@@ -186,7 +186,7 @@ export const SettingsController = {
     if (checkUpdateBtn) {
       checkUpdateBtn.addEventListener("click", async () => {
         AudioEngine.playNavBack();
-        const curVer = this.versionName || TargetConfig.version || "0.0.16";
+        const curVer = this.versionName || TargetConfig.version || "0.0.17";
         if (TargetConfig.isDesktop || TargetConfig.isItch) {
           refreshUpdateBtnState("checking", curVer);
           showToast("Opening updates & changelog page...");
@@ -240,7 +240,7 @@ export const SettingsController = {
       simAvailableBtn.addEventListener("click", () => {
         const updateData = {
           updateAvailable: true,
-          availableVersionCode: 17,
+          availableVersionCode: 18,
           isFlexibleAllowed: true,
           installStatus: "PENDING"
         };
@@ -250,7 +250,7 @@ export const SettingsController = {
         UpdateController.setUpdateAvailable(updateData);
         this.close();
         UpdateController.open(updateData);
-        showToast("Simulated: Update Available (v0.1.7)");
+        showToast("Simulated: Update Available (v0.1.8)");
       });
     }
 
@@ -278,7 +278,7 @@ export const SettingsController = {
         highlightSimBtn(simResetBtn);
         refreshUpdateBtnState("default", this.versionName);
         UpdateController.clearUpdate();
-        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.16"})`);
+        showToast(`Simulated: Up-to-date (v${this.versionName || "0.0.17"})`);
       });
     }
 
@@ -307,7 +307,7 @@ export const SettingsController = {
         moreGamesBtn.addEventListener("click", () => {
           AudioEngine.playNavBack();
           if (TargetConfig.isPlayStore || PlatformBridge.isCapacitor()) {
-            PlatformBridge.openExternalUrl("https://play.google.com/store/apps/developer?id=Olai+Digital+Studios");
+            PlatformBridge.openExternalUrl("https://play.google.com/store/apps/developer?id=OlaiDigitalStudios");
           } else if (TargetConfig.isItch) {
             PlatformBridge.openExternalUrl("https://olaidigitalstudios.itch.io");
           } else {

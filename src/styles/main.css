@@ -203,9 +203,11 @@ body {
   overflow: hidden;
 }
 
-/* Global Theme Transition for fluid switching */
-html, body, .app-root, .screen, .board, .cell, .cell-glyph, .stat-bubble, .card, .btn, .theme-toggle-btn, .theme-pill-btn {
-  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
+/* Native View Transition API: Hardware-Composited Cross-Fade for Butter-Smooth Theme Switch */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* App Root Container (Fluid on mobile/tablet portrait, framed on desktop) */
@@ -358,6 +360,15 @@ body[data-target-mode="playstore"] .app-root {
   justify-content: center;
   border-radius: 10px;
   font-size: 16px;
+}
+
+.theme-icon {
+  display: inline-block;
+  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle-btn:active .theme-icon {
+  transform: scale(0.85) rotate(-25deg);
 }
 
 .dev-bar-btn.theme-dev-btn {
@@ -3035,6 +3046,13 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
   pointer-events: auto;
 }
 
+/* Modals that can appear on top of the full-screen Settings scene (z-index: 120) */
+#notifBlockedModal,
+#notificationPromptModal,
+#updateModal {
+  z-index: 150;
+}
+
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--line);
@@ -3856,8 +3874,8 @@ body[data-ad-position="top"] #settingsModal {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 48px;
-  padding: 4px 10px 10px 10px;
+  min-height: 52px;
+  padding: 6px 12px 12px 12px;
   border-bottom: 1px solid var(--line-soft);
   flex: 0 0 auto;
   box-sizing: border-box;
@@ -3873,15 +3891,15 @@ body[data-ad-position="top"] #settingsModal {
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
-  width: 38px;
-  height: 38px;
-  min-height: 38px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
   padding: 0;
-  flex: 0 0 38px;
+  flex: 0 0 40px;
 }
 
 .settings-close-btn:hover,
@@ -3902,16 +3920,16 @@ body[data-ad-position="top"] #settingsModal {
 
 .settings-topbar-eyebrow {
   font-family: var(--font-num, monospace);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   color: var(--text-dim);
   text-transform: uppercase;
 }
 
 .settings-topbar-title {
   margin: 0;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: var(--text-main);
@@ -3919,9 +3937,9 @@ body[data-ad-position="top"] #settingsModal {
 }
 
 .settings-topbar-spacer {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
 }
 
 /* Scroll Area */
@@ -3930,23 +3948,23 @@ body[data-ad-position="top"] #settingsModal {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 12px 2px 20px 2px;
+  padding: 14px 4px 24px 4px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 #settingsMainView .settings-scroll-area {
   overflow-y: auto;
-  padding: 10px 0 16px 0;
-  gap: 12px;
+  padding: 12px 0 20px 0;
+  gap: 14px;
 }
 
 .settings-card-group {
   background: var(--surface, rgba(255, 255, 255, 0.03));
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  padding: 6px 14px;
+  border-radius: 14px;
+  padding: 8px 16px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -3954,12 +3972,12 @@ body[data-ad-position="top"] #settingsModal {
 
 .settings-group-header {
   font-family: var(--font-num, monospace);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   color: var(--accent);
   text-transform: uppercase;
-  padding: 4px 0 2px 0;
+  padding: 6px 0 4px 0;
   text-align: left;
 }
 
@@ -3967,8 +3985,8 @@ body[data-ad-position="top"] #settingsModal {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
-  min-height: 42px;
+  padding: 10px 0;
+  min-height: 48px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--line-soft);
 }
@@ -3984,21 +4002,21 @@ body[data-ad-position="top"] #settingsModal {
 }
 
 .settings-label-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
   text-align: left;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .settings-unavailable-pill {
   font-family: var(--font-num, monospace);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  padding: 1px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   color: #94A3B8;
@@ -4017,9 +4035,9 @@ body[data-ad-position="top"] #settingsModal {
   align-items: center;
   background: var(--ink-950, #0d0f14);
   border: 1px solid var(--line-soft);
-  border-radius: 10px;
-  padding: 3px;
-  gap: 3px;
+  border-radius: 12px;
+  padding: 3.5px;
+  gap: 4px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
@@ -4033,14 +4051,14 @@ body[data-ad-position="top"] #settingsModal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 6px;
+  padding: 6px 13px;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
   color: var(--paper-dim);
   font-family: var(--font-ui);
-  font-size: 11.5px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -4053,6 +4071,8 @@ body[data-ad-position="top"] #settingsModal {
 .theme-segment-btn svg {
   display: block;
   flex-shrink: 0;
+  width: 14.5px;
+  height: 14.5px;
   transition: transform 160ms ease;
 }
 
@@ -4104,8 +4124,8 @@ body[data-ad-position="top"] #settingsModal {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 48px;
+  height: 26px;
   flex: 0 0 auto;
 }
 
@@ -4127,7 +4147,7 @@ body[data-ad-position="top"] #settingsModal {
   background-color: var(--ink-700, #333);
   border: 1px solid var(--line);
   transition: all 0.2s ease;
-  border-radius: 24px;
+  border-radius: 26px;
 }
 
 .toggle-switch input:focus-visible + .toggle-slider {
@@ -4145,8 +4165,8 @@ body[data-ad-position="top"] #settingsModal {
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 20px;
+  width: 20px;
   left: 2px;
   bottom: 2px;
   background-color: var(--paper, #fff);
@@ -4166,7 +4186,7 @@ body[data-ad-position="top"] #settingsModal {
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(20px);
+  transform: translateX(22px);
   background-color: #ffffff;
 }
 
@@ -4176,7 +4196,9 @@ body[data-ad-position="top"] #settingsModal {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 0;
+  padding: 12px 0;
+  min-height: 48px;
+  box-sizing: border-box;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--line-soft);
@@ -4216,14 +4238,14 @@ body[data-ad-position="top"] #settingsModal {
 
 .settings-label-text {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
   letter-spacing: 0.01em;
 }
 
 .settings-nav-arrow {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 300;
   color: var(--text-dim);
   padding-left: 8px;
@@ -4233,6 +4255,8 @@ body[data-ad-position="top"] #settingsModal {
   color: var(--text-muted);
   opacity: 0.7;
   padding-right: 2px;
+  width: 16px;
+  height: 16px;
   transition: opacity 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
@@ -4257,7 +4281,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 }
 
 /* Defensive compact layout to strictly prevent scrolling on small mobile screens */
-@media (max-height: 640px) {
+@media (max-height: 600px) {
   .settings-topbar {
     min-height: 44px;
     padding: 2px 0 8px 0;
@@ -4269,7 +4293,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
     width: 34px;
   }
   .settings-topbar-title {
-    font-size: 15px;
+    font-size: 16px;
   }
   .settings-topbar-spacer {
     width: 34px;
@@ -4282,7 +4306,11 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
   #settingsMainView .settings-row,
   #settingsMainView .settings-nav-row {
     padding: 6px 0;
-    min-height: 38px;
+    min-height: 40px;
+  }
+  #settingsMainView .settings-label-title,
+  #settingsMainView .settings-label-text {
+    font-size: 14.5px;
   }
   #settingsMainView .settings-scroll-area {
     gap: 8px;
@@ -4357,12 +4385,12 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   font-family: var(--font-ui);
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
-  height: 30px;
+  height: 34px;
   cursor: pointer;
   transition: all 140ms ease;
   white-space: nowrap;
@@ -4379,7 +4407,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 
 .doc-meta {
   font-family: var(--font-num, monospace);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   letter-spacing: 0.05em;
   margin: 0 0 4px 0;
@@ -4392,7 +4420,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 }
 
 .doc-section h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
   margin: 0;
@@ -4400,8 +4428,8 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 }
 
 .doc-section p {
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14.5px;
+  line-height: 1.6;
   color: var(--text-dim);
   margin: 0;
 }
@@ -4414,9 +4442,9 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 .doc-contact {
   background: var(--surface, rgba(255, 255, 255, 0.03));
   border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13.5px;
 }
 
 .about-scroll-area {
@@ -4445,8 +4473,8 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 }
 
 .about-app-icon {
-  width: 76px;
-  height: 76px;
+  width: 80px;
+  height: 80px;
   background: var(--bg-card);
   border: 1.5px solid var(--line-soft);
   border-radius: 20px;
@@ -4474,7 +4502,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 
 .about-game-title {
   font-family: var(--font-ui);
-  font-size: 26px;
+  font-size: 27px;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--text-main);
@@ -4484,13 +4512,13 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 
 .about-version-pill {
   font-family: var(--font-num);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--text-dim);
   background: var(--bg-card);
   border: 1px solid var(--line-soft);
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 999px;
   margin-bottom: 20px;
 }
@@ -4519,7 +4547,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 .about-credit-label {
   margin: 0;
   font-family: var(--font-num);
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4534,12 +4562,12 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 }
 
 .about-credit-val.studio-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .about-credit-val.dev-name {
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 600;
   color: var(--accent-primary);
 }
@@ -4551,7 +4579,7 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 .about-credit-loc {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--text-dim);
   letter-spacing: 0.02em;
@@ -4560,19 +4588,19 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
 
 .about-actions-row {
   width: 100%;
-  max-width: 280px;
+  max-width: 290px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 32px;
 }
 
 .about-action-btn,
 .about-more-btn {
   width: 100%;
-  height: 44px;
+  height: 48px;
   border-radius: 14px;
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -4611,7 +4639,7 @@ body[data-target-mode="itch"] #aboutCheckUpdateBtn {
 .about-copyright-text {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-dim);
   letter-spacing: 0.02em;
