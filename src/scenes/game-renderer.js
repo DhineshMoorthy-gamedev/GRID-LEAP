@@ -56,11 +56,24 @@ export const DOM = {
   completionPill: document.getElementById("completionPill"),
   levelStrip: document.getElementById("levelStrip"),
   consumerLaunchSection: document.getElementById("consumerLaunchSection"),
+  consumerLaunchCard: document.getElementById("consumerLaunchCard"),
   consumerBadge: document.getElementById("consumerBadge"),
   consumerClearedCount: document.getElementById("consumerClearedCount"),
+  consumerLevelSelectBtn: document.getElementById("consumerLevelSelectBtn"),
   consumerTitle: document.getElementById("consumerTitle"),
   consumerSub: document.getElementById("consumerSub"),
+  consumerScoreBadge: document.getElementById("consumerScoreBadge"),
+  consumerScoreStars: document.getElementById("consumerScoreStars"),
+  consumerScoreMoves: document.getElementById("consumerScoreMoves"),
   consumerPlayBtn: document.getElementById("consumerPlayBtn"),
+
+  // Campaign Level Selector Modal Elements
+  levelSelectModal: document.getElementById("levelSelectModal"),
+  levelSelectCloseBtn: document.getElementById("levelSelectCloseBtn"),
+  levelSelectSummaryText: document.getElementById("levelSelectSummaryText"),
+  levelSelectGrid: document.getElementById("levelSelectGrid"),
+  levelSelectPlayBtn: document.getElementById("levelSelectPlayBtn"),
+  levelSelectPlayText: document.getElementById("levelSelectPlayText"),
 
   // Game Play Screen
   gameTopBar: document.querySelector(".game-topbar"),
@@ -311,7 +324,7 @@ export function applyTheme(themeName, updateStatusBar = true, animate = true) {
   }
 }
 
-export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSelect, session = null) {
+export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSelect, session = null, starsArr = [], bestMovesArr = []) {
   const isEditor = TargetConfig.isEditor;
   const isAllCleared = completedArr.every(Boolean);
   const clearedCount = completedArr.filter(Boolean).length;
@@ -377,7 +390,7 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
   } else {
     // ----------------------------------------------------
     // CONSUMER PLATFORMS (Play Store, Itch, Web):
-    // Dedicated single Next-Level Launch Card
+    // Dedicated Campaign Level Launch Card with Modal Level Selector
     // ----------------------------------------------------
     if (DOM.editorLevelSelectSection) DOM.editorLevelSelectSection.style.display = "none";
     if (DOM.editorAudioLabSection) DOM.editorAudioLabSection.style.display = "none";
@@ -385,46 +398,167 @@ export function renderHomeHub(levels, lastPlayedIndex, completedArr, onLevelSele
     if (DOM.heroBanner) DOM.heroBanner.style.display = "none";
     if (DOM.consumerLaunchSection) DOM.consumerLaunchSection.style.display = "flex";
 
-    // Resolve next uncompleted level index
+    // Resolve active selected level index (respects user selection within unlocked range)
     const firstUnfinished = completedArr.findIndex(done => !done);
-    const nextIndex = firstUnfinished !== -1 ? firstUnfinished : 0;
-    const nextLv = levels[nextIndex] || levels[0];
+    const maxUnlockedIndex = firstUnfinished !== -1 ? firstUnfinished : levels.length - 1;
+    const activeIndex = (typeof lastPlayedIndex === "number" && lastPlayedIndex >= 0 && lastPlayedIndex <= maxUnlockedIndex)
+      ? lastPlayedIndex
+      : (firstUnfinished !== -1 ? firstUnfinished : 0);
+    const activeLv = levels[activeIndex] || levels[0];
 
     // Check if player has an in-progress session with moves made on this level
-    const hasSession = Boolean(session && session.levelIndex === nextIndex && session.moveCount > 0);
+    const hasSession = Boolean(session && session.levelIndex === activeIndex && session.moveCount > 0);
+    const isLevelDone = Boolean(completedArr[activeIndex]);
+    const earnedStars = (starsArr && starsArr[activeIndex]) || 0;
+    const bestMove = (bestMovesArr && bestMovesArr[activeIndex]) || null;
 
-    const numStr = String(nextIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
+    const numStr = String(activeIndex + 1).padStart(levels.length >= 100 ? 3 : 2, "0");
     if (DOM.consumerTitle) DOM.consumerTitle.textContent = `Level ${numStr}`;
     if (DOM.consumerSub) {
       if (hasSession) {
-        DOM.consumerSub.textContent = `${nextLv.phase || "Puzzle"} • Move ${session.moveCount} in progress`;
+        DOM.consumerSub.textContent = `${activeLv.phase || "Puzzle"} • Move ${session.moveCount} in progress`;
       } else {
-        DOM.consumerSub.textContent = `${nextLv.phase || "Puzzle"} • ${nextLv.name || "Challenge"}`;
+        DOM.consumerSub.textContent = `${activeLv.phase || "Puzzle"} • ${activeLv.name || "Challenge"}`;
       }
     }
     if (DOM.consumerClearedCount) DOM.consumerClearedCount.textContent = `${clearedCount} / ${levels.length} CLEARED`;
-    if (DOM.consumerBadge) {
-      if (isAllCleared) {
-        DOM.consumerBadge.textContent = "ALL CLEARED";
-      } else if (hasSession) {
-        DOM.consumerBadge.textContent = "RESUME";
-      } else if (completedArr[nextIndex]) {
-        DOM.consumerBadge.textContent = "REPLAY";
+
+    // Performance Badge: Stars & Best Moves
+    if (DOM.consumerScoreBadge) {
+      if (isLevelDone) {
+        DOM.consumerScoreBadge.style.display = "inline-flex";
+        if (DOM.consumerScoreStars) {
+          DOM.consumerScoreStars.textContent = "★".repeat(Math.max(1, earnedStars)) + "☆".repeat(Math.max(0, 3 - Math.max(1, earnedStars)));
+        }
+        if (DOM.consumerScoreMoves) {
+          DOM.consumerScoreMoves.textContent = bestMove ? `Best: ${bestMove} moves` : "Cleared";
+        }
       } else {
-        DOM.consumerBadge.textContent = "UP NEXT";
+        DOM.consumerScoreBadge.style.display = "none";
       }
     }
+
     const playLabel = DOM.consumerPlayBtn?.querySelector(".consumer-play-label");
     if (playLabel) {
-      if (isAllCleared) {
+      if (hasSession) {
+        playLabel.textContent = "RESUME";
+      } else if (isLevelDone) {
         playLabel.textContent = "REPLAY";
-      } else if (hasSession) {
-        playLabel.textContent = "CONTINUE";
       } else {
         playLabel.textContent = "PLAY";
       }
     }
   }
+}
+
+const CHAPTER_METAS = [
+  { num: 1, roman: "CH I", phase: "Origins", title: "THE FOUNDATION" },
+  { num: 2, roman: "CH II", phase: "The Pivot", title: "MOMENTUM & PIVOT" },
+  { num: 3, roman: "CH III", phase: "Vectors", title: "VECTOR TRAJECTORIES" },
+  { num: 4, roman: "CH IV", phase: "Crossroads", title: "CROSSROADS JUNCTIONS" },
+  { num: 5, roman: "CH V", phase: "The Chasm I", title: "THE CHASM • PART I" },
+  { num: 6, roman: "CH VI", phase: "The Chasm II", title: "THE CHASM • PART II" },
+  { num: 7, roman: "CH VII", phase: "Labyrinth I", title: "LABYRINTH • ASCENT" },
+  { num: 8, roman: "CH VIII", phase: "Labyrinth II", title: "LABYRINTH • DESCENT" },
+  { num: 9, roman: "CH IX", phase: "The Citadel", title: "THE OBSIDIAN CITADEL" },
+  { num: 10, roman: "CH X", phase: "Grand Master", title: "GRAND MASTER PROTOCOL" }
+];
+
+/**
+ * Render Campaign Level Selector Modal (The Phase Matrix / Expedition Map)
+ */
+export function renderLevelSelectModal({
+  levels,
+  selectedIndex,
+  completedArr,
+  starsArr = [],
+  bestMovesArr = [],
+  onSelectLevel,
+  onLockedSelect
+}) {
+  if (!DOM.levelSelectModal || !DOM.levelSelectGrid) return;
+
+  const totalLevels = levels.length;
+  const clearedCount = completedArr.filter(Boolean).length;
+
+  // Update Centered Header Subtitle
+  if (DOM.levelSelectSummaryText) {
+    DOM.levelSelectSummaryText.textContent = `${clearedCount} / ${totalLevels} Cleared`;
+  }
+
+  // Find max unlocked level index
+  // Render Chapter Blocks
+  DOM.levelSelectGrid.innerHTML = "";
+
+  CHAPTER_METAS.forEach((meta) => {
+    const startIdx = (meta.num - 1) * 10;
+    const endIdx = Math.min(startIdx + 10, totalLevels);
+    const chapterLevels = levels.slice(startIdx, endIdx);
+
+    let chapterClearedCount = 0;
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      if (completedArr[idx]) chapterClearedCount++;
+    }
+    const isChapterFullyCleared = chapterClearedCount === chapterLevels.length;
+
+    const block = document.createElement("div");
+    block.className = "chapter-block";
+    block.setAttribute("data-phase", meta.phase);
+
+    // Simplified Clean Chapter Header
+    const header = document.createElement("div");
+    header.className = "chapter-block-header";
+    header.innerHTML = `
+      <h3 class="chapter-phase-title">${meta.roman} • ${meta.phase.toUpperCase()}</h3>
+      <span class="chapter-progress-badge ${isChapterFullyCleared ? "all-done" : ""}">
+        ${isChapterFullyCleared ? "✓ " : ""}${chapterClearedCount} / ${chapterLevels.length}
+      </span>
+    `;
+    block.appendChild(header);
+
+    // 5x2 Tiles Matrix
+    const matrix = document.createElement("div");
+    matrix.className = "chapter-tiles-matrix";
+
+    chapterLevels.forEach((lv, offset) => {
+      const i = startIdx + offset;
+      const isDone = Boolean(completedArr[i]);
+      const isSelected = i === selectedIndex;
+      const stars = starsArr[i] || 0;
+      const bestMove = bestMovesArr[i] || null;
+
+      const numStr = String(i + 1).padStart(totalLevels >= 100 ? 3 : 2, "0");
+
+      const tile = document.createElement("button");
+      tile.className = "level-tile" +
+        (isDone ? " done" : "") +
+        (isSelected ? " selected" : "");
+      tile.setAttribute("type", "button");
+      tile.setAttribute("data-index", String(i));
+      tile.setAttribute("tabindex", "0");
+      tile.setAttribute("aria-label", `Level ${i + 1}: ${lv.name}, ${isDone ? "Cleared" : "Unlocked"}`);
+      tile.setAttribute("title", `Level ${i + 1}: ${lv.name} (${lv.phase})${bestMove ? ` • Best: ${bestMove} moves` : ""}`);
+
+      tile.innerHTML = `
+        ${isDone ? `<span class="tile-check-glyph">✓</span>` : ""}
+        <span class="tile-num">${numStr}</span>
+        <div class="tile-stars-row">
+          <span class="tile-star-pip ${stars >= 1 ? "filled" : ""}">★</span>
+          <span class="tile-star-pip ${stars >= 2 ? "filled" : ""}">★</span>
+          <span class="tile-star-pip ${stars >= 3 ? "filled" : ""}">★</span>
+        </div>
+      `;
+
+      tile.addEventListener("click", () => {
+        if (typeof onSelectLevel === "function") onSelectLevel(i);
+      });
+
+      matrix.appendChild(tile);
+    });
+
+    block.appendChild(matrix);
+    DOM.levelSelectGrid.appendChild(block);
+  });
 }
 
 /**

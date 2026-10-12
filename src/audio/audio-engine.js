@@ -983,6 +983,13 @@ class ProceduralAudioEngine {
   }
 
   // ==========================================
+  // SFX-28B: UI Button / Tile Tap Feedback
+  // ==========================================
+  playTap() {
+    this._playSmoothSettle("uiTap", 60);
+  }
+
+  // ==========================================
   // SFX-29: Navigation Back (Smooth Settle Chime)
   // ==========================================
   playNavBack() {

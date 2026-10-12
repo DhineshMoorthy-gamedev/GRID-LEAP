@@ -21,7 +21,8 @@ const MODAL_ELEMENTS = {
   REWARD: "rewardModal",
   NOTIF_PROMPT: "notificationPromptModal",
   NOTIF_BLOCKED: "notifBlockedModal",
-  SHARE: "shareModal"
+  SHARE: "shareModal",
+  LEVEL_SELECT: "levelSelectModal"
 };
 
 let currentScreen = "screenHome"; // "screenHome" | "screenGame"

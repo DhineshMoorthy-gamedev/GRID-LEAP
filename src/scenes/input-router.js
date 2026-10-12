@@ -79,6 +79,7 @@ export function setupInputRouter({
     const isPauseOpen = SceneRouter.isModalOpen("PAUSE");
     const isCalendarOpen = SceneRouter.isModalOpen("DAILY_CALENDAR");
     const isAchievementsOpen = SceneRouter.isModalOpen("ACHIEVEMENTS");
+    const isLevelSelectOpen = SceneRouter.isModalOpen("LEVEL_SELECT");
     const isDevModalOpen = SceneRouter.isModalOpen("DEV");
     const isEditorJsonOpen = SceneRouter.isModalOpen("EDITOR_JSON");
     const isOutOfLivesOpen = SceneRouter.isModalOpen("OUT_OF_LIVES");
@@ -91,7 +92,7 @@ export function setupInputRouter({
     // Handle Tab key focus trapping for active modal overlays
     if (e.key === "Tab") {
       const activeModalIds = [
-        "settingsModal", "achievementsModal", "dailyCalendarModal", "rulesModal",
+        "settingsModal", "achievementsModal", "levelSelectModal", "dailyCalendarModal", "rulesModal",
         "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal",
         "updateModal", "rewardModal", "notificationPromptModal", "devModal", "editorJsonModal",
         "shareModal"
@@ -155,6 +156,11 @@ export function setupInputRouter({
       }
       if (isAchievementsOpen) {
         if (window.AchievementsController) window.AchievementsController.close();
+        else SceneRouter.popModal();
+        return;
+      }
+      if (isLevelSelectOpen) {
+        if (window.LevelSelectController) window.LevelSelectController.close();
         else SceneRouter.popModal();
         return;
       }
@@ -511,6 +517,15 @@ export function setupInputRouter({
           onOpenCalendar();
         } else if (window.DailyCalendarController) {
           window.DailyCalendarController.open();
+        }
+        return;
+      }
+      if (e.key === "l" || e.key === "L") {
+        e.preventDefault();
+        if (onShowLevelSelect) {
+          onShowLevelSelect();
+        } else if (window.LevelSelectController) {
+          window.LevelSelectController.open();
         }
         return;
       }

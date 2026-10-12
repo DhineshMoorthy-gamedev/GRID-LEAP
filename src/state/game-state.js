@@ -53,6 +53,7 @@ export const GameState = {
     this.bestMoves = saved.bestMoves || new Array(LEVELS.length).fill(null);
     this.hintsAvailable = typeof saved.hintsAvailable === "number" ? Math.max(0, saved.hintsAvailable) : 3;
     this.activeSession = saved.activeSession || null;
+    this.selectedCardLevelIndex = typeof saved.selectedCardLevelIndex === "number" ? saved.selectedCardLevelIndex : null;
     this.levelIndex = Math.min(Math.max(0, saved.lastPlayedLevel || 0), LEVELS.length - 1);
     this.settings = { ...this.settings, ...(saved.settings || {}) };
     this.devModeEnabled = Boolean(this.settings.devModeEnabled);
@@ -61,6 +62,7 @@ export const GameState = {
 
   resetToDefault() {
     this.levelIndex = 0;
+    this.selectedCardLevelIndex = null;
     this.player = null;
     this.moveCount = 0;
     this.history = [];
@@ -93,6 +95,7 @@ export const GameState = {
   save() {
     storage.save({
       lastPlayedLevel: this.levelIndex,
+      selectedCardLevelIndex: this.selectedCardLevelIndex,
       completed: this.completed,
       stars: this.stars,
       bestMoves: this.bestMoves,
@@ -223,6 +226,13 @@ export const GameState = {
       if (this.activeSession?.levelIndex === idx) {
         this.activeSession = null;
       }
+
+      // Automatically advance selected card level if cleared level was the active selection
+      if (this.selectedCardLevelIndex === null || this.selectedCardLevelIndex === idx) {
+        this.selectedCardLevelIndex = Math.min(idx + 1, LEVELS.length - 1);
+        this.levelIndex = this.selectedCardLevelIndex;
+      }
+
       this.save();
       return { isNewBest, isImprovedReplay, stars, prevBest };
     }
@@ -234,6 +244,28 @@ export const GameState = {
   },
 
   customLevel: null,
+
+  getMaxUnlockedLevelIndex() {
+    const firstUnfinished = this.completed.findIndex(done => !done);
+    return firstUnfinished !== -1 ? firstUnfinished : LEVELS.length - 1;
+  },
+
+  getSelectedCardLevelIndex() {
+    const maxIndex = LEVELS.length - 1;
+    if (typeof this.selectedCardLevelIndex === "number") {
+      return Math.max(0, Math.min(this.selectedCardLevelIndex, maxIndex));
+    }
+    const candidate = typeof this.levelIndex === "number" ? this.levelIndex : 0;
+    return Math.max(0, Math.min(candidate, maxIndex));
+  },
+
+  setSelectedCardLevelIndex(idx) {
+    const maxIndex = LEVELS.length - 1;
+    this.selectedCardLevelIndex = Math.max(0, Math.min(idx, maxIndex));
+    this.levelIndex = this.selectedCardLevelIndex;
+    this.save();
+    return this.selectedCardLevelIndex;
+  },
 
   getNextUncompletedLevelIndex() {
     const firstUnfinished = this.completed.findIndex(done => !done);

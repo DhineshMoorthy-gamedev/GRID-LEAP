@@ -44,6 +44,7 @@ import { SettingsController } from "./scenes/settings-controller.js";
 import { UpdateController } from "./scenes/update-controller.js";
 import { DailyCalendarController } from "./scenes/daily-calendar-controller.js";
 import { AchievementsController } from "./scenes/achievements-controller.js";
+import { LevelSelectController } from "./scenes/level-select-controller.js";
 import { AchievementManager } from "./state/achievement-manager.js";
 import { AdController } from "./scenes/ad-controller.js";
 import { RewardModalController } from "./scenes/reward-modal-controller.js";
@@ -76,9 +77,10 @@ export function openHome() {
     GameState.saveCurrentSession();
   }
   GameState.customLevel = null;
-  renderHomeHub(LEVELS, GameState.levelIndex, GameState.completed, (idx) => {
+  const selectedIdx = GameState.getSelectedCardLevelIndex();
+  renderHomeHub(LEVELS, selectedIdx, GameState.completed, (idx) => {
     startLevel(idx);
-  }, GameState.activeSession);
+  }, GameState.activeSession, GameState.stars, GameState.bestMoves);
 
   // Render Daily Challenge Card status
   const dailyLv = DailyManager.getTodayLevel();
@@ -160,6 +162,7 @@ export async function startLevel(i) {
   await AdController.showPendingInterstitialIfNeeded();
   GameState.customLevel = null;
   GameState.levelIndex = i;
+  GameState.selectedCardLevelIndex = i;
   GameState.clearSession();
   GameState.save();
 
@@ -1439,8 +1442,23 @@ export function bootApp() {
   DailyCalendarController.init({
     onPlayDate: (dateKey) => startDailyLevel(dateKey)
   });
+  // Consumer Campaign Level Launch Action (Resumes if in progress, else starts fresh)
+  const launchConsumerLevel = (targetIdx = GameState.getSelectedCardLevelIndex()) => {
+    GameState.setSelectedCardLevelIndex(targetIdx);
+    if (GameState.hasActiveSessionFor(targetIdx)) {
+      resumeLevelSession();
+    } else {
+      startLevel(targetIdx);
+    }
+  };
+
   ReviewManager.init();
+  LevelSelectController.init({
+    onLevelChosen: () => openHome(),
+    onLaunchLevel: (idx) => launchConsumerLevel(idx)
+  });
   window.AchievementsController = AchievementsController;
+  window.LevelSelectController = LevelSelectController;
   window.DailyCalendarController = DailyCalendarController;
   window.UpdateController = UpdateController;
   window.AdController = AdController;
@@ -1478,20 +1496,18 @@ export function bootApp() {
     });
   }
 
-  // Consumer Next Level Launch Action (Resumes if in progress, else starts fresh)
-  const launchConsumerNext = () => {
-    const nextIdx = GameState.getNextUncompletedLevelIndex();
-    if (GameState.hasActiveSessionFor(nextIdx)) {
-      resumeLevelSession();
-    } else {
-      startLevel(nextIdx);
-    }
-  };
-  if (DOM.consumerPlayBtn) DOM.consumerPlayBtn.addEventListener("click", launchConsumerNext);
+  if (DOM.consumerPlayBtn) DOM.consumerPlayBtn.addEventListener("click", () => launchConsumerLevel());
+  if (DOM.consumerLevelSelectBtn) {
+    DOM.consumerLevelSelectBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      AudioEngine.playNavBack();
+      LevelSelectController.open();
+    });
+  }
   if (DOM.consumerLaunchSection) {
     DOM.consumerLaunchSection.addEventListener("click", (e) => {
-      if (!DOM.consumerPlayBtn?.contains(e.target)) {
-        launchConsumerNext();
+      if (!DOM.consumerPlayBtn?.contains(e.target) && !DOM.consumerLevelSelectBtn?.contains(e.target)) {
+        launchConsumerLevel();
       }
     });
   }
@@ -1970,7 +1986,9 @@ async function copyImageBlobToClipboard(blob) {
     onToggleSolution: toggleSolutionPath,
     onShowPause: showPause,
     onShowLevelSelect: () => {
-      if (GameState.customLevel && !GameState.customLevel.isDaily) {
+      if (SceneRouter.getCurrentScreen() === "screenHome") {
+        LevelSelectController.open();
+      } else if (GameState.customLevel && !GameState.customLevel.isDaily) {
         SceneRouter.navigateTo("screenEditor");
       } else {
         openHome();
@@ -1979,10 +1997,11 @@ async function copyImageBlobToClipboard(blob) {
     onNextLevel: nextLevel,
     onCloseRules: () => SceneRouter.popModal(),
     onHomePlay: () => {
-      if (GameState.hasActiveSessionFor(GameState.levelIndex)) {
+      const targetIdx = GameState.getSelectedCardLevelIndex();
+      if (GameState.hasActiveSessionFor(targetIdx)) {
         resumeLevelSession();
       } else {
-        startLevel(GameState.levelIndex);
+        startLevel(targetIdx);
       }
     },
     onDailyPlay: () => startDailyLevel(),
