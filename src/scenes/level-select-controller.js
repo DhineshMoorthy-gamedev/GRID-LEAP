@@ -7,7 +7,7 @@ import { SceneRouter } from "./scene-router.js";
 import { GameState } from "../state/game-state.js";
 import { AudioEngine } from "../audio/audio-engine.js";
 import { LEVELS } from "../data/levels.js";
-import { renderLevelSelectModal } from "./game-renderer.js";
+import { renderLevelSelectModal, showToast } from "./game-renderer.js";
 
 export const LevelSelectController = {
   dom: {},
@@ -71,13 +71,6 @@ export const LevelSelectController = {
   },
 
   selectLevel(idx) {
-    if (this.selectedLevelIndex === idx) {
-      // Double tapping the already selected level tile launches it directly
-      AudioEngine.playTap();
-      this.launchSelectedLevel();
-      return;
-    }
-
     this.selectedLevelIndex = idx;
     GameState.setSelectedCardLevelIndex(idx);
     AudioEngine.playTap();
@@ -100,7 +93,7 @@ export const LevelSelectController = {
   updatePlayButton() {
     if (!this.dom.playText) return;
     const idx = this.selectedLevelIndex;
-    const numStr = String(idx + 1).padStart(2, "0");
+    const numStr = String(idx + 1).padStart(LEVELS.length >= 100 ? 3 : 2, "0");
 
     let label = `PLAY LEVEL ${numStr}`;
     if (GameState.hasActiveSessionFor(idx)) {
@@ -121,6 +114,11 @@ export const LevelSelectController = {
     }
   },
 
+  handleLockedSelect(idx) {
+    AudioEngine.playBlocked();
+    showToast(`🔒 Clear Level ${idx} to unlock!`);
+  },
+
   render() {
     renderLevelSelectModal({
       levels: LEVELS,
@@ -128,7 +126,8 @@ export const LevelSelectController = {
       completedArr: GameState.completed,
       starsArr: GameState.stars,
       bestMovesArr: GameState.bestMoves,
-      onSelectLevel: (idx) => this.selectLevel(idx)
+      onSelectLevel: (idx) => this.selectLevel(idx),
+      onLockedSelect: (idx) => this.handleLockedSelect(idx)
     });
   }
 };

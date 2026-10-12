@@ -259,17 +259,17 @@ export const GameState = {
   },
 
   getSelectedCardLevelIndex() {
-    const maxIndex = LEVELS.length - 1;
+    const maxUnlocked = this.getMaxUnlockedLevelIndex();
     if (typeof this.selectedCardLevelIndex === "number") {
-      return Math.max(0, Math.min(this.selectedCardLevelIndex, maxIndex));
+      return Math.max(0, Math.min(this.selectedCardLevelIndex, maxUnlocked));
     }
     const candidate = typeof this.levelIndex === "number" ? this.levelIndex : 0;
-    return Math.max(0, Math.min(candidate, maxIndex));
+    return Math.max(0, Math.min(candidate, maxUnlocked));
   },
 
   setSelectedCardLevelIndex(idx) {
-    const maxIndex = LEVELS.length - 1;
-    this.selectedCardLevelIndex = Math.max(0, Math.min(idx, maxIndex));
+    const maxUnlocked = this.getMaxUnlockedLevelIndex();
+    this.selectedCardLevelIndex = Math.max(0, Math.min(idx, maxUnlocked));
     this.levelIndex = this.selectedCardLevelIndex;
     this.save();
     return this.selectedCardLevelIndex;

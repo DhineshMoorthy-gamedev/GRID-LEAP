@@ -1,6 +1,6 @@
 {
   "name": "grid-leap",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "type": "module",
   "description": "Number Grid Maze puzzle game",
   "scripts": {

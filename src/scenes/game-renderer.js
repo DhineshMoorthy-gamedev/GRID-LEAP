@@ -184,6 +184,12 @@ export const DOM = {
   pauseRestartBtn: document.getElementById("pauseRestartBtn"),
   pauseHomeBtn: document.getElementById("pauseHomeBtn"),
 
+  // Exit / Leave Puzzle Confirmation Modal
+  exitConfirmModal: document.getElementById("exitConfirmModal"),
+  exitConfirmSub: document.getElementById("exitConfirmSub"),
+  exitConfirmResumeBtn: document.getElementById("exitConfirmResumeBtn"),
+  exitConfirmLeaveBtn: document.getElementById("exitConfirmLeaveBtn"),
+
   settingsModal: document.getElementById("settingsModal"),
   pillThemeObsidian: document.getElementById("pillThemeObsidian"),
   pillThemeVellum: document.getElementById("pillThemeVellum"),
@@ -497,6 +503,9 @@ export function renderLevelSelectModal({
   }
 
   // Find max unlocked level index
+  const firstUnfinished = completedArr.findIndex(done => !done);
+  const maxUnlockedIndex = firstUnfinished !== -1 ? firstUnfinished : totalLevels - 1;
+
   // Render Chapter Blocks
   DOM.levelSelectGrid.innerHTML = "";
 
@@ -532,6 +541,7 @@ export function renderLevelSelectModal({
 
     chapterLevels.forEach((lv, offset) => {
       const i = startIdx + offset;
+      const isUnlocked = i <= maxUnlockedIndex;
       const isDone = Boolean(completedArr[i]);
       const isSelected = i === selectedIndex;
       const stars = starsArr[i] || 0;
@@ -542,15 +552,19 @@ export function renderLevelSelectModal({
       const tile = document.createElement("button");
       tile.className = "level-tile" +
         (isDone ? " done" : "") +
-        (isSelected ? " selected" : "");
+        (isSelected ? " selected" : "") +
+        (!isUnlocked ? " locked" : "");
       tile.setAttribute("type", "button");
       tile.setAttribute("data-index", String(i));
-      tile.setAttribute("tabindex", "0");
-      tile.setAttribute("aria-label", `Level ${i + 1}: ${lv.name}, ${isDone ? "Cleared" : "Unlocked"}`);
-      tile.setAttribute("title", `Level ${i + 1}: ${lv.name} (${lv.phase})${bestMove ? ` • Best: ${bestMove} moves` : ""}`);
+      tile.setAttribute("tabindex", isUnlocked ? "0" : "-1");
+      tile.setAttribute("aria-label", `Level ${i + 1}: ${lv.name}, ${isDone ? "Cleared" : isUnlocked ? "Unlocked" : "Locked"}`);
+      tile.setAttribute("title", isUnlocked
+        ? `Level ${i + 1}: ${lv.name} (${lv.phase})${bestMove ? ` • Best: ${bestMove} moves` : ""}`
+        : `Level ${i + 1} (Locked)`);
 
       tile.innerHTML = `
         ${isDone ? `<span class="tile-check-glyph">✓</span>` : ""}
+        ${!isUnlocked ? `<span class="tile-lock-glyph">🔒</span>` : ""}
         <span class="tile-num">${numStr}</span>
         <div class="tile-stars-row">
           <span class="tile-star-pip ${stars >= 1 ? "filled" : ""}">★</span>
@@ -560,7 +574,11 @@ export function renderLevelSelectModal({
       `;
 
       tile.addEventListener("click", () => {
-        if (typeof onSelectLevel === "function") onSelectLevel(i);
+        if (isUnlocked) {
+          if (typeof onSelectLevel === "function") onSelectLevel(i);
+        } else {
+          if (typeof onLockedSelect === "function") onLockedSelect(i);
+        }
       });
 
       matrix.appendChild(tile);

@@ -3809,6 +3809,99 @@ body[data-target-mode="playstore"] .game-meta .meta-title {
 
 .btn.primary:hover { background: #f7b878; }
 
+/* ======================================================== */
+/* EXIT / LEAVE PUZZLE CONFIRMATION MODAL                   */
+/* ======================================================== */
+.exit-confirm-card {
+  width: 86vw;
+  max-width: 290px;
+  padding: 22px 18px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.exit-confirm-card h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--paper);
+  letter-spacing: -0.01em;
+}
+
+[data-theme="vellum"] .exit-confirm-card h2 {
+  color: #0F172A;
+}
+
+.exit-confirm-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--paper-dim);
+  line-height: 1.4;
+  margin: 0 0 16px;
+}
+
+[data-theme="vellum"] .exit-confirm-sub {
+  color: #64748B;
+}
+
+.exit-confirm-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.exit-confirm-actions .btn {
+  flex: 1;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+  user-select: none;
+}
+
+.exit-confirm-actions .btn:not(.primary) {
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  color: var(--paper);
+}
+
+[data-theme="vellum"] .exit-confirm-actions .btn:not(.primary) {
+  background: #EAE6DF;
+  border: 1px solid #D6D0C4;
+  color: #1E293B;
+}
+
+.exit-confirm-actions .btn.primary {
+  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+  color: #0D1117;
+  border: none;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+
+[data-theme="vellum"] .exit-confirm-actions .btn.primary {
+  background: linear-gradient(135deg, #2A3644 0%, #1E2732 100%);
+  color: #FBF9F4;
+  box-shadow: 0 4px 14px rgba(42, 54, 68, 0.25);
+}
+
+.exit-confirm-actions .btn:hover {
+  transform: translateY(-1.5px);
+}
+
+.exit-confirm-actions .btn:active {
+  transform: scale(0.97);
+}
+
 /* Out of Lives Modal Rework */
 .out-of-lives-card {
   padding: 28px 24px 24px;

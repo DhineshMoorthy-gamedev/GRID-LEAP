@@ -19,6 +19,7 @@ export function setupInputRouter({
   onToggleDev,
   onToggleSolution,
   onShowPause,
+  onShowExitConfirm,
   onShowLevelSelect,
   onNextLevel,
   onCloseRules,
@@ -87,6 +88,7 @@ export function setupInputRouter({
     const isRewardOpen = SceneRouter.isModalOpen("REWARD");
     const isNotifPromptOpen = SceneRouter.isModalOpen("NOTIF_PROMPT");
     const isShareOpen = SceneRouter.isModalOpen("SHARE");
+    const isExitConfirmOpen = SceneRouter.isModalOpen("EXIT_CONFIRM");
     const hasAnyModal = SceneRouter.hasAnyModalOpen();
 
     // Handle Tab key focus trapping for active modal overlays
@@ -95,7 +97,7 @@ export function setupInputRouter({
         "settingsModal", "achievementsModal", "levelSelectModal", "dailyCalendarModal", "rulesModal",
         "winOverlay", "finalOverlay", "pauseModal", "outOfLivesModal",
         "updateModal", "rewardModal", "notificationPromptModal", "devModal", "editorJsonModal",
-        "shareModal"
+        "shareModal", "exitConfirmModal"
       ];
       let activeModalEl = null;
       for (const id of activeModalIds) {
@@ -211,10 +213,22 @@ export function setupInputRouter({
         document.getElementById("shareModalCloseBtn")?.click();
         return;
       }
+      if (isExitConfirmOpen) {
+        document.getElementById("exitConfirmResumeBtn")?.click() || SceneRouter.popModal();
+        return;
+      }
       if (SceneRouter.popModal()) {
         return;
       }
-      if (currentScreen === "screenGame" || currentScreen === "screenEditor") {
+      if (currentScreen === "screenGame") {
+        if (onShowExitConfirm) {
+          onShowExitConfirm();
+        } else if (onShowLevelSelect) {
+          onShowLevelSelect();
+        }
+        return;
+      }
+      if (currentScreen === "screenEditor") {
         if (onShowLevelSelect) onShowLevelSelect();
         return;
       }

@@ -193,7 +193,7 @@ export const UpdateController = {
   },
 
   render() {
-    const curVer = TargetConfig.version || "0.0.18";
+    const curVer = TargetConfig.version || "0.0.19";
     let newVer = this.updateInfo?.availableVersionName;
 
     if (!newVer && this.updateInfo?.availableVersionCode) {

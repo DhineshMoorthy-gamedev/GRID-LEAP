@@ -618,6 +618,13 @@ export function showPause() {
   SceneRouter.pushModal("PAUSE");
 }
 
+export function showExitConfirm() {
+  if (DOM.exitConfirmSub) {
+    DOM.exitConfirmSub.textContent = "Progress is saved.";
+  }
+  SceneRouter.pushModal("EXIT_CONFIRM");
+}
+
 export async function nextLevel() {
   const wasDaily = Boolean(GameState.customLevel?.isDaily);
   ConfettiFX.stop();
@@ -1504,22 +1511,42 @@ export function bootApp() {
       LevelSelectController.open();
     });
   }
-  if (DOM.consumerLaunchSection) {
-    DOM.consumerLaunchSection.addEventListener("click", (e) => {
-      if (!DOM.consumerPlayBtn?.contains(e.target) && !DOM.consumerLevelSelectBtn?.contains(e.target)) {
-        launchConsumerLevel();
-      }
-    });
-  }
 
   // In-Game navigation
   if (DOM.gameBackBtn) {
     DOM.gameBackBtn.addEventListener("click", () => {
       AudioEngine.playNavBack();
-      openHome();
+      if (GameState.customLevel && !GameState.customLevel.isDaily) {
+        SceneRouter.navigateTo("screenEditor");
+      } else {
+        showExitConfirm();
+      }
     });
   }
   if (DOM.gamePauseBtn) DOM.gamePauseBtn.addEventListener("click", showPause);
+
+  // Exit Confirmation Modal handlers
+  if (DOM.exitConfirmResumeBtn) {
+    DOM.exitConfirmResumeBtn.addEventListener("click", () => {
+      AudioEngine.playTap();
+      SceneRouter.popModal();
+    });
+  }
+  if (DOM.exitConfirmLeaveBtn) {
+    DOM.exitConfirmLeaveBtn.addEventListener("click", () => {
+      AudioEngine.playNavBack();
+      SceneRouter.popModal();
+      openHome();
+    });
+  }
+  if (DOM.exitConfirmModal) {
+    DOM.exitConfirmModal.addEventListener("click", (e) => {
+      if (e.target === DOM.exitConfirmModal) {
+        AudioEngine.playTap();
+        SceneRouter.popModal();
+      }
+    });
+  }
 
   // In-Game Bottom tools
   if (DOM.undoBtn) DOM.undoBtn.addEventListener("click", () => undo(false));
@@ -1985,6 +2012,7 @@ async function copyImageBlobToClipboard(blob) {
     },
     onToggleSolution: toggleSolutionPath,
     onShowPause: showPause,
+    onShowExitConfirm: showExitConfirm,
     onShowLevelSelect: () => {
       if (SceneRouter.getCurrentScreen() === "screenHome") {
         LevelSelectController.open();
@@ -2084,9 +2112,9 @@ async function copyImageBlobToClipboard(blob) {
         SceneRouter.navigateTo("screenEditor");
         return true;
       }
-      // 3. If in active gameplay, Back returns to Home Hub
+      // 3. If in active gameplay, Back opens exit confirmation modal
       if (SceneRouter.getCurrentScreen() === "screenGame") {
-        openHome();
+        showExitConfirm();
         return true;
       }
       // 4. In Editor screen, Back returns to Home Hub
