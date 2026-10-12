@@ -461,7 +461,17 @@ const CHAPTER_METAS = [
   { num: 7, roman: "CH VII", phase: "Labyrinth I", title: "LABYRINTH • ASCENT" },
   { num: 8, roman: "CH VIII", phase: "Labyrinth II", title: "LABYRINTH • DESCENT" },
   { num: 9, roman: "CH IX", phase: "The Citadel", title: "THE OBSIDIAN CITADEL" },
-  { num: 10, roman: "CH X", phase: "Grand Master", title: "GRAND MASTER PROTOCOL" }
+  { num: 10, roman: "CH X", phase: "Grand Master", title: "GRAND MASTER PROTOCOL" },
+  { num: 11, roman: "CH XI", phase: "Singularity", title: "THE GRAVITATIONAL SINGULARITY" },
+  { num: 12, roman: "CH XII", phase: "Quantum Leap", title: "QUANTUM SUPERPOSITION" },
+  { num: 13, roman: "CH XIII", phase: "Event Horizon", title: "THE BOUNDARY PARADOX" },
+  { num: 14, roman: "CH XIV", phase: "Hypercube", title: "4D TESSERACT PROJECTION" },
+  { num: 15, roman: "CH XV", phase: "Chrono Loop", title: "TEMPORAL CYCLES" },
+  { num: 16, roman: "CH XVI", phase: "Stellar Corona", title: "THE SOLAR CORONA" },
+  { num: 17, roman: "CH XVII", phase: "Dark Matter", title: "SUBATOMIC WEAVE" },
+  { num: 18, roman: "CH XVIII", phase: "Supercluster", title: "STELLAR INCUBATOR" },
+  { num: 19, roman: "CH XIX", phase: "Void Nexus", title: "CATACLYSMIC SURGE" },
+  { num: 20, roman: "CH XX", phase: "Omniscience", title: "THE TRANSCENDENT APEX" }
 ];
 
 /**
@@ -1677,7 +1687,7 @@ export function renderWinModal({
 export function renderFinalModal({ totalSolved, totalLevels }) {
   if (DOM.finalTitle) DOM.finalTitle.textContent = "Campaign Complete!";
   if (DOM.finalSub) {
-    DOM.finalSub.textContent = `All ${totalLevels} puzzles conquered across all 10 chapters!`;
+    DOM.finalSub.textContent = `All ${totalLevels} puzzles conquered across all ${CHAPTER_METAS.length} chapters!`;
   }
   if (DOM.finalTotalSolved) DOM.finalTotalSolved.textContent = totalSolved;
   if (DOM.finalTotalLevels) DOM.finalTotalLevels.textContent = totalLevels;

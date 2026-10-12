@@ -48,9 +48,17 @@ export const GameState = {
 
   init() {
     const saved = storage.load();
-    this.completed = saved.completed || new Array(LEVELS.length).fill(false);
-    this.stars = saved.stars || new Array(LEVELS.length).fill(0);
-    this.bestMoves = saved.bestMoves || new Array(LEVELS.length).fill(null);
+    const padArray = (arr, len, fillVal) => {
+      if (!Array.isArray(arr)) return new Array(len).fill(fillVal);
+      if (arr.length < len) {
+        return [...arr, ...new Array(len - arr.length).fill(fillVal)];
+      }
+      return arr;
+    };
+
+    this.completed = padArray(saved.completed, LEVELS.length, false);
+    this.stars = padArray(saved.stars, LEVELS.length, 0);
+    this.bestMoves = padArray(saved.bestMoves, LEVELS.length, null);
     this.hintsAvailable = typeof saved.hintsAvailable === "number" ? Math.max(0, saved.hintsAvailable) : 3;
     this.activeSession = saved.activeSession || null;
     this.selectedCardLevelIndex = typeof saved.selectedCardLevelIndex === "number" ? saved.selectedCardLevelIndex : null;

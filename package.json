@@ -26,7 +26,9 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "npm run build:desktop && tauri build",
     "preview": "vite preview",
+    "test:campaign": "node tests/test-campaign-solvability.js",
     "test:daily": "node tests/test-daily-solvability.js",
+    "test": "node tests/test-campaign-solvability.js && node tests/test-daily-solvability.js",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android"
   },

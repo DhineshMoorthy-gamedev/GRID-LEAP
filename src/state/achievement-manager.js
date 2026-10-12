@@ -56,9 +56,17 @@ export const ACHIEVEMENT_DEFINITIONS = [
     id: "campaign_complete",
     category: ACHIEVEMENT_CATEGORIES.CAMPAIGN,
     title: "Grid Grandmaster",
-    description: "Complete all 100 levels in the campaign",
+    description: "Complete all 100 levels in the first 10 chapters",
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.45 1-1 1H7 M14 14.66V17c0 .55.45 1 1 1h2 M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`,
     target: 100
+  },
+  {
+    id: "campaign_200_complete",
+    category: ACHIEVEMENT_CATEGORIES.CAMPAIGN,
+    title: "Ascended Omniscient",
+    description: "Conquer all 200 campaign puzzles across all 20 chapters",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><circle cx="12" cy="12" r="3"/></svg>`,
+    target: 200
   },
 
   // ==========================================
@@ -403,6 +411,7 @@ class LocalAchievementManager {
     if (completedCampaignCount >= 25) this.unlock("level_25_clear", true);
     if (completedCampaignCount >= 50) this.unlock("level_50_clear", true);
     if (completedCampaignCount >= 100) this.unlock("campaign_complete", true);
+    if (completedCampaignCount >= 200) this.unlock("campaign_200_complete", true);
 
     if (totalAllTimeDaily >= 1) this.unlock("daily_initiate", true);
     if (dailyStreak >= 3) this.unlock("streak_3", true);
@@ -612,9 +621,14 @@ class LocalAchievementManager {
           this.unlock("level_50_clear");
         }
 
-        // 100 levels clear (All 100 campaign levels)
+        // 100 levels clear (All 100 initial campaign levels)
         if (completedCount >= 100) {
           this.unlock("campaign_complete");
+        }
+
+        // 200 levels clear (All 200 campaign levels)
+        if (completedCount >= 200) {
+          this.unlock("campaign_200_complete");
         }
 
         // Flawless Path: Beyond Chapter 1 (Level 11+ / index >= 10), 3 full lives, 0 dead ends
