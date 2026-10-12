@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Grid Leap",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "identifier": "com.olaidigitalstudios.gridleap.desktop",
   "build": {
     "frontendDist": "../dist/desktop",

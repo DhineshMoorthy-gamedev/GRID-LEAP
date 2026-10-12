@@ -256,7 +256,7 @@ export const PlatformBridge = {
         if (res?.versionName) {
           return {
             versionName: res.versionName,
-            versionCode: res.versionCode || 17
+            versionCode: res.versionCode || 18
           };
         }
       } catch (e) {
@@ -264,8 +264,8 @@ export const PlatformBridge = {
       }
     }
     return {
-      versionName: TargetConfig.version || "0.0.17",
-      versionCode: TargetConfig.versionCode || 17
+      versionName: TargetConfig.version || "0.0.18",
+      versionCode: TargetConfig.versionCode || 18
     };
   },
 
