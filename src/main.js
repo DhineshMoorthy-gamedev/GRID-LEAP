@@ -22,6 +22,7 @@ import {
   flushLevelCreationAnimation,
   placeToken,
   setArrowsMoving,
+  updateTokenArrows,
   updateGameHeader,
   getCellElements,
   showToast,
@@ -324,21 +325,8 @@ export function tick() {
   updateTrailButton(GameState.settings.showTrail);
   renderViability(viability, isGoal, isDeadEnd, GameState.player, GameState.solutionPathVisible);
 
-  // Token directional arrows
-  const hasUp = dests.some(d => d.dir === "up");
-  const hasDown = dests.some(d => d.dir === "down");
-  const hasLeft = dests.some(d => d.dir === "left");
-  const hasRight = dests.some(d => d.dir === "right");
-
-  const arrowUp = document.getElementById("tokenDirUp");
-  const arrowDown = document.getElementById("tokenDirDown");
-  const arrowLeft = document.getElementById("tokenDirLeft");
-  const arrowRight = document.getElementById("tokenDirRight");
-
-  if (arrowUp) arrowUp.classList.toggle("disabled", !hasUp);
-  if (arrowDown) arrowDown.classList.toggle("disabled", !hasDown);
-  if (arrowLeft) arrowLeft.classList.toggle("disabled", !hasLeft);
-  if (arrowRight) arrowRight.classList.toggle("disabled", !hasRight);
+  // Leap trajectory arcs & arrows (tutorial style across all levels)
+  updateTokenArrows(isGoal ? [] : dests, GameState.player);
 
   // Solution path / hint update if active
   if (GameState.solutionPathVisible) {
@@ -1140,6 +1128,7 @@ export function handleResize() {
       DOM.board.style.height = size + "px";
       placeToken(GameState.player, true);
       refreshTrail();
+      updateTokenArrows(GameState.legalDests, GameState.player);
     }
   }
 }

@@ -229,6 +229,9 @@ if (DOM.toast) {
 let cellEls = [];
 let tokenEl = null;
 let trailSvgEl = null;
+let arcSvgEl = null;
+let lastLegalDests = [];
+let lastPlayerPos = null;
 let lastRenderedCoords = [];
 let lastRenderedViable = true;
 let lastRenderedShowTrail = false;
@@ -661,6 +664,12 @@ export function flushLevelCreationAnimation() {
   if (DOM.board) {
     DOM.board.classList.remove("creating");
   }
+  if (lastLegalDests && lastLegalDests.length && lastPlayerPos) {
+    updateTokenArrows(lastLegalDests, lastPlayerPos);
+  }
+  if (arcSvgEl && (!tokenEl || !tokenEl.classList.contains("moving"))) {
+    arcSvgEl.style.opacity = "1";
+  }
 }
 
 export function calculateBoardSize(level) {
@@ -831,29 +840,16 @@ export function renderBoard(level, onCellClick, { animate = true, onReadySound =
     tokenEl.innerHTML = `
       <div class="token-inner">
         <div class="token-frame"></div>
-        <div class="token-dir-arrow up" id="tokenDirUp" aria-label="Up">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M2.5 7.5 L6 3.5 L9.5 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow down" id="tokenDirDown" aria-label="Down">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M2.5 4.5 L6 8.5 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow left" id="tokenDirLeft" aria-label="Left">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M7.5 2.5 L3.5 6 L7.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow right" id="tokenDirRight" aria-label="Right">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M4.5 2.5 L8.5 6 L4.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
       </div>
     `;
     DOM.board.appendChild(tokenEl);
+
+    // Tutorial-style Leap Trajectory Overlay (Arcs & Arrowheads)
+    arcSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    arcSvgEl.setAttribute("class", "game-arc-svg tutorial-arc-svg");
+    arcSvgEl.setAttribute("id", "gameArcSvg");
+    arcSvgEl.setAttribute("aria-hidden", "true");
+    DOM.board.appendChild(arcSvgEl);
 
     // Force reflow BEFORE adding .creating — this locks cells and token-inner at scale(0)
     // so the browser has a registered "initial state" to animate FROM.
@@ -865,6 +861,12 @@ export function renderBoard(level, onCellClick, { animate = true, onReadySound =
     creationAnimationTimer = setTimeout(() => {
       if (DOM.board) DOM.board.classList.remove("creating");
       creationAnimationTimer = null;
+      if (lastLegalDests && lastLegalDests.length && lastPlayerPos) {
+        updateTokenArrows(lastLegalDests, lastPlayerPos);
+      }
+      if (arcSvgEl && (!tokenEl || !tokenEl.classList.contains("moving"))) {
+        arcSvgEl.style.opacity = "1";
+      }
       if (typeof pendingReadySound === "function") {
         const snd = pendingReadySound;
         pendingReadySound = null;
@@ -913,29 +915,17 @@ export function renderBoard(level, onCellClick, { animate = true, onReadySound =
     tokenEl.innerHTML = `
       <div class="token-inner">
         <div class="token-frame"></div>
-        <div class="token-dir-arrow up" id="tokenDirUp" aria-label="Up">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M2.5 7.5 L6 3.5 L9.5 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow down" id="tokenDirDown" aria-label="Down">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M2.5 4.5 L6 8.5 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow left" id="tokenDirLeft" aria-label="Left">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M7.5 2.5 L3.5 6 L7.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="token-dir-arrow right" id="tokenDirRight" aria-label="Right">
-          <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M4.5 2.5 L8.5 6 L4.5 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
       </div>
     `;
     DOM.board.appendChild(tokenEl);
+
+    // Tutorial-style Leap Trajectory Overlay (Arcs & Arrowheads)
+    arcSvgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    arcSvgEl.setAttribute("class", "game-arc-svg tutorial-arc-svg");
+    arcSvgEl.setAttribute("id", "gameArcSvg");
+    arcSvgEl.setAttribute("aria-hidden", "true");
+    DOM.board.appendChild(arcSvgEl);
+
     if (typeof pendingReadySound === "function") {
       const snd = pendingReadySound;
       pendingReadySound = null;
@@ -956,6 +946,217 @@ export function setArrowsMoving(isMoving) {
   if (tokenEl) {
     tokenEl.classList.toggle("moving", Boolean(isMoving));
   }
+  if (arcSvgEl) {
+    arcSvgEl.style.opacity = isMoving ? "0" : "1";
+  }
+}
+
+export function updateTokenArrows(legalDests = [], playerPos = null) {
+  lastLegalDests = legalDests;
+  lastPlayerPos = playerPos;
+  if (!arcSvgEl || !DOM.board || !cellEls.length) return;
+  if (!playerPos || !legalDests || legalDests.length === 0) {
+    arcSvgEl.innerHTML = "";
+    arcSvgEl.style.opacity = "0";
+    return;
+  }
+
+  const [pr, pc] = playerPos;
+  const fromCell = cellEls[pr]?.[pc];
+  if (!fromCell || !fromCell.offsetWidth) {
+    if (fromCell && !fromCell.offsetWidth) {
+      requestAnimationFrame(() => {
+        if (lastLegalDests && lastPlayerPos) {
+          updateTokenArrows(lastLegalDests, lastPlayerPos);
+        }
+      });
+    } else {
+      arcSvgEl.innerHTML = "";
+    }
+    return;
+  }
+
+  const gridDim = Math.max(cellEls.length, cellEls[0]?.length || 4);
+  let arrowLen = 8;
+  let halfW = 4.8;
+  let strokeW = 2.6;
+
+  if (gridDim >= 7) {
+    arrowLen = 5.5;
+    halfW = 3.2;
+    strokeW = 1.8;
+  } else if (gridDim >= 5) {
+    arrowLen = 6.8;
+    halfW = 4.0;
+    strokeW = 2.2;
+  }
+
+  let pathsHtml = "";
+  let arrowsHtml = "";
+
+  for (const dest of legalDests) {
+    const toCell = cellEls[dest.r]?.[dest.c];
+    if (!toCell) continue;
+
+    const fx = fromCell.offsetLeft;
+    const fy = fromCell.offsetTop;
+    const fw = fromCell.offsetWidth;
+    const fh = fromCell.offsetHeight;
+    const fcx = fx + fw / 2;
+    const fcy = fy + fh / 2;
+
+    const tx = toCell.offsetLeft;
+    const ty = toCell.offsetTop;
+    const tw = toCell.offsetWidth;
+    const th = toCell.offsetHeight;
+    const tcx = tx + tw / 2;
+    const tcy = ty + th / 2;
+
+    const dir = dest.dir;
+    let sx = fcx;
+    let sy = fcy;
+    let tipX = tcx;
+    let tipY = tcy;
+    let baseX = tcx;
+    let baseY = tcy;
+    let arrowPoints = "";
+    let d = "";
+
+    const glyphR = Math.min(18, Math.max(11, tw * 0.25));
+
+    if (dir === "right") {
+      sx = fx + fw;
+      sy = fcy;
+      tipX = tx + Math.min(12, tw * 0.24);
+      tipY = tcy;
+      baseX = tipX - arrowLen;
+      arrowPoints = `${tipX.toFixed(1)},${tipY.toFixed(1)} ${baseX.toFixed(1)},${(tipY - halfW).toFixed(1)} ${baseX.toFixed(1)},${(tipY + halfW).toFixed(1)}`;
+
+      const cellDist = Math.abs(dest.c - pc);
+      if (cellDist > 1) {
+        let currX = sx;
+        const dParts = [];
+        for (let c = pc + 1; c < dest.c; c++) {
+          const ic = cellEls[pr]?.[c];
+          if (!ic) continue;
+          const icx = ic.offsetLeft + ic.offsetWidth / 2;
+          const gapStart = icx - glyphR;
+          const gapEnd = icx + glyphR;
+          if (gapStart > currX) {
+            dParts.push(`M ${currX.toFixed(1)} ${sy.toFixed(1)} L ${gapStart.toFixed(1)} ${sy.toFixed(1)}`);
+          }
+          currX = Math.max(currX, gapEnd);
+        }
+        if (baseX > currX) {
+          dParts.push(`M ${currX.toFixed(1)} ${sy.toFixed(1)} L ${baseX.toFixed(1)} ${sy.toFixed(1)}`);
+        }
+        d = dParts.join(" ");
+      } else {
+        d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} L ${baseX.toFixed(1)} ${tipY.toFixed(1)}`;
+      }
+    } else if (dir === "left") {
+      sx = fx;
+      sy = fcy;
+      tipX = tx + tw - Math.min(12, tw * 0.24);
+      tipY = tcy;
+      baseX = tipX + arrowLen;
+      arrowPoints = `${tipX.toFixed(1)},${tipY.toFixed(1)} ${baseX.toFixed(1)},${(tipY - halfW).toFixed(1)} ${baseX.toFixed(1)},${(tipY + halfW).toFixed(1)}`;
+
+      const cellDist = Math.abs(dest.c - pc);
+      if (cellDist > 1) {
+        let currX = sx;
+        const dParts = [];
+        for (let c = pc - 1; c > dest.c; c--) {
+          const ic = cellEls[pr]?.[c];
+          if (!ic) continue;
+          const icx = ic.offsetLeft + ic.offsetWidth / 2;
+          const gapStart = icx + glyphR;
+          const gapEnd = icx - glyphR;
+          if (gapStart < currX) {
+            dParts.push(`M ${currX.toFixed(1)} ${sy.toFixed(1)} L ${gapStart.toFixed(1)} ${sy.toFixed(1)}`);
+          }
+          currX = Math.min(currX, gapEnd);
+        }
+        if (baseX < currX) {
+          dParts.push(`M ${currX.toFixed(1)} ${sy.toFixed(1)} L ${baseX.toFixed(1)} ${sy.toFixed(1)}`);
+        }
+        d = dParts.join(" ");
+      } else {
+        d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} L ${baseX.toFixed(1)} ${tipY.toFixed(1)}`;
+      }
+    } else if (dir === "down") {
+      sx = fcx;
+      sy = fy + fh;
+      tipX = tcx;
+      tipY = ty + Math.min(12, th * 0.24);
+      baseY = tipY - arrowLen;
+      arrowPoints = `${tipX.toFixed(1)},${tipY.toFixed(1)} ${(tipX - halfW).toFixed(1)},${baseY.toFixed(1)} ${(tipX + halfW).toFixed(1)},${baseY.toFixed(1)}`;
+
+      const cellDist = Math.abs(dest.r - pr);
+      if (cellDist > 1) {
+        let currY = sy;
+        const dParts = [];
+        for (let r = pr + 1; r < dest.r; r++) {
+          const ic = cellEls[r]?.[pc];
+          if (!ic) continue;
+          const icy = ic.offsetTop + ic.offsetHeight / 2;
+          const gapStart = icy - glyphR;
+          const gapEnd = icy + glyphR;
+          if (gapStart > currY) {
+            dParts.push(`M ${sx.toFixed(1)} ${currY.toFixed(1)} L ${sx.toFixed(1)} ${gapStart.toFixed(1)}`);
+          }
+          currY = Math.max(currY, gapEnd);
+        }
+        if (baseY > currY) {
+          dParts.push(`M ${sx.toFixed(1)} ${currY.toFixed(1)} L ${sx.toFixed(1)} ${baseY.toFixed(1)}`);
+        }
+        d = dParts.join(" ");
+      } else {
+        d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} L ${tipX.toFixed(1)} ${baseY.toFixed(1)}`;
+      }
+    } else if (dir === "up") {
+      sx = fcx;
+      sy = fy;
+      tipX = tcx;
+      tipY = ty + th - Math.min(12, th * 0.24);
+      baseY = tipY + arrowLen;
+      arrowPoints = `${tipX.toFixed(1)},${tipY.toFixed(1)} ${(tipX - halfW).toFixed(1)},${baseY.toFixed(1)} ${(tipX + halfW).toFixed(1)},${baseY.toFixed(1)}`;
+
+      const cellDist = Math.abs(dest.r - pr);
+      if (cellDist > 1) {
+        let currY = sy;
+        const dParts = [];
+        for (let r = pr - 1; r > dest.r; r--) {
+          const ic = cellEls[r]?.[pc];
+          if (!ic) continue;
+          const icy = ic.offsetTop + ic.offsetHeight / 2;
+          const gapStart = icy + glyphR;
+          const gapEnd = icy - glyphR;
+          if (gapStart < currY) {
+            dParts.push(`M ${sx.toFixed(1)} ${currY.toFixed(1)} L ${sx.toFixed(1)} ${gapStart.toFixed(1)}`);
+          }
+          currY = Math.min(currY, gapEnd);
+        }
+        if (baseY < currY) {
+          dParts.push(`M ${sx.toFixed(1)} ${currY.toFixed(1)} L ${sx.toFixed(1)} ${baseY.toFixed(1)}`);
+        }
+        d = dParts.join(" ");
+      } else {
+        d = `M ${sx.toFixed(1)} ${sy.toFixed(1)} L ${tipX.toFixed(1)} ${baseY.toFixed(1)}`;
+      }
+    }
+
+    if (d && arrowPoints) {
+      pathsHtml += `<path class="tutorial-arc-path active" style="stroke-width: ${strokeW}px;" d="${d}" />`;
+      arrowsHtml += `<polygon class="tutorial-arc-arrow active" points="${arrowPoints}" />`;
+    }
+  }
+
+  arcSvgEl.innerHTML = pathsHtml + arrowsHtml;
+
+  const isCreating = Boolean(DOM.board && DOM.board.classList.contains("creating"));
+  const isMoving = Boolean(tokenEl && tokenEl.classList.contains("moving"));
+  arcSvgEl.style.opacity = (isCreating || isMoving) ? "0" : "1";
 }
 
 export function placeToken(playerPos, instant = false) {
