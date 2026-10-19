@@ -9,11 +9,11 @@ import { solve } from "../src/core/solver.js";
  * 3. Grid bounds, cell leap distances, start, and goal positions are valid
  */
 
-console.log("🔍 Running Campaign Solvability Suite (200 Levels / 20 Chapters)...");
+console.log("🔍 Running Campaign Solvability Suite (250 Levels / 25 Chapters)...");
 
 const totalLevels = LEVELS.length;
-if (totalLevels !== 200) {
-  console.error(`❌ Expected 200 levels, but found ${totalLevels}!`);
+if (totalLevels !== 250) {
+  console.error(`❌ Expected 250 levels, but found ${totalLevels}!`);
   process.exit(1);
 }
 
@@ -21,7 +21,7 @@ let passedCount = 0;
 let errors = [];
 const chapterStats = [];
 
-for (let ch = 1; ch <= 20; ch++) {
+for (let ch = 1; ch <= 25; ch++) {
   const startIdx = (ch - 1) * 10;
   const endIdx = startIdx + 10;
   const chapterLevels = LEVELS.slice(startIdx, endIdx);

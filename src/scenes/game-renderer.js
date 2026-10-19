@@ -477,7 +477,12 @@ const CHAPTER_METAS = [
   { num: 17, roman: "CH XVII", phase: "Dark Matter", title: "SUBATOMIC WEAVE" },
   { num: 18, roman: "CH XVIII", phase: "Supercluster", title: "STELLAR INCUBATOR" },
   { num: 19, roman: "CH XIX", phase: "Void Nexus", title: "CATACLYSMIC SURGE" },
-  { num: 20, roman: "CH XX", phase: "Omniscience", title: "THE TRANSCENDENT APEX" }
+  { num: 20, roman: "CH XX", phase: "Omniscience", title: "THE TRANSCENDENT APEX" },
+  { num: 21, roman: "CH XXI", phase: "Wormhole", title: "SPACETIME BRIDGES" },
+  { num: 22, roman: "CH XXII", phase: "Cosmic String", title: "ONE-DIMENSIONAL DEFECTS" },
+  { num: 23, roman: "CH XXIII", phase: "Nebula Core", title: "IONIZED PROTO-STAR" },
+  { num: 24, roman: "CH XXIV", phase: "Dark Energy", title: "ACCELERATING EXPANSION" },
+  { num: 25, roman: "CH XXV", phase: "Infinity Apex", title: "THE FINAL ODYSSEY" }
 ];
 
 /**

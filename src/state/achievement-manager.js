@@ -64,9 +64,17 @@ export const ACHIEVEMENT_DEFINITIONS = [
     id: "campaign_200_complete",
     category: ACHIEVEMENT_CATEGORIES.CAMPAIGN,
     title: "Ascended Omniscient",
-    description: "Conquer all 200 campaign puzzles across all 20 chapters",
+    description: "Conquer all 200 campaign puzzles across the first 20 chapters",
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><circle cx="12" cy="12" r="3"/></svg>`,
     target: 200
+  },
+  {
+    id: "campaign_250_complete",
+    category: ACHIEVEMENT_CATEGORIES.CAMPAIGN,
+    title: "Infinity Ascended",
+    description: "Conquer all 250 campaign puzzles across all 25 chapters",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.267-8-12.356-8-5.096 0-5.096 8 0 8 5.09 0 7.261-8 12.356-8z"/></svg>`,
+    target: 250
   },
 
   // ==========================================
@@ -412,6 +420,7 @@ class LocalAchievementManager {
     if (completedCampaignCount >= 50) this.unlock("level_50_clear", true);
     if (completedCampaignCount >= 100) this.unlock("campaign_complete", true);
     if (completedCampaignCount >= 200) this.unlock("campaign_200_complete", true);
+    if (completedCampaignCount >= 250) this.unlock("campaign_250_complete", true);
 
     if (totalAllTimeDaily >= 1) this.unlock("daily_initiate", true);
     if (dailyStreak >= 3) this.unlock("streak_3", true);
@@ -631,6 +640,11 @@ class LocalAchievementManager {
           this.unlock("campaign_200_complete");
         }
 
+        // 250 levels clear (All 250 campaign levels)
+        if (completedCount >= 250) {
+          this.unlock("campaign_250_complete");
+        }
+
         // Flawless Path: Beyond Chapter 1 (Level 11+ / index >= 10), 3 full lives, 0 dead ends
         if (levelIndex >= 10 && livesRemaining >= 3 && deadEndsEncountered === 0) {
           this.unlock("flawless_run");
@@ -771,7 +785,7 @@ class LocalAchievementManager {
       if (!isUnlocked) {
         if (def.id === "first_leap") {
           progress = Math.min(totalCompletedCampaign, 1);
-        } else if (def.id === "chapter_origins" || def.id === "level_25_clear" || def.id === "level_50_clear" || def.id === "campaign_complete") {
+        } else if (def.id === "chapter_origins" || def.id === "level_25_clear" || def.id === "level_50_clear" || def.id === "campaign_complete" || def.id === "campaign_200_complete" || def.id === "campaign_250_complete") {
           progress = Math.min(totalCompletedCampaign, def.target);
         } else if (def.id === "daily_initiate") {
           progress = Math.min(totalAllTimeDaily, 1);
