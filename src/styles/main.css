@@ -4743,9 +4743,11 @@ body[data-target-mode="playstore"] #settingsSectionIAP {
   box-shadow: 0 0 16px rgba(42, 161, 152, 0.4);
 }
 
-/* Hide Check for Updates on Web & Itch production targets */
+/* Hide Check for Updates on Desktop, Web, Itch & CrazyGames production targets */
+body[data-target-mode="desktop"] #aboutCheckUpdateBtn,
 body[data-target-mode="web"] #aboutCheckUpdateBtn,
-body[data-target-mode="itch"] #aboutCheckUpdateBtn {
+body[data-target-mode="itch"] #aboutCheckUpdateBtn,
+body[data-target-mode="crazygames"] #aboutCheckUpdateBtn {
   display: none !important;
 }
 

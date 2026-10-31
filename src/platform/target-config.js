@@ -23,8 +23,8 @@ const activeMode = Object.values(TARGET_MODES).includes(rawMode) ? rawMode : TAR
 export const TargetConfig = {
   mode: activeMode,
   title: import.meta.env?.VITE_APP_TITLE || "Grid Leap",
-  version: "0.0.21",
-  versionCode: 21,
+  version: activeMode === TARGET_MODES.DESKTOP ? "0.0.22" : "0.0.21",
+  versionCode: activeMode === TARGET_MODES.DESKTOP ? 22 : 21,
 
   isEditor: activeMode === TARGET_MODES.EDITOR,
   isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,
@@ -68,7 +68,9 @@ export const TargetConfig = {
     winShareButton: activeMode !== TARGET_MODES.WEB && activeMode !== TARGET_MODES.ITCH && activeMode !== TARGET_MODES.CRAZYGAMES,
     // Rewarded and Interstitial ads (Play Store native AdMob and CrazyGames SDK)
     ads: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.CRAZYGAMES,
-    rewardedAds: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.CRAZYGAMES
+    rewardedAds: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.CRAZYGAMES,
+    // In-App Update checking button (Play Store and Editor simulator only; hidden on Desktop, Web, Itch, CrazyGames)
+    checkForUpdates: activeMode === TARGET_MODES.PLAYSTORE || activeMode === TARGET_MODES.EDITOR
   }
 };
 

@@ -159,6 +159,9 @@ export const SettingsController = {
     const checkUpdateLabel = document.getElementById("aboutCheckUpdateLabel");
     const aboutActionsRow = document.querySelector(".about-actions-row");
 
+    if (!TargetConfig.features.checkForUpdates || TargetConfig.isDesktop) {
+      if (checkUpdateBtn) checkUpdateBtn.style.display = "none";
+    }
     if (TargetConfig.isCrazyGames || TargetConfig.isWeb) {
       if (checkUpdateBtn) checkUpdateBtn.style.display = "none";
       if (aboutActionsRow) aboutActionsRow.style.display = "none";
