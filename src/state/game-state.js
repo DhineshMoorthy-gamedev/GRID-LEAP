@@ -238,7 +238,6 @@ export const GameState = {
       // Automatically advance selected card level if cleared level was the active selection
       if (this.selectedCardLevelIndex === null || this.selectedCardLevelIndex === idx) {
         this.selectedCardLevelIndex = Math.min(idx + 1, LEVELS.length - 1);
-        this.levelIndex = this.selectedCardLevelIndex;
       }
 
       this.save();

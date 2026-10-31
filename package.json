@@ -1,6 +1,6 @@
 {
   "name": "grid-leap",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "type": "module",
   "description": "Number Grid Maze puzzle game",
   "scripts": {
@@ -30,9 +30,11 @@
     "test:daily": "node tests/test-daily-solvability.js",
     "test": "node tests/test-campaign-solvability.js && node tests/test-daily-solvability.js",
     "cap:sync": "cap sync android",
-    "cap:open": "cap open android"
+    "cap:open": "cap open android",
+    "tauri:windows:build": "tauri-windows-bundle build --runner npm"
   },
   "devDependencies": {
+    "@choochmeque/tauri-windows-bundle": "^0.2.0",
     "@tauri-apps/cli": "^2.11.4",
     "vite": "^6.0.0"
   },

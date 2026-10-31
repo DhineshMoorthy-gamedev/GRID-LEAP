@@ -1,0 +1,23 @@
+{
+  "identifier": "OLAIDigitalStudios.GridLeap",
+  "publisher": "CN=25D5884C-ABDD-421C-A804-FA2DDCCF97E3",
+  "publisherDisplayName": "OLAI Digital Studios",
+  "capabilities": {
+    "general": [
+      "internetClient"
+    ]
+  },
+  "extensions": {
+    "shareTarget": false,
+    "fileAssociations": [],
+    "protocolHandlers": []
+  },
+  "signing": {
+    "pfx": null,
+    "pfxPassword": null
+  },
+  "resourceIndex": {
+    "enabled": false,
+    "keepConfig": false
+  }
+}

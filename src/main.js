@@ -1350,10 +1350,11 @@ export function bootApp() {
 
   // Home Hub bindings
   const launchHeroLevel = () => {
-    if (GameState.hasActiveSessionFor(GameState.levelIndex)) {
+    const targetIdx = GameState.getSelectedCardLevelIndex();
+    if (GameState.hasActiveSessionFor(targetIdx)) {
       resumeLevelSession();
     } else {
-      startLevel(GameState.levelIndex);
+      startLevel(targetIdx);
     }
   };
   if (DOM.heroPlayBtn) DOM.heroPlayBtn.addEventListener("click", launchHeroLevel);
