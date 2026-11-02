@@ -1,0 +1,32 @@
+# F-Droid Metadata Recipe for Grid Leap
+# Package ID: com.olaidigitalstudios.gridleap
+# Repository: https://gitlab.com/fdroid/fdroiddata
+
+Categories:
+  - Games
+License: MIT
+AuthorName: OLAI Digital Studios
+SourceCode: https://github.com/olaidigitalstudios/grid-leap
+IssueTracker: https://github.com/olaidigitalstudios/grid-leap/issues
+Changelog: https://github.com/olaidigitalstudios/grid-leap/releases
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags
+
+Builds:
+  - versionName: 0.0.21
+    versionCode: 21
+    commit: v0.0.21
+    subdir: android/app
+    sudo:
+      - apt-get update
+      - apt-get install -y npm
+    gradle:
+      - fdroidRelease
+    prebuild:
+      - cd ../..
+      - npm install
+      - npm run build:fdroid
+      - npx cap sync android
+    scandelete:
+      - node_modules

@@ -3,7 +3,6 @@
  * Handles Google Play In-App Review integration via @capacitor-community/in-app-review.
  */
 
-import { InAppReview } from "@capacitor-community/in-app-review";
 import { TargetConfig } from "./target-config.js";
 import { GameState } from "../state/game-state.js";
 import { showToast } from "../scenes/game-renderer.js";
@@ -34,9 +33,10 @@ class ReviewManagerClass {
       return;
     }
 
-    if (TargetConfig.isPlayStore && typeof InAppReview !== "undefined") {
+    const inAppReviewPlugin = window.Capacitor?.Plugins?.InAppReview;
+    if (TargetConfig.isPlayStore && inAppReviewPlugin?.requestReview) {
       try {
-        await InAppReview.requestReview();
+        await inAppReviewPlugin.requestReview();
       } catch (err) {
         console.warn("[ReviewManager] Manual review request fallback to URL:", err);
         this._openStoreUrl();
@@ -48,7 +48,11 @@ class ReviewManagerClass {
 
   _openStoreUrl() {
     try {
-      window.open(PLAY_STORE_URL, "_blank");
+      if (TargetConfig.isFdroid) {
+        window.open("https://f-droid.org/packages/com.olaidigitalstudios.gridleap", "_blank");
+      } else {
+        window.open(PLAY_STORE_URL, "_blank");
+      }
     } catch (_) {}
   }
 }

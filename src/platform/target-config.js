@@ -7,6 +7,7 @@ export const TARGET_MODES = {
   EDITOR: "editor",
   PLAYSTORE: "playstore",
   ITCH: "itch",
+  FDROID: "fdroid",
   WEB: "web",
   DESKTOP: "desktop",
   CRAZYGAMES: "crazygames"
@@ -28,6 +29,7 @@ export const TargetConfig = {
 
   isEditor: activeMode === TARGET_MODES.EDITOR,
   isPlayStore: activeMode === TARGET_MODES.PLAYSTORE,
+  isFdroid: activeMode === TARGET_MODES.FDROID,
   isItch: activeMode === TARGET_MODES.ITCH,
   isWeb: activeMode === TARGET_MODES.WEB,
   isDesktop: activeMode === TARGET_MODES.DESKTOP,
