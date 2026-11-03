@@ -1,0 +1,28 @@
+Step onto the grid. Calculate your path. Make the leap.
+
+Grid Leap is an elegant, minimalist logic puzzle where numbers dictate your movement. Every tile you land on determines the exact distance of your next jump in any cardinal direction (Up, Down, Left, Right). Plan your sequence carefully, avoid dead-end traps, and find the singular path to the Goal.
+
+Designed with an offline-first philosophy and a calm, cerebral aesthetic, Grid Leap delivers deep spatial deduction without timers, rush, or artificial pressure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ CORE GAMEPLAY & FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧩 100 HANDCRAFTED LEVELS
+Progress through distinct difficulty phases—from intuitive introductory grids to intricate labyrinthine challenges. Every single level is mathematically verified for optimal solvability.
+
+📅 PROCEDURAL DAILY CHALLENGES
+Test your deduction daily with unique, procedurally generated logic puzzles. Build your daily streak and challenge yourself to find the least-moves solution.
+
+🌓 DUAL MINIMALIST THEMES
+Switch effortlessly between two bespoke visual styles:
+• Obsidian & Ochre: Deep midnight backdrop with luminous amber accents.
+• Vellum & Deboss: Tactile paper aesthetic with soft contrast and crisp debossed typography.
+
+✨ CLEAN & FOCUSED EXPERIENCE
+• Interactive Tutorial: Learn the mechanics in seconds with guided interactive lessons.
+• Instant Undo & Compass Hints: Smoothly rewind mistaken moves or illuminate the next optimal leap when you need a nudge.
+• Tactile Feedback: Responsive animations and haptic feedback accompany every leap.
+
+📴 100% OFFLINE & PRIVACY-FIRST
+Play anywhere—on commutes, flights, or off the grid. No account creation required, no mandatory internet connection, and your progress stays securely on your device.

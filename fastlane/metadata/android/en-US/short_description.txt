@@ -1,0 +1,1 @@
+Leap across the grid. Match number to jump distance. Reach the goal!
